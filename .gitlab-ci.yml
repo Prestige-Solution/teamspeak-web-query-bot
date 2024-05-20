@@ -1,0 +1,57 @@
+stages:
+    - testing
+    - deploy
+
+cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+        - vendor/
+
+variables:
+    STAGING_DOMAIN: devpsbot.ps.prestige-solutions.de
+    GITLAB_DOMAIN: git.ps.prestige-solutions.de
+
+application test:
+    image: ubuntu:latest
+    stage: testing
+    only:
+        - development
+    before_script:
+        - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+        - apt update
+        - apt install composer -yq
+        - apt install php php-xdebug php-{cli,common,curl,intl,mbstring,xml,bz2,xml,sqlite3,gd} -y
+    script:
+        - cat $DOTENV_DEPLOYMENT_TESTING > .env
+        - cat $DOTENV_DEPLOYMENT_TESTING > .env.testing
+        - composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        - php artisan config:clear
+        - php artisan key:generate --env=testing
+        - php artisan key:generate
+        - php artisan migrate:fresh --no-interaction
+        - php artisan test --without-tty
+
+.deploy to development:
+    image: ubuntu:latest
+    stage: deploy
+    only:
+        - development
+    before_script:
+        - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+        - apt update
+        - apt install composer -yq
+        - apt install php php-xdebug php-{cli,common,curl,intl,mbstring,xml,bz2,xml,sqlite3,gd} -yq
+        - apt install openssh-client git rsync -yq
+        - composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        - eval $(ssh-agent -s)
+        - chmod 400 "$SSH_PRIVATE_KEY_GIT_DEPLOY"
+        - ssh-add "$SSH_PRIVATE_KEY_GIT_DEPLOY"
+        - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+        - touch ~/.ssh/known_hosts
+        - chmod 644 ~/.ssh/known_hosts
+        - ssh-keyscan $STAGING_DOMAIN >> ~/.ssh/known_hosts
+        - ssh-keyscan $GITLAB_DOMAIN >> ~/.ssh/known_hosts
+        - touch ~/.ssh/config && echo "$SSH_CONFIG" >> ~/.ssh/config
+    script:
+        - vendor/bin/dep deploy -vvv
+    resource_group: development
