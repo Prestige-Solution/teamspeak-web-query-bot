@@ -1,7 +1,7 @@
 @extends('template')
 
 @section('site-title')
-    Botliste
+    Serverliste | {{config('app.name')}}
 @endsection
 
 @section('custom-css')
@@ -13,7 +13,7 @@
 @section('content')
     <div class="container mt-3">
         <div class="row mb-2">
-            <div class="col-lg-12">
+            <div class="col-lg-8">
                 <h2 class="fs-3 fw-bold">Serverliste</h2>
             </div>
         </div>
@@ -22,7 +22,7 @@
             <div class="row">
                 <div class="col-lg-3">
                     <div class="card">
-                        <a href="{{Route('backend.view.createOrUpdateServer')}}" class="text-decoration-none text-dark">
+                        <a href="{{Route('serverConfig.view.createServer')}}" class="text-decoration-none text-dark">
                             <div class="card-body">
                                 <h5 class="card-title fs-5 fw-bold">
                                     <i class="fa-solid fa-circle-plus"></i> Server Hinzufügen
@@ -35,6 +35,14 @@
         </form>
         <hr>
         @include('form-components.alertCustomError')
+        @include('form-components.successCustom')
+        @if($servers->count() === 0)
+        <div>
+            <div class="alert alert-primary" role="alert">
+                Es wurden noch keine Server hinzugefügt. <a href="{{Route('serverConfig.view.createServer')}}">Jetzt einen Server hinzufügen.</a>
+            </div>
+        </div>
+        @else
         <div class="row">
             <div class="col-lg-12">
                 <table class="table table-striped">
@@ -48,19 +56,34 @@
                         <th scope="col">Query Port</th>
                         <th scope="col">Mode</th>
                         <th scope="col">Status</th>
-                        <th scope="col">Aktion</th>
+                        <th scope="col"></th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach($servers as $server)
                         <tr>
-                            <td class="col-lg-1"><span class="badge text-bg-success">Default</span></td>
+                            <td class="col-lg-1">
+                                @if($server->default == true)
+                                    <span class="badge text-bg-success">Active</span>
+                                @else
+                                    <form class="m-0 p-0" method="post" action="{{route('serverConfig.update.switchDefaultServer')}}">
+                                        @csrf
+                                        <button class="btn btn-link m-0 p-0 me-2" type="submit" name="ServerID" value="{{$server->id}}"><span class="badge text-bg-warning">Switch</span></button>
+                                    </form>
+                                @endif
+                            </td>
                             <td class="col-lg-3">{{$server->server_name}}</td>
                             <td class="col-lg-2">{{$server->qa_name}}</td>
-                            <td class="col-lg-1">{{$server->ipv4}}</td>
+                            <td class="col-lg-1">{{$server->server_ip}}</td>
                             <td class="col-lg-1">{{$server->server_port}}</td>
                             <td class="col-lg-1">{{$server->server_query_port}}</td>
-                            <td class="col-lg-1"><span class="badge text-bg-warning">RAW</span> <span class="badge text-bg-success">SSH</span></td>
+                            <td class="col-lg-1">
+                                @if($server->mode == 1)
+                                    <span class="badge text-bg-warning">RAW</span>
+                                @else
+                                    <span class="badge text-bg-success">SSH</span>
+                                @endif
+                            </td>
                             <td class="col-lg-1">
                                 @if($server->rel_bot_status->id == 1)
                                     <span class="badge text-bg-success">{{$server->rel_bot_status->status_name}}</span>
@@ -76,8 +99,18 @@
                                 @endif
                             </td>
                             <td class="col-lg-1">
-                                <button class="btn btn-link text-primary m-0 p-0" type="button"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button class="btn btn-link text-danger m-0 p-0" type="button"><i class="fa-solid fa-trash ms-2"></i></button>
+                                <div class="d-flex justify-content-end">
+                                    <form class="m-0 p-0" method="post" action="{{route('serverConfig.view.updateServer')}}">
+                                        @csrf
+                                        <button class="btn btn-link text-primary m-0 p-0 me-2" type="submit" name="ServerID" value="{{$server->id}}"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    </form>
+                                    <form class="m-0 p-0">
+                                        <button class="btn btn-link text-danger m-0 p-0 me-2" type="button" data-bs-toggle="modal" data-bs-target="#ServerReInit{{$server->id}}"><i class="fa-solid fa-recycle"></i></button>
+                                    </form>
+                                    <form class="m-0 p-0">
+                                        <button class="btn btn-link text-danger m-0 p-0 me-2" type="button" data-bs-toggle="modal" data-bs-target="#ServerDelete{{$server->id}}"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -85,5 +118,14 @@
                 </table>
             </div>
         </div>
+        @endif
     </div>
 @endsection
+
+@foreach($servers as $server)
+    @include('backend.server.inc.inc-server-init', ['server'=>$server])
+@endforeach
+
+@foreach($servers as $server)
+    @include('backend.server.inc.inc-server-delete', ['server'=>$server])
+@endforeach

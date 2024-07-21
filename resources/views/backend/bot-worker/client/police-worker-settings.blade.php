@@ -19,7 +19,8 @@
     </div>
     <hr>
     @include('form-components.alertCustomError')
-    <form method="post" action="{{Route('worker.create.createOrUpdatePoliceWorkerSettings')}}">
+    @include('form-components.successCustom')
+    <form method="post" action="{{Route('worker.create.updatePoliceWorkerSettings')}}">
         @csrf
         <div class="row mb-3 mt-3">
             <div class="col-lg-2 d-grid">

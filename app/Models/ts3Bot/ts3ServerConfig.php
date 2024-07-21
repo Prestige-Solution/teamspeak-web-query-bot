@@ -6,18 +6,20 @@ use App\Models\category\catBotStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\Hash;
 
 class ts3ServerConfig extends Model
 {
     use HasFactory;
+    public const BotReconnectTrue = 1;
+    public const BotReconnectFalse = 0;
+    public const TS3ConnectModeRAW = 1;
+    public const TS3ConnectModeSSH = 2;
 
     protected $fillable = [
         'user_id',
         'server_name',
-        'ipv4',
+        'server_ip',
         'qa_name',
         'qa_pw',
         'server_query_port',
@@ -30,17 +32,16 @@ class ts3ServerConfig extends Model
         'bot_confirm_token',
         'bot_confirmed_at',
         'active',
+        'default',
+        'mode',
     ];
 
-    /**
-     * @return HasOne
-     */
     public function rel_bot_status(): HasOne
     {
         return $this->hasOne(catBotStatus::class,'id','bot_status_id');
     }
 
-    public function rel_ts3serverConfig()
+    public function rel_ts3serverConfig(): HasOne
     {
         return $this->hasOne(User::class,'id','user_id');
     }

@@ -4,7 +4,8 @@ namespace App\Http\Controllers\ts3Config;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
-use App\Models\ts3Bot\ts3BotLog;
+use App\Http\Requests\Ts3Config\CreateStartBotRequest;
+use App\Http\Requests\Ts3Config\CreateStopBotRequest;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
@@ -14,10 +15,8 @@ use App\Models\ts3BotJobs\ts3BotJobCreateChannels;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelRemover;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
@@ -25,66 +24,10 @@ class Ts3ConfigController extends Controller
 {
     protected Ts3LogController $ts3LogController;
 
-    public function __construct()
-    {
-        $this->ts3LogController = new Ts3LogController('bot_init',Auth::user()->server_id);
-    }
-
-    public function ts3SendBotVerifyToken($serverID): array
-    {
-        $ts3ServerConfig = ts3ServerConfig::query()
-            ->where('id','=',$serverID)
-            ->first();
-
-        $uri = new Ts3UriStringHelperController();
-        $uri = $uri->getStandardUriString(
-            $ts3ServerConfig->qa_name,
-            $ts3ServerConfig->qa_pw,
-            $ts3ServerConfig->ipv4,
-            $ts3ServerConfig->server_query_port,
-            $ts3ServerConfig->server_port,
-            $ts3ServerConfig->qa_name
-        );
-
-        try {
-            // Create new object of TS3 PHP Framework class
-            $ts3_VirtualServer = TeamSpeak3::factory($uri);
-            //get server Admin group id
-            $serverAdminGroups = collect($ts3_VirtualServer->serverGroupList(['name'=>'Server Admin','type'=>1]));
-            //foreach serverAdminGroup get the client lists
-            foreach ($serverAdminGroups->keys()->all() as $serverAdminGroup)
-            {
-                //get Clients
-                $adminClients = collect($ts3_VirtualServer->clientList(['client_servergroups'=>$serverAdminGroup]));
-                //send token to each Client in the group
-                foreach ($adminClients->keys()->all() as $client)
-                {
-                    $client = $ts3_VirtualServer->clientGetById($client);
-                    $client->message('Dein Aktivierungscode lautet: '.$ts3ServerConfig->bot_confirm_token);
-                }
-            }
-
-        }catch(TeamSpeak3Exception $e)
-        {
-            //set log
-            ts3BotLog::query()->create([
-                'server_id'=>$ts3ServerConfig->id,
-                'status_id'=>4,
-                'job'=>'Config Initialization',
-                'description'=>NULL,
-                'error_code'=>$e->getCode(),
-                'error_message'=>$e->getMessage(),
-                'worker'=>'bot-Initialization',
-            ]);
-
-            // return status
-            return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
-        }
-        return ['status'=>1,'msg'=>'Bot Token wurde erfolgreich versendet'];
-    }
-
     public function ts3ServerInitializing($serverID): array
     {
+        $this->ts3LogController = new Ts3LogController('Server Initialising', Auth::user()->server_id);
+
         $ts3ServerConfig = ts3ServerConfig::query()
             ->where('id','=',$serverID)
             ->first();
@@ -100,25 +43,34 @@ class Ts3ConfigController extends Controller
         ts3BotWorkerChannelRemover::query()->where('server_id','=',$serverID)->delete();
         ts3BotWorkerPolice::query()->where('server_id','=',$serverID)->update(['allow_sgid_vpn'=>1]);
 
+        //TODO Delete Banner configs and data
+
         $uri = new Ts3UriStringHelperController();
         $uri = $uri->getStandardUriString(
             $ts3ServerConfig->qa_name,
             $ts3ServerConfig->qa_pw,
-            $ts3ServerConfig->ipv4,
+            $ts3ServerConfig->server_ip,
             $ts3ServerConfig->server_query_port,
             $ts3ServerConfig->server_port,
-            $ts3ServerConfig->qa_name
+            $ts3ServerConfig->qa_name,
+            $ts3ServerConfig->mode,
         );
+
+        if ($uri == 0)
+        {
+            redirect()->back()->withErrors(['ipAddress'=>'Die Eingegeben IP Adresse ist nicht gültig']);
+        }
 
         try {
             // Create new object of TS3 PHP Framework class
             $ts3_VirtualServer = TeamSpeak3::factory($uri);
-        }catch (TeamSpeak3Exception $e)
+
+        }catch (TeamSpeak3Exception|\Exception $e)
         {
             $this->ts3LogController->setLog(
                 $e,
                 4,
-                'Install - Init Framework',
+                'Setup - Initialising Server',
             );
 
             // print the error message returned by the server
@@ -153,7 +105,7 @@ class Ts3ConfigController extends Controller
             $this->ts3LogController->setLog(
                 $e,
                 4,
-                'Install - Init Channels',
+                'Setup - Channels',
             );
 
             // print the error message returned by the server
@@ -178,7 +130,7 @@ class Ts3ConfigController extends Controller
             $this->ts3LogController->setLog(
                 $e,
                 4,
-                'Install - Init Server Groups',
+                'Setup - Server Groups',
             );
 
             // print the error message returned by the server
@@ -204,7 +156,7 @@ class Ts3ConfigController extends Controller
             $this->ts3LogController->setLog(
                 $e,
                 4,
-                'Install - Init Channel Groups',
+                'Setup - Channel Groups',
             );
 
             // print the error message returned by the server
@@ -228,49 +180,31 @@ class Ts3ConfigController extends Controller
             $this->ts3LogController->setLog(
                 $e,
                 4,
-                'Install - Init TS3 Database',
+                'Setup - TS3 Database',
             );
 
             // print the error message returned by the server
             return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
         }
 
-        ts3BotLog::query()->create([
-            'server_id'=>$serverID,
-            'status_id'=>5,
-            'job'=>'Config Initialization',
-            'description'=>'Der Server wurde erfolgreich initialisiert',
-            'error_code'=>NULL,
-            'error_message'=>NULL,
-            'worker'=>'bot-Initialization',
-        ]);
+        $this->ts3LogController->setCustomLog(
+            $serverID,
+            '5',
+            'Config Initialisation',
+            'Der Server wurde erfolgreich initialisiert',
+            NULL,
+            NULL,
+        );
 
         return ['status'=>1,'msg'=>'success'];
     }
 
-    public function ts3StartBot(Request $request)
+    public function ts3StartBot(CreateStartBotRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //validator
-        $rules = [
-            'server_id'=>'required|numeric',
-        ];
-
-        $messages = [];
-
-        //create validator with parameters
-        $validator = validator::make($request->all(), $rules, $messages);
-
-        //validate data
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
         //set log
-        $logController = new Ts3LogController('Webinterface',Auth::user()->server_id);
+        $logController = new Ts3LogController('Webinterface',$request->validated('ServerID'));
         $logController->setCustomLog(
-            Auth::user()->server_id,
+            $request->validated('ServerID'),
             1,
             'startBot',
             'Bot wurde via Webinterface gestartet',
@@ -280,43 +214,23 @@ class Ts3ConfigController extends Controller
 
         //set bot active status
         ts3ServerConfig::query()
-            ->where('id','=',Auth::user()->server_id)
+            ->where('id','=',$request->validated('ServerID'))
             ->update([
                 'ts3_start_stop'=>1,
                 'active'=>1,
             ]);
 
-        Artisan::call('command:start_bot '.Auth::user()->server_id);
+        Artisan::call('app:start-bot '.$request->validated('ServerID'));
 
-        return redirect()->back()->with('success', 'Der Bot wird gestartet. Dieser erscheint gleich auf deinem Server');
+        return redirect()->back()->with('success', 'Der Bot wird gestartet und loggt sich gleich auf den Server ein.');
     }
 
-    public function ts3StopBot(Request $request)
+    public function ts3StopBot(CreateStopBotRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //validator
-        $rules = [
-            'server_id'=>'required|numeric',
-        ];
-
-        $messages = [
-            'server_id.required'=>'Hoppla, da lief etwas schief',
-            'server_id.numeric'=>'Hoppla, da lief etwas schief',
-        ];
-
-        //create validator with parameters
-        $validator = validator::make($request->all(), $rules, $messages);
-
-        //validate data
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
         //set log
-        $logController = new Ts3LogController('Webinterface',Auth::user()->server_id);
+        $logController = new Ts3LogController('Webinterface',$request->validated('ServerID'));
         $logController->setCustomLog(
-            Auth::user()->server_id,
+            $request->validated('ServerID'),
             1,
             'botStop',
             'Bot durch das Webinterface gestoppt',
@@ -326,7 +240,7 @@ class Ts3ConfigController extends Controller
 
         //set bot active status
         ts3ServerConfig::query()
-            ->where('id','=',Auth::user()->server_id)
+            ->where('id','=',$request->validated('ServerID'))
             ->update([
                 'ts3_start_stop'=>0,
                 'active'=>0,

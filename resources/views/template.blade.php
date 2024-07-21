@@ -6,7 +6,7 @@
     <title>@yield('site-title')</title>
 
     <link href="{{asset('/css/bootstrap/bootstrap.min.css')}}" rel="stylesheet">
-    <link rel="shortcut icon" type="image/x-icon" href="{{asset('storage/img/ps-bot.png')}}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{asset('storage/img/bot-logo.png')}}">
 
     @yield('custom-css')
 </head>

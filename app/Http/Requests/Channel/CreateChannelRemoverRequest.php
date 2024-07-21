@@ -35,7 +35,7 @@ class CreateChannelRemoverRequest extends FormRequest
         return [
             'ServerID.required'=>'Hoppla, da lief etwas schief',
             'ServerID.numeric'=>'Hoppla, da lief etwas schief',
-            'ChannelCid.required'=>'Hoppla, da lief etwas schief',
+            'ChannelCid.required'=>'Bitte wähle einen Channel aus',
             'ChannelCid.numeric'=>'Hoppla, da lief etwas schief',
             'MaxIdleTime.required'=>'Hoppla, da lief etwas schief',
             'MaxIdleTime.numeric'=>'Hoppla, da lief etwas schief',

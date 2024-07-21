@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ts3_bot_logs', function (Blueprint $table) {
-            $table->string('error_message')->nullable()->change()->change();
+            $table->string('error_message')->nullable()->change();
         });
     }
 };

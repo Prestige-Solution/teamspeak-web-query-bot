@@ -5,7 +5,7 @@ namespace App\Http\Requests\Channel;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateChannelJobRequest extends FormRequest
+class UpsertChannelJobRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,6 +21,7 @@ class CreateChannelJobRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'ServerID'=>'required|numeric',
             'ChannelTarget'=>'required|numeric',
             'ChannelEvent'=>'required',
             'ChannelAction'=>'required|numeric',
@@ -30,7 +31,6 @@ class CreateChannelJobRequest extends FormRequest
             'NotifyServerGroupBool'=>'required|bool',
             'NotifyServerGroupSgid'=>'required|numeric',
             'NotifyServerGroupMessage'=>'nullable',
-            'ServerID'=>'required|numeric',
             'ChannelActionMinClientCount'=>'required|numeric',
             'MaxChannels'=>'required|numeric',
         ];

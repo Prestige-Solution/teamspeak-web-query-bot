@@ -41,29 +41,39 @@ class Ts3BotController extends Controller
         $ts3ServerConfig = ts3ServerConfig::query()
             ->where('id','=', $serverID)->first();
 
-        //declare class
-        $TS3PHPFramework = new TeamSpeak3();
-        TeamSpeak3::init();
-
-        $this->TS3PHPFramework = $TS3PHPFramework;
-        $this->serverPort = $ts3ServerConfig->server_port;
+        //declare logging
         $this->serverID = $ts3ServerConfig->id;
-        $this->waitIncrease = 1;
-        $this->reconnectCode = 0;
-
         $this->logController = new Ts3LogController('ts3Bot', $this->serverID);
 
+        //declare ts3Framework
+        $TS3PHPFramework = new TeamSpeak3();
+        try {
+            TeamSpeak3::init();
+        } catch (\Exception $e) {
+            $this->logController->setLog(
+                $e->getMessage(),
+                4,
+                'Construct Start Bot'
+            );
+        }
+
+        //set global variables
+        $this->TS3PHPFramework = $TS3PHPFramework;
+        $this->serverPort = $ts3ServerConfig->server_port;
+        $this->waitIncrease = 1;
+        $this->reconnectCode = ts3ServerConfig::BotReconnectFalse;
+
+        //start bot
         $this->startBot();
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     public function startBot(): void
     {
-        //set restartCode to 0
-        $this->reconnectCode = 0;
+        //set restart no
+        $this->reconnectCode = ts3ServerConfig::BotReconnectFalse;
 
         try {
             //get Server config
@@ -78,10 +88,10 @@ class Ts3BotController extends Controller
                 $qaNickname = $ts3ServerConfig->qa_name;
             }
 
-            // Connect via ipv4 to ts3 Server // timeout in seconds
+            // Connect via server_ip to ts3 Server // timeout in seconds
             $uri = 'serverquery://'
                 .$ts3ServerConfig->qa_name.':'.Crypt::decryptString($ts3ServerConfig->qa_pw).
-                '@'.$ts3ServerConfig->ipv4.
+                '@'.$ts3ServerConfig->server_ip.
                 ':'.$ts3ServerConfig->server_query_port.
                 '/?server_port='.$ts3ServerConfig->server_port.
                 '&timeout=30'.
@@ -118,8 +128,6 @@ class Ts3BotController extends Controller
                 1,
                 'Bot start process',
                 'Bot wurde gestartet. Warte auf Events',
-                null,
-                null,
             );
 
             //set reset wait Increase
@@ -145,7 +153,7 @@ class Ts3BotController extends Controller
                             'active'=>0,
                         ]);
                     //set log
-                    $this->logController->setLog($e,4,'startBot');
+                    $this->logController->setLog($e->getMessage(),4,'startBot');
                     //stop bot process
                     $this->botStopSignal(true);
                     break;
@@ -157,7 +165,7 @@ class Ts3BotController extends Controller
                             'bot_status_id'=>2,
                         ]);
                     //set log
-                    $this->logController->setLog($e,2,'startBot');
+                    $this->logController->setLog($e->getMessage(),2,'startBot');
                     //try restart
                     $this->reconnectCode = $this->reconnectBot();
                     break;
@@ -169,7 +177,7 @@ class Ts3BotController extends Controller
                             'bot_status_id'=>2,
                         ]);
                     //set log
-                    $this->logController->setLog($e,2,'startBot');
+                    $this->logController->setLog($e->getMessage(),2,'startBot');
                     //try restart
                     $this->reconnectCode = $this->reconnectBot();
                     break;
@@ -185,7 +193,7 @@ class Ts3BotController extends Controller
                             'active'=>0,
                         ]);
                     //set log
-                    $this->logController->setLog($e,4,'startBot');
+                    $this->logController->setLog($e->getMessage(),4,'startBot');
                     //stop bot process
                     $this->botStopSignal(true);
                     break;
@@ -197,7 +205,7 @@ class Ts3BotController extends Controller
                             'bot_status_id'=>4,
                         ]);
                     //set log
-                    $this->logController->setLog($e,4,'startBot');
+                    $this->logController->setLog($e->getMessage(),4,'startBot');
             }
         }catch (\Exception $e)
         {
@@ -244,7 +252,7 @@ class Ts3BotController extends Controller
         } finally
         {
             //if bot has re-connect code
-            if($this->reconnectCode == 1)
+            if($this->reconnectCode == ts3ServerConfig::BotReconnectTrue)
             {
                 //set custom log
                 $this->logController->setCustomLog(
@@ -252,8 +260,6 @@ class Ts3BotController extends Controller
                     2,
                     'Handling finally restart bot',
                     'Bot wird neu gestartet',
-                    null,
-                    null,
                 );
 
                 //restart bot
@@ -261,7 +267,7 @@ class Ts3BotController extends Controller
             }
 
             //is bot has max re-connect times
-            if ($this->reconnectCode == 0)
+            if ($this->reconnectCode == ts3serverConfig::BotReconnectFalse)
             {
                 //set custom log
                 $this->logController->setCustomLog(
@@ -269,8 +275,6 @@ class Ts3BotController extends Controller
                     2,
                     'Handling finally restart bot failed',
                     'Bot wird gestoppt',
-                    null,
-                    null,
                 );
 
                 //bot stop Process
@@ -286,8 +290,6 @@ class Ts3BotController extends Controller
                     5,
                     'Bot stop process finally finished',
                     'Bot wurde gestoppt',
-                    null,
-                    null,
                 );
             }
         }
@@ -319,8 +321,6 @@ class Ts3BotController extends Controller
                     4,
                     'checkKeepAlive',
                     'Bot is dead! Restart Bot',
-                    null,
-                    null,
                 );
 
                 ts3ServerConfig::query()
@@ -334,7 +334,7 @@ class Ts3BotController extends Controller
         }catch (TeamSpeak3Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'checkKeepAlive');
+            $this->logController->setLog($e->getMessage(),4,'checkKeepAlive');
         }
     }
 
@@ -412,14 +412,13 @@ class Ts3BotController extends Controller
                 3,
                 'botStopSignal',
                 'Bot wird gestoppt',
-                null,
-                null,
             );
 
             //set signal to true
             $this->botStop = true;
 
-            //throw new exception for Bot stop
+            //Stop Bot and throw a new exception
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
             throw new \Exception('BotStopException');
         }
     }
@@ -462,9 +461,7 @@ class Ts3BotController extends Controller
                 $this->serverID,
                 2,
                 'eventClientEnterView',
-                $e,
-                null,
-                null,
+                $e->getMessage(),
             );
         }
     }
@@ -513,7 +510,7 @@ class Ts3BotController extends Controller
         }catch (TeamSpeak3Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'eventClientMoved');
+            $this->logController->setLog($e->getMessage(),4,'eventClientMoved');
         }
     }
 
@@ -528,7 +525,7 @@ class Ts3BotController extends Controller
         }catch (TeamSpeak3Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'eventChannelCreated');
+            $this->logController->setLog($e->getMessage(),4,'eventChannelCreated');
         }
     }
 
@@ -559,7 +556,7 @@ class Ts3BotController extends Controller
         }catch (TeamSpeak3Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'eventChannelEdited');
+            $this->logController->setLog($e->getMessage(),4,'eventChannelEdited');
         }
 
     }
@@ -575,7 +572,7 @@ class Ts3BotController extends Controller
         }catch (TeamSpeak3Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'eventChannelDeleted');
+            $this->logController->setLog($e->getMessage(),4,'eventChannelDeleted');
         }
     }
 
@@ -794,7 +791,7 @@ class Ts3BotController extends Controller
         catch(TeamSpeak3Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'CreateChannel');
+            $this->logController->setLog($e->getMessage(),4,'CreateChannel');
         }
     }
 
@@ -819,7 +816,7 @@ class Ts3BotController extends Controller
             }catch (TeamSpeak3Exception $e)
             {
                 //set log
-                $this->logController->setLog($e,4,'storeCreatedChannel');
+                $this->logController->setLog($e->getMessage(),4,'storeCreatedChannel');
             }
         }
     }
@@ -845,7 +842,7 @@ class Ts3BotController extends Controller
             }catch (TeamSpeak3Exception $e)
             {
                 //set log
-                $this->logController->setLog($e,4,'updateChannel');
+                $this->logController->setLog($e->getMessage(),4,'updateChannel');
             }
         }
     }
@@ -876,8 +873,6 @@ class Ts3BotController extends Controller
             2,
             'reconnectBot',
             'Es wird versucht die Verbindung neu aufzubauen',
-            null,
-            null,
         );
 
         $waitTimeSeconds = 10 * $this->waitIncrease;
@@ -894,12 +889,10 @@ class Ts3BotController extends Controller
                 4,
                 'reconnectBot',
                 'Maximale Versuche und Wartezeit ('.$waitTimeSeconds.' sekunden) erreicht',
-                null,
-                null,
             );
 
             //bot stopped
-            return 0;
+            return ts3ServerConfig::BotReconnectFalse;
         }else
         {
             //set custom log
@@ -908,12 +901,10 @@ class Ts3BotController extends Controller
                 2,
                 'reconnectBot',
                 'Neuer Verbindungsversuch in '.$waitTimeSeconds.' sekunden',
-                null,
-                null,
             );
 
             //bot start
-            return 1;
+            return ts3ServerConfig::BotReconnectTrue;
         }
     }
 }

@@ -15,13 +15,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->integer('default_server_id')->default(0);
             $table->string('nickname')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->timestamp('birthday');
-            $table->integer('role_id')->default(0);
-            $table->integer('server_id')->default(0);
-            $table->boolean('server_owner')->default(0);
             $table->boolean('need_change_password')->default(0);
             $table->boolean('banned')->default(0);
             $table->timestamp('email_verified_at')->nullable();

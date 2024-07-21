@@ -3,6 +3,7 @@
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\banner\BannerController;
 use App\Http\Controllers\channel\ChannelController;
+use App\Http\Controllers\channel\ChannelRemoverController;
 use App\Http\Controllers\client\ClientController;
 use App\Http\Controllers\sys\LoginController;
 use App\Http\Controllers\sys\ServerController;
@@ -30,64 +31,59 @@ Route::middleware(['throttle:login'])->group(function (){
 });
 
 Route::middleware(['auth'])->group(function (){
-    Route::prefix('start')->name('start.')->middleware('auth')->group(function (){
-        Route::get('/dashboard',[BackendController::class,'viewBackendDashboard'])->name('view.dashboard');
-//        Route::get('/invite-code',[BackendController::class,'viewUseInvite'])->name('view.useInviteCode');
-    });
-
     Route::prefix('dashboard')->name('backend.')->group(function (){
-        Route::get('/bot-control-center',[BackendController::class,'viewBotControlCenter'])->name('view.botControlCenter');
+        Route::get('/control-center',[BackendController::class,'viewBotControlCenter'])->name('view.botControlCenter');
         Route::get('/password-reset',[BackendController::class, 'viewChangePassword'])->name('view.changePassword');
-        Route::post('/password-change',[BackendController::class,'updateChangePassword'])->name('update.changePassword');
-
-        Route::prefix('server-settings')->group(function (){
-            Route::get('/server-list',[ServerController::class,'viewServerList'])->name('view.serverList');
-            Route::post('/create-new-server',[BackendController::class,'upsertServer'])->name('create.createOrUpdateServer');
-            Route::get('/edit-server',[BackendController::class,'viewUpdateServer'])->name('view.createOrUpdateServer');
-        });
+        Route::post('/change-password',[BackendController::class,'updateChangePassword'])->name('update.changePassword');
 
         Route::prefix('logs')->group(function (){
             Route::get('/bot-logs',[BackendController::class,'viewBotLogs'])->name('view.botLogs');
         });
+    });
 
-        Route::prefix('bad-names')->group(function (){
-            Route::get('/bad-names',[BadNameController::class,'viewListBadNames'])->name('view.badNames');
-            Route::get('/global-bad-names',[BadNameController::class,'viewGlobalListBadNames'])->name('view.globalBadNames');
-            Route::post('/create-new-bad-name',[BadNameController::class,'createNewBadName'])->name('create.newBadName');
-            Route::post('/delete-bad-name',[BadNameController::class,'deleteBadName'])->name('delete.badName');
-        });
+    Route::prefix('bad-nicknames')->name('backend.')->group(function (){
+        Route::get('/list',[BadNameController::class,'viewListBadNames'])->name('view.badNames');
+        Route::get('/global-list',[BadNameController::class,'viewGlobalListBadNames'])->name('view.globalBadNames');
+        Route::post('/create-new-bad-name',[BadNameController::class,'createNewBadName'])->name('create.newBadName');
+        Route::post('/delete-bad-name',[BadNameController::class,'deleteBadName'])->name('delete.badName');
+    });
 
-//        Route::get('/manage-invites',[BackendController::class,'viewManageInvite'])->name('view.manageInvite');
-//        Route::post('/create-new-invite',[BackendController::class,'createNewInviteCode'])->name('create.newInvite');
-//        Route::post('/use-invite-code',[BackendController::class,'updateUseInviteCode'])->name('update.useInviteCode');
-//        Route::post('/delete-invite',[BackendController::class,'deleteInvite'])->name('delete.invite');
-//        Route::get('/bot-verify',[BackendController::class,'viewVerifyBot'])->name('view.verifyBot');
-//        Route::post('/verify-bot',[BackendController::class,'updateBotVerification'])->name('update.verifyBot');
-
+    Route::prefix('server')->name('serverConfig.')->group(function (){
+        Route::get('/list',[ServerController::class,'viewServerList'])->name('view.serverList');
+        Route::get('/new-server',[BackendController::class,'viewCreateServer'])->name('view.createServer');
+        Route::post('/create-new-server',[ServerController::class, 'createServer'])->name('create.server');
+        Route::any('/edit',[BackendController::class,'viewUpdateServer'])->name('view.updateServer');
+        Route::post('/update-server',[ServerController::class, 'updateServer'])->name('update.server');
+        Route::post('/initialisieren',[ServerController::class, 'updateServerInit'])->name('update.serverInit');
+        Route::post('/update-default-server',[ServerController::class, 'updateSwitchDefaultServer'])->name('update.switchDefaultServer');
+        Route::post('/delete-server',[ServerController::class, 'deleteServer'])->name('delete.server');
     });
 
     Route::prefix('channels')->name('channel.')->group(function (){
-        Route::get('/channel-job-list',[ChannelController::class,'viewListChannelJobs'])->name('view.channelList');
-        Route::get('/create-channel-job',[ChannelController::class,'viewUpsertChannelJobs'])->name('view.createOrUpdateJobChannel');
-        Route::post('/create-new-bot-job',[ChannelController::class,'createChannelJob'])->name('createOrUpdate.BotJob');
-        Route::get('/delete-channel-job',[ChannelController::class,'deleteChannelJob'])->name('delete.channelJob');
+        Route::get('/job-list',[ChannelController::class,'viewChannels'])->name('view.listChannel');
+        Route::get('/job-create',[ChannelController::class,'viewCreateChannel'])->name('view.createJobChannel');
+        Route::post('/job-edit',[ChannelController::class,'viewUpsertChannel'])->name('view.upsertJobChannel');
+        Route::post('/upsert-job',[ChannelController::class,'upsertChannelJob'])->name('upsert.channelJob');
+        Route::post('/delete-job',[ChannelController::class,'deleteChannelJob'])->name('delete.channelJob');
     });
 
     Route::prefix('worker')->name('worker.')->group(function (){
-        Route::prefix('afk-settings')->group(function (){
-            Route::get('/afk-worker-settings',[ClientController::class,'viewUpsertAfkWorker'])->name('view.createOrUpdateAfkWorker');
-            Route::post('/create-afk-worker',[ClientController::class,'updateAfkWorkerSettings'])->name('update.afkWorker');
+        Route::prefix('afk')->group(function (){
+            Route::get('/settings',[ClientController::class,'viewUpsertAfkWorker'])->name('view.createOrUpdateAfkWorker');
+            Route::post('/update-settings',[ClientController::class,'updateAfkWorkerSettings'])->name('update.afkWorker');
         });
 
-        Route::prefix('remover-settings')->group(function (){
-            Route::get('/channel-remover-list',[ChannelController::class,'viewListChannelRemover'])->name('view.listChannelRemover');
-            Route::post('/create-channel-remover',[ChannelController::class,'createChannelRemover'])->name('create.newChannelRemover');
-            Route::get('/edit-channel-remover',[ChannelController::class,'viewCreateOrUpdateChannelRemoverChannel'])->name('view.createOrUpdateChannelRemover');
+        Route::prefix('channel-remover')->group(function (){
+            Route::get('/job-list',[ChannelRemoverController::class,'viewChannelRemover'])->name('view.listChannelRemover');
+            Route::get('/job-create',[ChannelRemoverController::class,'viewCreateChannelRemover'])->name('view.createChannelRemover');
+            Route::post('/job-edit',[ChannelRemoverController::class,'viewUpsertChannelRemover'])->name('view.upsertChannelRemover');
+            Route::post('/upsert-channel',[ChannelRemoverController::class,'upsertChannelRemover'])->name('create.newChannelRemover');
+            Route::post('/delete-channel',[ChannelRemoverController::class,'deleteChannelRemover'])->name('delete.channelRemover');
         });
 
-        Route::prefix('police-settings')->group(function (){
-            Route::get('/edit-police-worker',[ClientController::class,'viewUpsertPoliceWorker'])->name('view.createOrUpdatePoliceWorker');
-            Route::post('/update-police-worker',[ClientController::class,'updatePoliceWorkerSettings'])->name('create.createOrUpdatePoliceWorkerSettings');
+        Route::prefix('guardian')->group(function (){
+            Route::get('/settings',[ClientController::class,'viewUpsertPoliceWorker'])->name('view.upsertPoliceWorker');
+            Route::post('/update',[ClientController::class,'updatePoliceWorkerSettings'])->name('create.updatePoliceWorkerSettings');
         });
     });
 

@@ -4,9 +4,14 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelRemover;
-use Illuminate\Support\Facades\Crypt;
+use Exception;
+use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 
@@ -14,6 +19,8 @@ class ChannelRemoveWorkerController extends Controller
 {
     protected int $serverID;
     protected Ts3LogController $logController;
+    protected string $qaName;
+    protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
     public function startChannelRemover($serverID): void
     {
@@ -28,27 +35,39 @@ class ChannelRemoveWorkerController extends Controller
 
             if ($ts3ServerConfig->qa_nickname != null)
             {
-                $qaNickname = $ts3ServerConfig->qa_nickname;
+                $this->qaName = $ts3ServerConfig->qa_nickname;
             } else
             {
-                $qaNickname = $ts3ServerConfig->qa_name;
+                $this->qaName = $ts3ServerConfig->qa_name;
             }
 
-            //declare class
-            $TS3PHPFramework = new TeamSpeak3();
+            //get uri with StringHelper
+            $ts3StringHelper = new Ts3UriStringHelperController();
+            $uri = $ts3StringHelper->getStandardUriString(
+                $ts3ServerConfig->qa_name,
+                $ts3ServerConfig->qa_pw,
+                $ts3ServerConfig->server_ip,
+                $ts3ServerConfig->server_query_port,
+                $ts3ServerConfig->server_port,
+                $this->qaName.'-Remover-Worker',
+                $ts3ServerConfig->mode,
+            );
 
-            // Connect via ipv4 to ts3 Server // timeout in seconds
-            $uri = 'serverquery://'
-                .$ts3ServerConfig->qa_name.':'.Crypt::decryptString($ts3ServerConfig->qa_pw).
-                '@'.$ts3ServerConfig->ipv4.
-                ':'.$ts3ServerConfig->server_query_port.
-                '/?server_port='.$ts3ServerConfig->server_port.
-                '&blocking=0'.
-                '&no_query_clients'.
-                '&nickname='.$qaNickname.'-Remove-Worker';
+            //stop if return uri = 0
+            if ($uri == 0)
+            {
+                $this->logController->setCustomLog(
+                    $this->serverID,
+                    4,
+                    'Initialising Clearing Worker',
+                    'Invalid Server IP Address',
+                );
+
+                throw new Exception('Invalid Server IP');
+            }
 
             // connect to the server
-            $ts3_VirtualServer = $TS3PHPFramework->factory($uri);
+            $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
 
             //get sub-channels
             $subChannelRemoves = ts3BotWorkerChannelRemover::query()
@@ -59,24 +78,30 @@ class ChannelRemoveWorkerController extends Controller
             foreach ($subChannelRemoves as $subChannelRemove)
             {
                 //get sub-channel list
-                $subChannels = collect($ts3_VirtualServer->channelList(['pid'=>$subChannelRemove->channel_cid]));
+                $subChannels = collect($this->ts3_VirtualServer->channelList(['pid'=>$subChannelRemove->channel_cid]));
 
                 //proof delete time
                 foreach ($subChannels->keys()->all() as $subChannel)
                 {
-                    $subChannelInfo = $ts3_VirtualServer->channelGetById($subChannel)->getInfo();
+                    $subChannelInfo = $this->ts3_VirtualServer->channelGetById($subChannel)->getInfo();
 
                     if($subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty)
                     {
-                        $ts3_VirtualServer->channelDelete($subChannel);
+                        $this->ts3_VirtualServer->channelDelete($subChannel);
                     }
                 }
             }
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
-        catch(TeamSpeak3Exception $e)
+        catch(TeamSpeak3Exception | Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'startChannelRemover');
+            $this->logController->setLog($e->getMessage(),4,'startChannelRemover');
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
     }
 }

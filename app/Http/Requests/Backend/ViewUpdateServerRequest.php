@@ -21,20 +21,20 @@ class ViewUpdateServerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'sometimes|numeric',
+            'ServerID'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'server_id.required'=>'Hoppla, da lief etwas schief',
-            'server_id.numeric'=>'Hoppla, da lief etwas schief',
+            'ServerID.required'=>'Hoppla, da lief etwas schief',
+            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        return redirect()->route('backend.view.createOrUpdateServer')->withErrors($validator)->withInput();
+        return redirect()->back();
     }
 }

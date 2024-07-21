@@ -23,46 +23,41 @@
                             Funktionen
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{Route('channel.view.channelList')}}">Channel Jobs</a></li>
-                            <li><a class="dropdown-item" href="{{Route('channel.view.createOrUpdateJobChannel',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Channel Job erstellen</a></li>
+                            <li><a class="dropdown-item" href="{{Route('channel.view.listChannel')}}">Channel Jobs</a></li>
+                            <li><a class="dropdown-item" href="{{Route('channel.view.createJobChannel')}}">Channel Job erstellen</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{Route('worker.view.listChannelRemover',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Channel Remover</a></li>
-                            <li><a class="dropdown-item" href="{{Route('worker.view.createOrUpdateChannelRemover',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Channel Remover erstellen</a></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.listChannelRemover')}}">Channel Remover</a></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.upsertChannelRemover')}}">Channel Remover erstellen</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{Route('banner.view.listBanner',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Banner Creator</a></li>
+                            <li><a class="dropdown-item" href="{{Route('banner.view.listBanner')}}">Banner Creator</a></li>
                         </ul>
                     </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Einstellungen
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{Route('worker.view.createOrUpdateAfkWorker',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">AFK Einstellungen</a></li>
-                                <li><a class="dropdown-item" href="{{Route('worker.view.createOrUpdatePoliceWorker',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Bot Einstellungen</a></li>
-                                <li><a class="dropdown-item" href="{{Route('backend.view.badNames',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Bad Name Liste</a></li>
-                                @if(\Illuminate\Support\Facades\Auth::user()->server_id != 0)
-                                    @if(\Illuminate\Support\Facades\Auth::user()->server_owner == true)
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{Route('backend.view.serverList')}}">Serverliste</a></li>
-                                <li><a class="dropdown-item" href="#">Nutzer Einstellungen</a></li>
-                                    @endif
-                                @endif
-                            </ul>
-                        </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Einstellungen
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{Route('worker.view.createOrUpdateAfkWorker')}}">AFK Einstellungen</a></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.upsertPoliceWorker')}}">Bot Einstellungen</a></li>
+                            <li><a class="dropdown-item" href="{{Route('backend.view.badNames')}}">Bad Nicknames</a></li>
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li><a class="dropdown-item" href="#">Nutzer Einstellungen</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{Route('serverConfig.view.serverList')}}">Serverliste</a>
+                    </li>
                 @endif
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Mein Profil
                         </a>
                         <ul class="dropdown-menu">
-                            @if(\Illuminate\Support\Facades\Auth::user()->server_id != 0)
-                                @if(\Illuminate\Support\Facades\Auth::user()->server_owner == true)
-                                    <li><a class="dropdown-item" href="{{Route('backend.view.changePassword',['server_id'=>\Illuminate\Support\Facades\Auth::user()->server_id])}}">Passwort ändern</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                @endif
-                                <li><a class="dropdown-item" href="{{Route('backend.view.botLogs')}}">Bot Logs</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                            @endif
+                            <li><a class="dropdown-item" href="{{Route('backend.view.changePassword')}}">Passwort ändern</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{Route('backend.view.botLogs')}}">Bot Logs</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item fw-bold" href="{{Route('logout')}}">Logout</a></li>
                         </ul>
                     </li>

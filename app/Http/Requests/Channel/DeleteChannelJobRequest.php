@@ -21,20 +21,20 @@ class DeleteChannelJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'DeleteID'=>'required|numeric',
+            'JobID'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'DeleteID.required'=>'Hoppla, da lief etwas schief',
-            'DeleteID.numeric'=>'Hoppla, da lief etwas schief',
+            'JobID.required'=>'Hoppla, da lief etwas schief',
+            'JobID.numeric'=>'Hoppla, da lief etwas schief',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        return redirect()->back()->withErrors($validator)->withInput();
+        return redirect()->back()->withErrors($validator);
     }
 }

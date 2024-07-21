@@ -4,20 +4,27 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
 use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
 use App\Models\category\catFont;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Crypt;
+use Exception;
 use Illuminate\Support\Facades\File;
+use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 
 class BannerWorkerController extends Controller
 {
     protected int $serverID;
+    protected string $qaName;
     protected Ts3LogController $logController;
+    protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
     public function bannerWorkerCreateBanner($serverID): void
     {
@@ -40,10 +47,10 @@ class BannerWorkerController extends Controller
 
                 if ($ts3ServerConfig->qa_nickname != NULL)
                 {
-                    $qaNickname = $ts3ServerConfig->qa_nickname;
+                    $this->qaName = $ts3ServerConfig->qa_nickname;
                 }else
                 {
-                    $qaNickname = $ts3ServerConfig->qa_name;
+                    $this->qaName = $ts3ServerConfig->qa_name;
                 }
 
                 //get the latest unused banner / touch for update updated_at
@@ -55,21 +62,35 @@ class BannerWorkerController extends Controller
                 //check if delay arrived
                 if (Carbon::now() >= $banner->next_check_at)
                 {
-                    //declare class // it is only necessary when bot musst be recreating a banner
-                    $TS3PHPFramework = new TeamSpeak3();
 
-                    // Connect via ipv4 to ts3 Server // timeout in seconds
-                    $uri = 'serverquery://'
-                        .$ts3ServerConfig->qa_name.':'.Crypt::decryptString($ts3ServerConfig->qa_pw).
-                        '@'.$ts3ServerConfig->ipv4.
-                        ':'.$ts3ServerConfig->server_query_port.
-                        '/?server_port='.$ts3ServerConfig->server_port.
-                        '&blocking=0'.
-                        '&nickname='.$qaNickname.'-Banner-Worker';
+                    //get uri with StringHelper
+                    $ts3StringHelper = new Ts3UriStringHelperController();
+                    $uri = $ts3StringHelper->getStandardUriString(
+                        $ts3ServerConfig->qa_name,
+                        $ts3ServerConfig->qa_pw,
+                        $ts3ServerConfig->server_ip,
+                        $ts3ServerConfig->server_query_port,
+                        $ts3ServerConfig->server_port,
+                        $this->qaName.'-Banner-Worker',
+                        $ts3ServerConfig->mode,
+                    );
+
+                    //stop if return uri = 0
+                    if ($uri == 0)
+                    {
+                        $this->logController->setCustomLog(
+                            $this->serverID,
+                            4,
+                            'Initialising Clearing Worker',
+                            'Invalid Server IP Address',
+                        );
+
+                        throw new Exception('Invalid Server IP');
+                    }
 
                     // connect to above specified server, authenticate and spawn an object for the virtual server on port 9987
-                    $ts3_VirtualServer = $TS3PHPFramework->factory($uri);
-                    $ts3ServerInfo = $ts3_VirtualServer->getInfo();
+                    $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
+                    $ts3ServerInfo = $this->ts3_VirtualServer->getInfo();
 
                     //exists banner options
                     $bannerOptions = bannerOption::query()
@@ -113,11 +134,11 @@ class BannerWorkerController extends Controller
                                     $text = substr($text,0, $pos);
                                     break;
                                 case 'get_server_group_online':
-                                    $clientGroupOnline = collect($ts3_VirtualServer->clientList(['client_servergroups' => $bannerOption->extra_option]));
+                                    $clientGroupOnline = collect($this->ts3_VirtualServer->clientList(['client_servergroups' => $bannerOption->extra_option]));
                                     $text = $clientGroupOnline->count();
                                     break;
                                 case 'get_server_group_max_clients':
-                                    $clientGroupCount = collect($ts3_VirtualServer->serverGroupClientList($bannerOption->extra_option));
+                                    $clientGroupCount = collect($this->ts3_VirtualServer->serverGroupClientList($bannerOption->extra_option));
                                     $text = $clientGroupCount->count();
                                     break;
                                 case 'get_server_status':
@@ -180,23 +201,23 @@ class BannerWorkerController extends Controller
                         }
 
                         //set banner location
-                        if ($ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] != config('app.url').'/'.$storagePathAsset)
+                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] != config('app.url').'/'.$storagePathAsset)
                         {
-                            $ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = config('app.url').'/'.$storagePathAsset;
+                            $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = config('app.url').'/'.$storagePathAsset;
                         }
-                        if ($ts3_VirtualServer['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url)
+                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url)
                         {
-                            $ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
+                            $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
                         }
                         //update every 5 minutes value is seconds
-                        if ($ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] != 180)
+                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] != 180)
                         {
-                            $ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
+                            $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
                         }
                         //update size
-                        if ($ts3_VirtualServer['virtualserver_hostbanner_mode'] != 2)
+                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_mode'] != 2)
                         {
-                            $ts3_VirtualServer['virtualserver_hostbanner_mode'] = 2;
+                            $this->ts3_VirtualServer['virtualserver_hostbanner_mode'] = 2;
                         }
 
                     } else
@@ -208,16 +229,22 @@ class BannerWorkerController extends Controller
                         ]);
 
                         //set banner to virtual server
-                        $ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = config('app.url').'/'.$banner->banner_viewer;
-                        $ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
+                        $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = config('app.url').'/'.$banner->banner_viewer;
+                        $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
                     }
                 }
+
+                //disconnect form server
+                $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
             }
         }
-        catch(TeamSpeak3Exception $e)
+        catch(TeamSpeak3Exception | Exception $e)
         {
             //set log
             $this->logController->setLog($e,4,'bannerWorkerCreateBanner');
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
     }
 }

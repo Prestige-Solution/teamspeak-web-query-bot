@@ -8,14 +8,14 @@
     <div class="container my-auto">
         <div class="row justify-content-center">
             <div class="col-lg-2 d-flex justify-content-center">
-                <img class="img-fluid" src="{{asset('storage/img/ps-bot.png')}}" alt="PS-Bot Logo" oncontextmenu="return false" style="width: 18rem;">
+                <img class="img-fluid" src="{{asset('storage/img/bot-logo.png')}}" alt="PS-Bot Logo" oncontextmenu="return false" style="width: 18rem;">
             </div>
         </div>
         <div class="row justify-content-center">
             <div class="col-lg-6">
                 <div class="card border-0">
                     <div class="card-body">
-                        <h1 class="fw-bold fs-5 mb-3">PS-Bot | Login</h1>
+                        <h1 class="fw-bold fs-5 mb-3">Teamspeak3 Web Query Bot | Login</h1>
                         @include('form-components.alertHandlingLogin')
                         <form method="post" action="{{Route('logging-in')}}">
                             @csrf

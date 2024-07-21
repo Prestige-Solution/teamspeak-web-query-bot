@@ -26,11 +26,11 @@ class NewAccountCommand extends Command
     public function handle(): int
     {
         //ask and validate information from user
-        $nickname = $this->askWithValidation('What is your Nickname?',NULL, function ($value){
+        $nickname = $this->askWithValidation('Enter your Nickname?',NULL, function ($value){
                 return $this->validateInput('nickname', 'required',$value);
             }
         );
-        $mail = $this->askWithValidation('Enter the E-Mail Adresse',NULL, function ($value){
+        $mail = $this->askWithValidation('Enter your E-Mail Adresse',NULL, function ($value){
             return $this->validateInput('email', 'email',$value);
             }
         );

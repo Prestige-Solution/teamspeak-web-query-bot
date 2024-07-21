@@ -4,6 +4,7 @@ namespace App\Http\Requests\Banner;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ViewListBannerRequest extends FormRequest
 {
@@ -15,21 +16,28 @@ class ViewListBannerRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'ServerID'=>Auth::user()->server_id,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric',
+            'ServerID'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'server_id.required'=>'Hoppla, da lief etwas schief',
-            'server_id.numeric'=>'Hoppla, da lief etwas schief',
+            'ServerID.required'=>'Hoppla, da lief etwas schief',
+            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
         ];
     }
 

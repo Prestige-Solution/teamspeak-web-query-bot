@@ -5,6 +5,7 @@ namespace App\Http\Controllers\botWorker;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Controllers\ts3Config\BadNameController;
+use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use App\Models\ts3BotWorkers\ts3BotWorkerPoliceVpnProtection;
@@ -13,8 +14,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\AdapterException;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\ServerQueryException;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
@@ -24,12 +25,13 @@ class PoliceWorkerController extends Controller
 {
     protected int $serverID;
     protected string $qaName;
-    protected Server|Adapter $ts3_VirtualServer;
+    protected Server|Adapter|Host|Node $ts3_VirtualServer;
     protected Ts3LogController $logController;
 
     /**
      * @param $serverID
      * @return void
+     * @throws Exception
      */
     public function startPolice($serverID): void
     {
@@ -43,28 +45,42 @@ class PoliceWorkerController extends Controller
 
         if ($ts3ServerConfig->qa_nickname != NULL)
         {
-            $qaNickname = $ts3ServerConfig->qa_nickname;
+            $this->qaName = $ts3ServerConfig->qa_nickname;
         }else
         {
-            $qaNickname = $ts3ServerConfig->qa_name;
+            $this->qaName = $ts3ServerConfig->qa_name;
         }
 
-        $this->qaName = $qaNickname;
+        //get uri with StringHelper
+        $ts3StringHelper = new Ts3UriStringHelperController();
+        $uri = $ts3StringHelper->getStandardUriString(
+            $ts3ServerConfig->qa_name,
+            $ts3ServerConfig->qa_pw,
+            $ts3ServerConfig->server_ip,
+            $ts3ServerConfig->server_query_port,
+            $ts3ServerConfig->server_port,
+            $this->qaName.'-Police-Worker',
+            $ts3ServerConfig->mode,
+        );
 
-        //declare class
-        $TS3PHPFramework = new TeamSpeak3();
+        //stop if return uri = 0
+        if ($uri == 0)
+        {
+            $this->logController->setCustomLog(
+                $this->serverID,
+                4,
+                'Initialising Clearing Worker',
+                'Invalid Server IP Address',
+            );
 
-        // Connect via ipv4 to ts3 Server // timeout in seconds
-        $uri = 'serverquery://'
-            .$ts3ServerConfig->qa_name.':'.Crypt::decryptString($ts3ServerConfig->qa_pw).
-            '@'.$ts3ServerConfig->ipv4.
-            ':'.$ts3ServerConfig->server_query_port.
-            '/?server_port='.$ts3ServerConfig->server_port.
-            '&blocking=0'.
-            '&nickname='.$qaNickname.'-Police-Worker';
+            throw new Exception('Invalid Server IP');
+        }
 
         try
         {
+            //initialising ts3 framework
+            $TS3PHPFramework = new TeamSpeak3();
+
             //connect to above specified server
             $this->ts3_VirtualServer = $TS3PHPFramework->factory($uri);
 
@@ -72,7 +88,7 @@ class PoliceWorkerController extends Controller
             $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id','=',$serverID)->first();
 
             //check VPN
-            if($policeWorkerSetting->vpn_protection_active == 1)
+            if($policeWorkerSetting->vpn_protection_active == 1 && config('app.vpn_protection_mail') != false)
             {
                 $this->checkVpn($policeWorkerSetting);
             }
@@ -85,11 +101,17 @@ class PoliceWorkerController extends Controller
             {
                 $this->checkBadName();
             }
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
         catch(TeamSpeak3Exception | Exception $e)
         {
             //set log
             $this->logController->setLog($e,4,'startPolice');
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
     }
 

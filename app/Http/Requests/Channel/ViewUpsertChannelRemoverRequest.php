@@ -4,6 +4,7 @@ namespace App\Http\Requests\Channel;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ViewUpsertChannelRemoverRequest extends FormRequest
 {
@@ -15,24 +16,31 @@ class ViewUpsertChannelRemoverRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'ServerID'=>Auth::user()->server_id
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric',
-            'update'=>'sometimes|boolean',
-            'remover_id'=>'sometimes|numeric',
+            'ServerID'=>'required|numeric',
+            'RemoveID'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'server_id.required' => 'Hoppla, da lief etwas schief',
-            'update.bool'=>'Hoppla, da lief etwas schief!',
-            'remover_id.numeric'=>'Hoppla, da lief etwas schief!',
+            'ServerID.required' => 'Hoppla, da lief etwas schief',
+            'ServerID.numeric' => 'Hoppla, da lief etwas schief',
+            'RemoveID.required' => 'Hoppla, da lief etwas schief',
+            'RemoveID.numeric' => 'Hoppla, da lief etwas schief',
         ];
     }
 

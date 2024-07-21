@@ -13,13 +13,20 @@ class Kernel extends ConsoleKernel
      * @param  Schedule  $schedule
      * @return void
      */
-    protected function schedule(Schedule $schedule)
+    protected function schedule(Schedule $schedule): void
     {
         //define afk worker schedule
-        $schedule->command('command:start_ts3Worker')->everyMinute();
-        $schedule->command('app:start_worker_clearing')->everyFifteenMinutes();
-        $schedule->call('App\Http\Controllers\admin\ResetStatsController@resetVPNQueryCountPerMinute')->everyMinute();
-        $schedule->call('App\Http\Controllers\admin\ResetStatsController@resetVPNQueryPerDay')->daily();
+        if (config('app.env') === 'development')
+        {
+            $schedule->command('app:start-worker');
+            $schedule->command('app:start-clearing');
+        }else
+        {
+            $schedule->command('app:start-worker')->everyMinute();
+            $schedule->command('app:start-clearing')->everyFifteenMinutes();
+            $schedule->call('App\Http\Controllers\admin\ResetStatsController@resetVPNQueryCountPerMinute')->everyMinute();
+            $schedule->call('App\Http\Controllers\admin\ResetStatsController@resetVPNQueryPerDay')->daily();
+        }
     }
 
     /**
@@ -27,7 +34,7 @@ class Kernel extends ConsoleKernel
      *
      * @return void
      */
-    protected function commands()
+    protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');
 

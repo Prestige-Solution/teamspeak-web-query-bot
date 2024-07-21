@@ -11,14 +11,14 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('ts3_server_configs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('server_name');
-            $table->string('ipv4')->unique();
+            $table->string('server_ip')->unique();
             $table->string('qa_name');
             $table->string('qa_pw');
             $table->integer('server_query_port')->default(10011);
@@ -42,7 +42,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ts3_server_configs');
     }

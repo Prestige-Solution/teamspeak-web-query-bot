@@ -12,24 +12,38 @@
 
 @section('content')
     <div class="container mt-2">
-        <div class="row mb-2">
-            <div class="col-lg-12">
-                <h2 class="fs-3 fw-bold">Control Center | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->first()->server_name }} |
-                    @if($server->bot_status_id == 1)
-                        <span class="badge bg-success">{{$server->rel_bot_status->status_name}}</span>
-                    @endif
-                    @if($server->bot_status_id == 2)
-                        <span class="badge bg-warning">{{$server->rel_bot_status->status_name}}</span>
-                    @endif
-                    @if($server->bot_status_id == 3)
-                        <span class="badge bg-danger">{{$server->rel_bot_status->status_name}}</span>
-                    @endif
-                    @if($server->bot_status_id == 4)
-                        <span class="badge bg-danger">{{$server->rel_bot_status->status_name}}</span>
-                    @endif
-                </h2>
+        <form method="post" action="{{route('serverConfig.update.switchDefaultServer')}}">
+            @csrf
+            <div class="row mb-2">
+                <div class="col-lg-8">
+                    <h2 class="fs-3 fw-bold">Control Center | {{$server->server_name}} |
+                        @if($server->bot_status_id == 1)
+                            <span class="badge bg-success">{{$server->rel_bot_status->status_name}}</span>
+                        @endif
+                        @if($server->bot_status_id == 2)
+                            <span class="badge bg-warning">{{$server->rel_bot_status->status_name}}</span>
+                        @endif
+                        @if($server->bot_status_id == 3)
+                            <span class="badge bg-danger">{{$server->rel_bot_status->status_name}}</span>
+                        @endif
+                        @if($server->bot_status_id == 4)
+                            <span class="badge bg-danger">{{$server->rel_bot_status->status_name}}</span>
+                        @endif
+                    </h2>
+                </div>
+                <div class="col-lg-4">
+                    <div class="d-flex justify-content-end">
+                        <select class="form-select" name="ServerID" id="ServerID">
+                            @foreach($availableServers as $availableServer)
+                                <option value="{{$availableServer->id}}" @if($server->id == $availableServer->id) selected @endif>{{$availableServer->server_name}}</option>
+                            @endforeach
+                        </select>
+
+                        <button type="submit" class="btn btn-primary ms-2"><i class="fa-solid fa-repeat"></i></button>
+                    </div>
+                </div>
             </div>
-        </div>
+        </form>
         <hr>
         @include('form-components/alertCustomError')
         @include('form-components/successCustom')
@@ -55,7 +69,7 @@
                                 @if($server->ts3_start_stop == 0 && $server->bot_status_id == 3)
                                 <form method="post" action="{{Route('ts3.start.ts3Bot')}}">
                                     @csrf
-                                    <button class="btn btn-link" name="server_id" value="{{$server->id}}"><i class="fa-solid fa-circle-play fa-2x text-success"></i></button>
+                                    <button class="btn btn-link" name="ServerID" value="{{$server->id}}"><i class="fa-solid fa-circle-play fa-2x text-success"></i></button>
                                 </form>
                                 @elseif($server->ts3_start_stop == 0 && $server->bot_status_id != 3)
                                     <div class="alert alert-warning ms-2" role="alert">
@@ -64,7 +78,7 @@
                                 @else
                                     <form method="post" action="{{Route('ts3.stop.ts3Bot')}}">
                                         @csrf
-                                        <button class="btn btn-link" name="server_id" value="{{$server->id}}"><i class="fa-solid fa-circle-stop fa-2x text-danger"></i></button>
+                                        <button class="btn btn-link" name="ServerID" value="{{$server->id}}"><i class="fa-solid fa-circle-stop fa-2x text-danger"></i></button>
                                     </form>
                                 @endif
                             @else
@@ -78,7 +92,7 @@
             </div>
             <div class="col-lg-4 d-flex align-items-stretch">
                 <div class="card flex-fill">
-                    <a href="{{Route('worker.view.createOrUpdatePoliceWorker',['server_id'=>$server->id])}}" class="text-decoration-none text-dark">
+                    <a href="{{Route('worker.view.upsertPoliceWorker')}}" class="text-decoration-none text-dark">
                         <div class="card-body">
                             <h5 class="card-title fs-3 fw-bold">
                                 <i class="fa-solid fa-gear mb-3"></i> Bot Einstellungen
@@ -92,7 +106,7 @@
             </div>
             <div class="col-lg-4 d-flex align-items-stretch">
                 <div class="card flex-fill">
-                    <a href="{{Route('banner.view.listBanner',['server_id'=>$server->id])}}" class="text-decoration-none text-dark">
+                    <a href="{{Route('banner.view.listBanner')}}" class="text-decoration-none text-dark">
                     <div class="card-body">
                         <h5 class="card-title fs-3 fw-bold">
                             <i class="fa-solid fa-image mb-3"></i> Banner Creator
@@ -114,7 +128,7 @@
         <div class="row mb-3">
             <div class="col-lg-4 d-flex align-items-stretch">
                 <div class="card flex-fill">
-                    <a href="{{Route('channel.view.channelList')}}" class="text-decoration-none text-dark">
+                    <a href="{{Route('channel.view.listChannel')}}" class="text-decoration-none text-dark">
                         <div class="card-body">
                             <h5 class="card-title fs-3 fw-bold">
                                 <i class="fa-solid fa-bars-staggered mb-3"></i> Channel Creator
@@ -128,7 +142,7 @@
             </div>
             <div class="col-lg-4 d-flex align-items-stretch">
                 <div class="card flex-fill">
-                    <a href="{{Route('worker.view.listChannelRemover',['server_id'=>$server->id])}}" class="text-decoration-none text-dark">
+                    <a href="{{Route('worker.view.listChannelRemover')}}" class="text-decoration-none text-dark">
                     <div class="card-body">
                         <h5 class="card-title fs-3 fw-bold">
                             <i class="fa-solid fa-user-ninja mb-3"></i> Channel Remover
@@ -142,7 +156,7 @@
             </div>
             <div class="col-lg-4 d-flex align-items-stretch">
                 <div class="card flex-fill">
-                    <a href="{{Route('worker.view.createOrUpdateAfkWorker',['server_id'=>$server->id])}}" class="text-decoration-none text-dark">
+                    <a href="{{Route('worker.view.createOrUpdateAfkWorker')}}" class="text-decoration-none text-dark">
                         <div class="card-body">
                             <h5 class="card-title fs-3 fw-bold">
                                 <i class="fa-solid fa-user-ninja mb-3"></i> AFK Einstellungen

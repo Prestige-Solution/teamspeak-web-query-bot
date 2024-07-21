@@ -16,45 +16,23 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 
 class ClientController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next)
-        {
-            if(Auth::user()->server_id == $request->input('server_id') || Auth::user()->server_id == $request->input('ServerID'))
-            {
-                return $next($request);
-            }
-            else
-            {
-                if ($request->has('DeleteID'))
-                {
-                    return $next($request);
-                }else
-                {
-                    return redirect()->route('start.view.dashboard');
-                }
-            }
-        });
-    }
-
     public function viewUpsertPoliceWorker(ViewUpsertPoliceWorkerRequest $request): View|Factory|RedirectResponse|Application
     {
         $policeWorkerSetting = ts3BotWorkerPolice::query()
-            ->where('server_id','=',$request->validated('server_id'))
+            ->where('server_id','=',$request->validated('ServerID'))
             ->first();
 
         $serverGroups = ts3ServerGroup::query()
-            ->where('server_id','=', $request->validated('server_id'))
+            ->where('server_id','=', $request->validated('ServerID'))
             ->where('type','=',1)
             ->get(['sgid','name']);
 
-        return view('backend.bot-worker.client.create-or-update-police-worker')->with([
-            'serverID'=>$request->validated('server_id'),
+        return view('backend.bot-worker.client.police-worker-settings')->with([
+            'serverID'=>$request->validated('ServerID'),
             'policeWorker'=>$policeWorkerSetting,
             'serverGroups'=>$serverGroups,
         ]);
@@ -64,20 +42,20 @@ class ClientController extends Controller
     {
         //Vorlagengruppen => Typ 0 //Normale Gruppen => Typ 1 //ServerQuery Gruppen => Typ 2
         $serverGroups = ts3ServerGroup::query()
-            ->where('server_id','=', $request->validated('server_id'))
+            ->where('server_id','=', $request->validated('ServerID'))
             ->where('type','=',1)
             ->get(['sgid','name']);
 
         $channels = ts3Channel::query()
-            ->where('server_id','=',$request->validated('server_id'))
+            ->where('server_id','=',$request->validated('ServerID'))
             ->get(['cid','channel_name']);
 
         $afkWorkerAfkChannel = ts3BotWorkerAfk::query()
-            ->where('server_id','=',$request->validated('server_id'))
+            ->where('server_id','=',$request->validated('ServerID'))
             ->first('afk_channel_cid');
 
         $afkWorkerOptions = ts3BotWorkerAfk::query()
-            ->where('server_id','=',$request->validated('server_id'))
+            ->where('server_id','=',$request->validated('ServerID'))
             ->first([
                 'active',
                 'max_client_idle_time',
@@ -87,13 +65,13 @@ class ClientController extends Controller
             ]);
 
         $afkExcludedServerGroups = ts3BotWorkerAfk::query()
-            ->where('server_id','=',$request->validated('server_id'))
+            ->where('server_id','=',$request->validated('ServerID'))
             ->get(['excluded_servergroup']);
 
-        return view('backend.bot-worker.client.create-or-update-afk-worker')->with([
+        return view('backend.bot-worker.client.afk-worker-settings')->with([
             'serverGroups'=>$serverGroups,
             'channels'=>$channels,
-            'server_id'=>$request->validated('server_id'),
+            'server_id'=>$request->validated('ServerID'),
             'afkChannel'=>$afkWorkerAfkChannel->afk_channel_cid ?? 0,
             'excludedServerGroups'=>$afkExcludedServerGroups ?? NULL,
             'max_client_idle_time'=>$afkWorkerOptions->max_client_idle_time ?? 0,
@@ -132,7 +110,7 @@ class ClientController extends Controller
                 'bad_name_protection_global_list_active'=>$request->validated('PoliceBadNamesGlobalList'),
             ]);
 
-        return redirect()->route('worker.view.createOrUpdatePoliceWorker',['server_id'=>$request->validated('ServerID')]);
+        return redirect()->back()->with(['success'=>'Einstellungen erfolgreich aktualisiert.']);
     }
 
     public function updateAfkWorkerSettings(UpdateAfkWorkerSettingsRequest $request): RedirectResponse
@@ -188,6 +166,6 @@ class ClientController extends Controller
             ]);
         }
 
-        return redirect()->route('worker.view.createOrUpdateAfkWorker',['server_id'=>$request->validated('ServerID')]);
+        return redirect()->route('worker.view.createOrUpdateAfkWorker');
     }
 }

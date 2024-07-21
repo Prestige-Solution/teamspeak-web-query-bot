@@ -4,14 +4,13 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotJobs\ts3BotJobCreateChannels;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelRemover;
 use Exception;
-use Illuminate\Support\Facades\Crypt;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\AdapterException;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\ServerQueryException;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
@@ -22,15 +21,18 @@ class ClearingWorkerController extends Controller
 {
     protected int $serverID;
     protected string $qaName;
-    protected Server|Adapter|Node $ts3_VirtualServer;
+    protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
     protected Ts3LogController $logController;
 
+    /**
+     * @throws Exception
+     */
     public function startClearing($serverID): void
     {
         //declare
         $this->serverID = $serverID;
-        $this->logController = new Ts3LogController('ClearingWorker', $this->serverID);
+        $this->logController = new Ts3LogController('Clearing-Worker', $this->serverID);
 
         //get Server config
         $ts3ServerConfig = ts3ServerConfig::query()
@@ -38,54 +40,72 @@ class ClearingWorkerController extends Controller
 
         if ($ts3ServerConfig->qa_nickname != NULL)
         {
-            $qaNickname = $ts3ServerConfig->qa_nickname;
+            $this->qaName = $ts3ServerConfig->qa_nickname;
         }else
         {
-            $qaNickname = $ts3ServerConfig->qa_name;
+            $this->qaName = $ts3ServerConfig->qa_name;
         }
 
-        $this->qaName = $qaNickname;
+        //get uri with StringHelper
+        $Ts3UriStringHelper = new Ts3UriStringHelperController();
+        $uri = $Ts3UriStringHelper->getStandardUriString(
+            $ts3ServerConfig->qa_name,
+            $ts3ServerConfig->qa_pw,
+            $ts3ServerConfig->server_ip,
+            $ts3ServerConfig->server_query_port,
+            $ts3ServerConfig->server_port,
+            $this->qaName.'-Clearing-Worker',
+            $ts3ServerConfig->mode,
+        );
 
-        //declare class
-        $TS3PHPFramework = new TeamSpeak3();
+        //stop if return uri = 0
+        if ($uri == 0)
+        {
+            $this->logController->setCustomLog(
+                $this->serverID,
+                4,
+                'Initialising Clearing Worker',
+                'Invalid Server IP Address',
+            );
 
-        // Connect via ipv4 to ts3 Server // timeout in seconds
-        $uri = 'serverquery://'
-            .$ts3ServerConfig->qa_name.':'.Crypt::decryptString($ts3ServerConfig->qa_pw).
-            '@'.$ts3ServerConfig->ipv4.
-            ':'.$ts3ServerConfig->server_query_port.
-            '/?server_port='.$ts3ServerConfig->server_port.
-            '&blocking=0'.
-            '&nickname='.$qaNickname.'-Clear-Worker';
+            throw new Exception('Invalid Server IP');
+        }
 
         try
         {
             //connect to above specified server
-            $this->ts3_VirtualServer = $TS3PHPFramework->factory($uri);
+            $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
 
             //update db from ts3 server
             $this->updateChannelList();
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
 
         }
         catch(TeamSpeak3Exception | Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'clearingWorker');
+            $this->logController->setLog($e->getMessage(),4,'Connect to Server failed');
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
     }
 
     private function updateChannelList(): void
     {
-        //get all channels as collection without SubChannels
-        $updateTsChannels = collect($this->ts3_VirtualServer->channelList());
-        //get array from existing channels
-        $channelList = [];
-        foreach ($updateTsChannels->keys()->all() as $cid)
-        {
-            $channelList[] = $cid;
-        }
-
         try {
+            //get all channels as collection without SubChannels
+            $updateTsChannels = collect($this->ts3_VirtualServer->channelList());
+
+            //get array from existing channels
+            $channelList = [];
+
+            foreach ($updateTsChannels->keys()->all() as $cid)
+            {
+                $channelList[] = $cid;
+            }
 
             //get for each key - channelID connection the channel info and store in db
             foreach ($updateTsChannels->keys()->all() as $cid) {
@@ -113,8 +133,9 @@ class ClearingWorkerController extends Controller
         catch(TeamSpeak3Exception | Exception $e)
         {
             //set log
-            $this->logController->setLog($e,4,'clearingWorker');
+            $this->logController->setLog($e,4,'Update Channel List');
         }
+
     }
 
     private function updateChannelInDatabase($cid, $channelInfo, $channelName): void

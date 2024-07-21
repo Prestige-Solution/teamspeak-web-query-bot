@@ -104,7 +104,7 @@ class Ts3LogController extends Controller
         ]);
     }
 
-    public function setCustomLog(int $serverID, int $statusID, string $job, string $desc, $errCode, $errMsg): void
+    public function setCustomLog(int $serverID, int $statusID, string $job, string $desc, $errCode = NULL, $errMsg = NULL): void
     {
         ts3BotLog::query()->create([
             'server_id'=>$serverID,

@@ -18,7 +18,7 @@
         <div class="row mb-3">
             <label class="col-lg-2 col-form-label fw-bold" for="ChannelCid">Channel</label>
             <div class="col-lg-8">
-                <select class="form-select" id="ChannelCid" name="ChannelCid">
+                <select class="form-select" id="ChannelCid" name="ChannelCid" required>
                     <option selected disabled>Bitte wählen</option>
                     @foreach($ts3Channels->where('pid','=',0) as $ts3Channel)
                         <option value="{{$ts3Channel->cid}}" @isset($update) @if($ts3Channel->cid == $channelRemoverSetting->channel_cid) selected @endif @endisset>{{$ts3Channel->channel_name}}</option>
@@ -72,11 +72,6 @@
             <div class="col-lg-2 d-grid">
                 <button class="btn btn-primary" name="ServerID" value="{{$serverID}}">Speichern</button>
             </div>
-            @isset($update)
-            <div class="col-lg-2 d-grid">
-                <button class="btn btn-danger" name="DeleteID" value="{{$channelRemoverSetting->id}}">Löschen</button>
-            </div>
-            @endisset
         </div>
     </form>
 </div>

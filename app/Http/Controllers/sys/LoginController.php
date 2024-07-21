@@ -25,7 +25,7 @@ class LoginController extends Controller
         {
             $request->session()->regenerate();
 
-            return redirect()->route('start.view.dashboard');
+            return redirect()->route('backend.view.botControlCenter');
         }
 
         return redirect()->back()->withErrors([

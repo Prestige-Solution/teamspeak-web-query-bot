@@ -18,28 +18,13 @@ use Illuminate\Support\Str;
 
 class BadNameController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next)
-        {
-            if(Auth::user()->server_id == $request->input('server_id') || Auth::user()->server_id == $request->input('ServerID'))
-            {
-                return $next($request);
-            }
-            else
-            {
-                return redirect()->route('start.view.dashboard')->with(['error'=>'Du bist für diesen Server nicht berechtigt']);
-            }
-        });
-    }
-
     public function viewListBadNames(): View|Factory|Application
     {
         $badNames = badName::query()
             ->where('server_id','=',Auth::user()->server_id)
             ->get();
 
-        return view('backend.settings.list-bad-names')->with([
+        return view('backend.settings.bad-names')->with([
             'badNames'=>$badNames,
         ]);
     }
@@ -50,7 +35,7 @@ class BadNameController extends Controller
             ->where('server_id','=',0)
             ->get();
 
-        return view('backend.settings.list-global-bad-names')->with([
+        return view('backend.settings.global-bad-names')->with([
             'badNames'=>$badNames,
         ]);
     }
@@ -84,9 +69,7 @@ class BadNameController extends Controller
         //declare variables
         $badNameResult = false;
 
-        // option 1 = contains / option 2 = regex
-        //proof option 2 with regex
-        // proof if global list active
+        //proof if global list active
         $globalListActive = ts3BotWorkerPolice::query()
             ->where('server_id','=',$serverID)
             ->first('bad_name_protection_global_list_active')->bad_name_protection_global_list_active;
@@ -98,14 +81,14 @@ class BadNameController extends Controller
                     $query->where('server_id','=',$serverID)
                         ->orWhere('server_id','=',0);
                 })
-                ->where('value_option','=',2)
+                ->where('value_option','=',badName::stringRegex)
                 ->where('failed','=',false)
                 ->get(['value', 'id']);
         }else
         {
             $checkNames = badName::query()
                 ->where('server_id','=',$serverID)
-                ->where('value_option','=',2)
+                ->where('value_option','=',badName::stringRegex)
                 ->where('failed','=',false)
                 ->get(['value','id']);
         }
@@ -145,7 +128,7 @@ class BadNameController extends Controller
         {
             $checkNames = badName::query()
                 ->where('server_id','=',$serverID)
-                ->orWhere('value_option','=',1)
+                ->orWhere('value_option','=',badName::stringContains)
                 ->get('value');
 
             foreach ($checkNames as $checkName)

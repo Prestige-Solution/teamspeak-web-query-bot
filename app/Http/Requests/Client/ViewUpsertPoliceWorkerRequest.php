@@ -4,6 +4,7 @@ namespace App\Http\Requests\Client;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ViewUpsertPoliceWorkerRequest extends FormRequest
 {
@@ -15,26 +16,33 @@ class ViewUpsertPoliceWorkerRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'ServerID'=>Auth::user()->server_id,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric',
+            'ServerID'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
-        //TODO create message
         return [
-
+            'ServerID.required' => 'Hoppla, da lief etwas schief',
+            'ServerID.numeric' => 'Hoppla, da lief etwas schief',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        return redirect()->back()->withErrors($validator)->withInput();
+        return redirect()->route('backend.view.botControlCenter')->withErrors($validator);
     }
 }

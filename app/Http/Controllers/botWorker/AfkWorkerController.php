@@ -4,10 +4,13 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use Exception;
-use Illuminate\Support\Facades\Crypt;
+use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
@@ -15,8 +18,9 @@ use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 class AfkWorkerController extends Controller
 {
     protected int $serverID;
-    protected Server $ts3_VirtualServer;
+    protected string $qaName;
     protected Ts3LogController $logController;
+    protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
     /**
      * @param $serverID
@@ -35,47 +39,65 @@ class AfkWorkerController extends Controller
 
             if ($ts3ServerConfig->qa_nickname != null)
             {
-                $qaNickname = $ts3ServerConfig->qa_nickname;
+                $this->qaName = $ts3ServerConfig->qa_nickname;
             }else
             {
-                $qaNickname = $ts3ServerConfig->qa_name;
+                $this->qaName = $ts3ServerConfig->qa_name;
             }
 
-            //declare class
-            $TS3PHPFramework = new TeamSpeak3();
+            //get uri with StringHelper
+            $ts3StringHelper = new Ts3UriStringHelperController();
+            $uri = $ts3StringHelper->getStandardUriString(
+                $ts3ServerConfig->qa_name,
+                $ts3ServerConfig->qa_pw,
+                $ts3ServerConfig->server_ip,
+                $ts3ServerConfig->server_query_port,
+                $ts3ServerConfig->server_port,
+                $this->qaName.'-Remover-Worker',
+                $ts3ServerConfig->mode,
+            );
 
-            // Connect via ipv4 to ts3 Server // timeout in seconds
-            $uri = 'serverquery://'
-                .$ts3ServerConfig->qa_name.':'.Crypt::decryptString($ts3ServerConfig->qa_pw).
-                '@'.$ts3ServerConfig->ipv4.
-                ':'.$ts3ServerConfig->server_query_port.
-                '/?server_port='.$ts3ServerConfig->server_port.
-                '&blocking=0'.
-                '&no_query_clients'.
-                '&nickname='.$qaNickname.'-AFK-Worker';
+            //stop if return uri = 0
+            if ($uri == 0)
+            {
+                $this->logController->setCustomLog(
+                    $this->serverID,
+                    4,
+                    'Initialising Clearing Worker',
+                    'Invalid Server IP Address',
+                );
 
-            // connect to above specified server, authenticate and spawn an object for the virtual server on port 9987
-            $this->ts3_VirtualServer = $TS3PHPFramework->factory($uri);
+                throw new Exception('Invalid Server IP');
+            }
+
+            // connect to above specified server, authenticate and spawn an object for the virtual server
+            $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
 
             //proof if active
-            $functionIsActive = ts3BotWorkerAfk::query()->where('server_id','=',$this->serverID)->first(['active','afk_kicker_active']);
+            $functionIsActive = ts3BotWorkerAfk::query()->where('server_id','=',$this->serverID);
 
             //afk mover is active
-            if ($functionIsActive->active == true)
+            if ($functionIsActive->count() > 0 && $functionIsActive->first(['active'])->active == true)
             {
                 $this->afkMover();
             }
 
             //afk kicker is active
-            if($functionIsActive->afk_kicker_active == true)
+            if($functionIsActive->count() > 0 && $functionIsActive->first(['afk_kicker_active'])->afk_kicker_active == true)
             {
                 $this->afkKicker();
             }
 
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+
         }catch(TeamSpeak3Exception | Exception $e)
         {
             // set log
-            $this->logController->setLog($e,4);
+            $this->logController->setLog($e->getMessage(),4, 'AFK Worker');
+
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
     }
 

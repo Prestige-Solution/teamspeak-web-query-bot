@@ -3,7 +3,7 @@
 namespace App\Console\Commands\bot;
 
 use App\Http\Controllers\sys\Ts3LogController;
-use App\Jobs\ts3BotStartJob;
+use App\Jobs\ts3BotStartQueue;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Console\Command;
 
@@ -14,7 +14,7 @@ class StartBotAllCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:start_bots';
+    protected $signature = 'app:start-bots';
 
     /**
      * The console command description.
@@ -54,7 +54,7 @@ class StartBotAllCommand extends Command
             ]);
 
             //start bot
-            ts3BotStartJob::dispatch($startBot->id)->onConnection('bot')->onQueue('default');
+            ts3BotStartQueue::dispatch($startBot->id)->onConnection('bot')->onQueue('bot');
         }
     }
 }

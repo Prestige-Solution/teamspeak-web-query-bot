@@ -12,14 +12,14 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class StartBusChaining extends Command
+class StartWorkerCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'command:start_ts3Worker';
+    protected $signature = 'app:start-worker';
 
     /**
      * The console command description.
@@ -48,13 +48,13 @@ class StartBusChaining extends Command
                 new ts3BotChannelRemoveWorkerQueue($activeServerId->id),
                 new ts3BotPoliceWorkerQueue($activeServerId->id),
             ])
-                ->catch(function (Throwable $e)
-                {
-                    Log::channel('busChain')->error($e);
-                })
-                ->onConnection('worker')
-                ->onQueue('default')
-                ->dispatch();
+            ->catch(function (Throwable $e)
+            {
+                Log::channel('busChain')->error($e);
+            })
+            ->onConnection('worker')
+            ->onQueue('worker')
+            ->dispatch();
         }
     }
 }

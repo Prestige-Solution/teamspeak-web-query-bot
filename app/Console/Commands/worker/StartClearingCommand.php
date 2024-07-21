@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class StartBusChainingClearing extends Command
+class StartClearingCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:start_worker_clearing';
+    protected $signature = 'app:start-clearing';
 
     /**
      * The console command description.
@@ -47,7 +47,7 @@ class StartBusChainingClearing extends Command
                     Log::channel('busChain')->error($e);
                 })
                 ->onConnection('worker')
-                ->onQueue('default')
+                ->onQueue('clearing')
                 ->dispatch();
         }
     }

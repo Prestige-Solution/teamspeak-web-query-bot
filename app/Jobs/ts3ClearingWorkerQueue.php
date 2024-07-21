@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\ClearingWorkerController;
+use App\Http\Controllers\sys\Ts3LogController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,9 +31,15 @@ class ts3ClearingWorkerQueue implements ShouldQueue
      */
     public function handle(): void
     {
-        //start clearing
-        $clearingController = new ClearingWorkerController();
-        $clearingController->startClearing($this->serverID);
+        try {
+            //start clearing
+            $clearingController = new ClearingWorkerController();
+            $clearingController->startClearing($this->serverID);
+        }catch (\Exception $exception)
+        {
+            $ts3Logging = new Ts3LogController('Clearing-Worker',$this->serverID);
+            $ts3Logging->setLog($exception->getMessage(),5,'Start Queue Clearing-Worker failed');
+        }
     }
 
     public function uniqueId(): string

@@ -13,7 +13,7 @@
     </div>
     <hr>
     @include('form-components.alertCustomError')
-    <form method="post" action="{{Route('channel.createOrUpdate.BotJob')}}">
+    <form method="post" action="{{Route('channel.upsert.channelJob')}}">
         @csrf
         <div class="row mb-3">
             <label class="col-lg-2 col-form-label fw-bold" for="ChannelTarget">Channel wählen</label>
@@ -136,11 +136,6 @@
             <div class="col-lg-2 d-grid">
                 <button class="btn btn-primary" name="ServerID" value="{{$serverID}}">Speichern</button>
             </div>
-            @isset($update) @if($update == 1)
-            <div class="col-lg-2 d-grid">
-                <button class="btn btn-danger" name="DeleteID" value="{{$ts3BotJob->id}}">Löschen</button>
-            </div>
-            @endif @endisset
         </div>
     </form>
 </div>

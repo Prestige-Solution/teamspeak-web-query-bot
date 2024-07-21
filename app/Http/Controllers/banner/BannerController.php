@@ -23,46 +23,12 @@ use Illuminate\Support\Facades\Validator;
 
 class BannerController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next)
-        {
-            if(Auth::user()->server_id == $request->input('server_id') || Auth::user()->server_id == $request->input('ServerID'))
-            {
-                return $next($request);
-            }
-            else
-            {
-                if($request->has('bannerID'))
-                {
-                    $serverID = banner::query()->where('id','=',$request->input('bannerID'))->first();
-
-                    if ($serverID != null && Auth::user()->server_id == $serverID->server_id)
-                    {
-                        return $next($request);
-                    }
-                }
-                if($request->has('DeleteBannerID'))
-                {
-                    $serverID = banner::query()->where('id','=',$request->input('DeleteBannerID'))->first();
-
-                    if ($serverID != null && Auth::user()->server_id == $serverID->server_id)
-                    {
-                        return $next($request);
-                    }
-                }
-
-                return redirect()->route('start.view.dashboard');
-            }
-        });
-    }
-
     public function viewListBanner(ViewListBannerRequest $request): View|Factory|RedirectResponse|Application
     {
-        $banners = banner::query()->where('server_id','=',$request->validated('server_id'))->get();
+        $banners = banner::query()->where('server_id','=',$request->validated('ServerID'))->get();
 
         return view('backend.banner-creator.list-banner')->with([
-            'serverID'=>$request->validated('server_id'),
+            'serverID'=>$request->validated('ServerID'),
             'banners'=>$banners,
         ]);
     }
