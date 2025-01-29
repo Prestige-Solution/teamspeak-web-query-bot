@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('site-title')</title>
 
-    <link href="{{asset('/css/bootstrap/bootstrap.min.css')}}" rel="stylesheet">
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <link rel="shortcut icon" type="image/x-icon" href="{{asset('storage/img/bot-logo.png')}}">
 
     @yield('custom-css')
