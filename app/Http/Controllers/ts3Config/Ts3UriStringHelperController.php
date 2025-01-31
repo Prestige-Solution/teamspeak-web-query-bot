@@ -27,9 +27,20 @@ class Ts3UriStringHelperController extends Controller
             return false;
         }
 
+        //proof serverPort - if is null then set the standard ports else set the specific given port
+        if ($queryPort === null)
+        {
+            if ($mode == ts3ServerConfig::TS3ConnectModeRAW)
+            {
+                $queryPort = 10011;
+            }else{
+                $queryPort = 10022;
+            }
+        }
+
         if ($mode == ts3ServerConfig::TS3ConnectModeRAW)
         {
-            return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedIP.':'.$queryPort.
+            return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
                 '/?server_port='.$serverPort.
                 '&ssh=0'.
                 '&no_query_clients'.
