@@ -16,10 +16,10 @@ class Ts3UriStringHelperController extends Controller
     public function getStandardUriString(string $queryName, string $queryPassword, string $host, int|null $queryPort, int $serverPort, string $botName, int $mode = 1): string
     {
         //proof ipv4 or ipv6
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
+        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
         {
-            $validatedIP = $ip;
-        }elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+            $validatedHost = $host;
+        }elseif (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ||filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
         {
             $validatedIP = '['.$ip.']';
         }else
