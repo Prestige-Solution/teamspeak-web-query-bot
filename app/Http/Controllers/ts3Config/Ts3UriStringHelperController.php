@@ -21,7 +21,7 @@ class Ts3UriStringHelperController extends Controller
             $validatedHost = $host;
         }elseif (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ||filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
         {
-            $validatedIP = '['.$ip.']';
+            $validatedHost = '['.$host.']';
         }else
         {
             return 0;
@@ -39,7 +39,7 @@ class Ts3UriStringHelperController extends Controller
 
         }else
         {
-            return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedIP.':'.$queryPort.
+            return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
                 '/?server_port='.$serverPort.
                 '&ssh=1'.
                 '&no_query_clients'.
