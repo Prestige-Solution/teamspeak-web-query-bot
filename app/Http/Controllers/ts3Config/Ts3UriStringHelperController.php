@@ -24,7 +24,7 @@ class Ts3UriStringHelperController extends Controller
             $validatedHost = '['.$host.']';
         }else
         {
-            return 0;
+            return false;
         }
 
         if ($mode == ts3ServerConfig::TS3ConnectModeRAW)

@@ -56,9 +56,9 @@ class Ts3ConfigController extends Controller
             $ts3ServerConfig->mode,
         );
 
-        if ($uri == 0)
+        if ($uri == false)
         {
-            redirect()->back()->withErrors(['ipAddress'=>'Die Eingegeben IP Adresse ist nicht gültig']);
+            redirect()->back()->withErrors(['ipAddress'=>'Die eingetragene IP oder Hostname ist nicht gültig.']);
         }
 
         try {
