@@ -13,7 +13,7 @@ class Ts3UriStringHelperController extends Controller
      * mode = 1 is ssh = 0 equal raw
      * mode = 2 is ssh = 1
      */
-    public function getStandardUriString(string $queryName, string $queryPassword, string $ip, string $queryPort, string $serverPort, string $botName, int $mode = 1): string
+    public function getStandardUriString(string $queryName, string $queryPassword, string $host, int|null $queryPort, int $serverPort, string $botName, int $mode = 1): string
     {
         //proof ipv4 or ipv6
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
