@@ -6,16 +6,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>
-                    <span class="fw-bold text-danger">Warnung:</span><br>
-                    Wenn der Server zurückgesetzt wird, werden alle Einstellungen entfernt und vom Teamspeak Server neu geladen.
-                    Gesetzte Einstellungen müssen neu gesetzt werden. Alle Banner Konfigurationen und Vorlagen werden ebenfalls entfernt.
+                <p class="fw-bold text-danger">
+                    Folgende Einstellungen werden unwiderruflich gelöscht:
                 </p>
+                <ul>
+                    <li>Banner Konfigurationen sowie Vorlagen</li>
+                    <li>Channel Konfigurationen</li>
+                    <li>Channel Jobs (Create and Remove)</li>
+                </ul>
+                <p>Der Server wird anschließend neu initialisiert</p>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer d-flex justify-content-between">
                 <form method="post" action="{{route('serverConfig.update.serverInit')}}">
                     @csrf
-                    <button type="submit" class="btn btn-danger" name="ServerID" value="{{$server->id}}">Zurücksetzen</button>
+                    <button type="submit" class="btn btn-danger" name="server_id" value="{{$server->id}}">Zurücksetzen</button>
                 </form>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
             </div>

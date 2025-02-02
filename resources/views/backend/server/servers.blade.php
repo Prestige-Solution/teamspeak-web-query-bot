@@ -4,128 +4,150 @@
     Serverliste | {{config('app.name')}}
 @endsection
 
-@section('custom-css')
-    <link href="{{asset('css/font-awesome/css/fontawesome.css')}}" rel="stylesheet">
-    <link href="{{asset('css/font-awesome/css/brands.css')}}" rel="stylesheet">
-    <link href="{{asset('css/font-awesome/css/solid.css')}}" rel="stylesheet">
-@endsection
-
 @section('content')
-    <div class="container mt-3">
-        <div class="row mb-2">
-            <div class="col-lg-8">
-                <h2 class="fs-3 fw-bold">Serverliste</h2>
-            </div>
+<div class="container mt-3">
+    <div class="row mb-2">
+        <div class="col-lg-8">
+            <h2 class="fs-3 fw-bold">Serverliste</h2>
         </div>
-        <hr>
-        <form method="get" action="#">
-            <div class="row">
-                <div class="col-lg-3">
-                    <div class="card">
-                        <a href="{{Route('serverConfig.view.createServer')}}" class="text-decoration-none text-dark">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">
-                                    <i class="fa-solid fa-circle-plus"></i> Server Hinzufügen
-                                </h5>
-                            </div>
-                        </a>
-                    </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                <button type="button"
+                        class="btn btn-link m-0 p-0 text-start text-decoration-none text-dark fw-bold fs-5"
+                        data-bs-toggle="modal"
+                        data-bs-target="#CreateServer">
+                    <i class="fa-solid fa-circle-plus"></i> Server Hinzufügen
+                </button>
                 </div>
             </div>
-        </form>
-        <hr>
-        @include('form-components.alertCustomError')
-        @include('form-components.successCustom')
-        @if($servers->count() === 0)
-        <div>
-            <div class="alert alert-primary" role="alert">
-                Es wurden noch keine Server hinzugefügt. <a href="{{Route('serverConfig.view.createServer')}}">Jetzt einen Server hinzufügen.</a>
-            </div>
         </div>
-        @else
-        <div class="row">
-            <div class="col-lg-12">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col"></th>
-                        <th scope="col">Servername</th>
-                        <th scope="col">Query Admin</th>
-                        <th scope="col">IP Address</th>
-                        <th scope="col">Server Port</th>
-                        <th scope="col">Query Port</th>
-                        <th scope="col">Mode</th>
-                        <th scope="col">Status</th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($servers as $server)
-                        <tr>
-                            <td class="col-lg-1">
-                                @if($server->default == true)
+    </div>
+    <hr>
+    @include('form-components.alertCustomError')
+    @include('form-components.successCustom')
+    @if($servers->count() === 0)
+    <div>
+        <div class="alert alert-primary" role="alert">
+            Es konnten keine Server gefunden werden.
+        </div>
+    </div>
+    <hr>
+    @else
+    <div class="row row-cols-1 row-cols-lg-2 g-2">
+        @foreach($servers as $server)
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title fw-bold">{{ $server->server_name }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Status:</span>
+                                <span class="text-secondary">
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$running)
+                                        <span class="badge text-bg-success">{{$server->rel_bot_status->status_name}}</span>
+                                    @endif
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$reconnect)
+                                        <span class="badge text-bg-warning">{{$server->rel_bot_status->status_name}}</span>
+                                    @endif
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$stopped)
+                                        <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
+                                    @endif
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$failed)
+                                        <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
+                                @endif
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Query Admin:</span>
+                                <span class="text-secondary">{{ $server->qa_name }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">IP Address:</span>
+                                <span class="text-secondary">{{ $server->server_ip }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Server Port:</span>
+                                <span class="text-secondary">{{ $server->server_port }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Verbindungsmodus:</span>
+                                @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeRAW)
+                                    <span class="badge text-bg-warning">RAW</span>
+                                @elseif($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH)
+                                    <span class="badge text-bg-success">SSH</span>
+                                @endif
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Query Port:</span>
+                                @if($server->server_query_port === null)
+                                    @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH)
+                                        <span class="text-secondary">10022</span>
+                                    @else
+                                        <span class="text-secondary">10011</span>
+                                    @endif
+                                @else
+                                    <span class="text-secondary">{{ $server->server_query_port }}</span>
+                                @endif
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Bearbeitungsmodus:</span>
+                                @if($server->id === \Illuminate\Support\Facades\Auth::user()->default_server_id && \Illuminate\Support\Facades\Auth::user()->default_server_id !== 0)
                                     <span class="badge text-bg-success">Active</span>
                                 @else
                                     <form class="m-0 p-0" method="post" action="{{route('serverConfig.update.switchDefaultServer')}}">
                                         @csrf
-                                        <button class="btn btn-link m-0 p-0 me-2" type="submit" name="ServerID" value="{{$server->id}}"><span class="badge text-bg-warning">Switch</span></button>
+                                        <button class="btn btn-link m-0 p-0" type="submit" name="server_id" value="{{$server->id}}"><span class="badge text-bg-warning">Switch to Active</span></button>
                                     </form>
                                 @endif
-                            </td>
-                            <td class="col-lg-3">{{$server->server_name}}</td>
-                            <td class="col-lg-2">{{$server->qa_name}}</td>
-                            <td class="col-lg-1">{{$server->server_ip}}</td>
-                            <td class="col-lg-1">{{$server->server_port}}</td>
-                            <td class="col-lg-1">{{$server->server_query_port}}</td>
-                            <td class="col-lg-1">
-                                @if($server->mode == 1)
-                                    <span class="badge text-bg-warning">RAW</span>
-                                @else
-                                    <span class="badge text-bg-success">SSH</span>
-                                @endif
-                            </td>
-                            <td class="col-lg-1">
-                                @if($server->rel_bot_status->id == 1)
-                                    <span class="badge text-bg-success">{{$server->rel_bot_status->status_name}}</span>
-                                @endif
-                                @if($server->rel_bot_status->id == 2)
-                                    <span class="badge text-bg-warning">{{$server->rel_bot_status->status_name}}</span>
-                                @endif
-                                @if($server->rel_bot_status->id == 3)
-                                    <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
-                                @endif
-                                @if($server->rel_bot_status->id == 4)
-                                    <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
-                                @endif
-                            </td>
-                            <td class="col-lg-1">
-                                <div class="d-flex justify-content-end">
-                                    <form class="m-0 p-0" method="post" action="{{route('serverConfig.view.updateServer')}}">
-                                        @csrf
-                                        <button class="btn btn-link text-primary m-0 p-0 me-2" type="submit" name="ServerID" value="{{$server->id}}"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    </form>
-                                    <form class="m-0 p-0">
-                                        <button class="btn btn-link text-danger m-0 p-0 me-2" type="button" data-bs-toggle="modal" data-bs-target="#ServerReInit{{$server->id}}"><i class="fa-solid fa-recycle"></i></button>
-                                    </form>
-                                    <form class="m-0 p-0">
-                                        <button class="btn btn-link text-danger m-0 p-0 me-2" type="button" data-bs-toggle="modal" data-bs-target="#ServerDelete{{$server->id}}"><i class="fa-solid fa-trash"></i></button>
-                                    </form>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="fw-bold">Bot Nickname:</span>
+                                <span class="text-secondary">{{ $server->qa_nickname }}</span>
+                            </li>
+                        </ul>
+                        <hr>
+                        <div>
+                            <p class="fw-bold">Beschreibung:</p>
+                            <p>{{ $server->description }}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer text-body-secondary">
+                        <div class="row">
+                            <div class="d-flex justify-content-end">
+                                <div class="m-0 p-0">
+                                    <button class="btn btn-link text-primary m-0 p-0 me-3" type="button" data-bs-toggle="modal" data-bs-target="#UpdateServer{{$server->id}}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                                <div class="m-0 p-0">
+                                    <button class="btn btn-link text-danger m-0 p-0 me-3" type="button" data-bs-toggle="modal" data-bs-target="#ServerReInit{{$server->id}}"><i class="fa-solid fa-recycle"></i></button>
+                                </div>
+                                <div class="m-0 p-0">
+                                    <button class="btn btn-link text-danger m-0 p-0" type="button" data-bs-toggle="modal" data-bs-target="#ServerDelete{{$server->id}}"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        @endif
+        @endforeach
     </div>
+    @endif
+</div>
+@include('backend.server.inc.create-server')
+
+@foreach($servers as $server)
+    @include('backend.server.inc.edit-server', ['server'=>$server])
+@endforeach
+
+@foreach($servers as $server)
+    @include('backend.server.inc.init-server', ['server'=>$server])
+@endforeach
+
+@foreach($servers as $server)
+    @include('backend.server.inc.delete-server', ['server'=>$server])
+@endforeach
 @endsection
-
-@foreach($servers as $server)
-    @include('backend.server.inc.inc-server-init', ['server'=>$server])
-@endforeach
-
-@foreach($servers as $server)
-    @include('backend.server.inc.inc-server-delete', ['server'=>$server])
-@endforeach
