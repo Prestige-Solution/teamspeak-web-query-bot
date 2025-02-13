@@ -43,7 +43,7 @@ class Ts3UriStringHelperController extends Controller
             return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
                 '/?server_port='.$serverPort.
                 '&ssh=0'.
-                '&no_query_clients'.
+                '&no_query_clients=1'.
                 '&blocking=0'.
                 '&timeout=30'.
                 '&nickname='.$botName;
@@ -53,7 +53,7 @@ class Ts3UriStringHelperController extends Controller
             return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
                 '/?server_port='.$serverPort.
                 '&ssh=1'.
-                '&no_query_clients'.
+                '&no_query_clients=1'.
                 '&blocking=0'.
                 '&timeout=30'.
                 '&nickname='.$botName;
