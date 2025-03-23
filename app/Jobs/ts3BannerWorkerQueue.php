@@ -15,6 +15,7 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
+
     protected int $serverID;
 
     /**

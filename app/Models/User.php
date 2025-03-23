@@ -23,16 +23,12 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
+        'default_server_id',
         'nickname',
         'email',
         'password',
-        'birthday',
-        'role_id',
-        'server_id',
-        'server_owner',
-        'plan_level',
-        'need_change_password',
-        'banned',
+        'is_need_change_password',
+        'is_banned',
     ];
 
     /**
@@ -61,7 +57,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function rel_server(): HasOne
     {
-        return $this->hasOne(ts3ServerConfig::class, 'id', 'server_id');
+        return $this->hasOne(ts3ServerConfig::class, 'id', 'default_server_id');
     }
-
 }

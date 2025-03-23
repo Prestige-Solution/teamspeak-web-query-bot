@@ -4,6 +4,7 @@ namespace App\Http\Requests\Config;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UpdateServerInitRequest extends FormRequest
 {
@@ -12,7 +13,11 @@ class UpdateServerInitRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -21,16 +26,16 @@ class UpdateServerInitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerID'=>'required|numeric|exists:ts3_server_configs,id',
+            'server_id'=>'required|numeric|exists:ts3_server_configs,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
-            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
-            'ServerID.exists'=>'Der Server existiert nicht in der Serverliste',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.numeric'=>'Oops, something went wrong',
+            'server_id.exists'=>'The server does not exist in the server list',
         ];
     }
 

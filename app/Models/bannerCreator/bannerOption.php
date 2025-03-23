@@ -24,6 +24,6 @@ class bannerOption extends Model
 
     public function rel_cat_banner_option()
     {
-        return $this->hasOne(catBannerOption::class,'id','option_id');
+        return $this->hasOne(catBannerOption::class, 'id', 'option_id');
     }
 }

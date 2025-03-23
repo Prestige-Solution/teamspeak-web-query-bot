@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         //create initial entry
-        \App\Models\sys\system_config::query()->create(['seed_version'=>0]);
+        App\Models\sys\system_config::query()->create(['seed_version'=>0]);
     }
 
     /**

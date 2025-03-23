@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('description');
             $table->integer('value_option')->default(1); // 1 contains / 2 regex
             $table->string('value');
-            $table->boolean('failed')->default(false);
+            $table->boolean('is_failed')->default(false);
             $table->timestamps();
         });
     }

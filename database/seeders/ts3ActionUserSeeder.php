@@ -13,16 +13,16 @@ class ts3ActionUserSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         ts3BotActionUser::query()->create([
             'action_bot'=>'0',
-            'action_name'=>'Keine Aktion',
+            'action_name'=>'No Action',
             'type_id'=>1,
         ]);
         ts3BotActionUser::query()->create([
             'action_bot'=>'client_move_to_created_channel',
-            'action_name'=>'Client in neuen Channel verschieben',
+            'action_name'=>'Move client to channel',
             'type_id'=>1,
         ]);
     }

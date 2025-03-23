@@ -35,21 +35,18 @@ class StartWorkerCommand extends Command
     {
         //get all active servers
         $activeServerIds = ts3ServerConfig::query()
-            ->where('bot_confirmed','=',true)
-            ->where('ts3_start_stop','=',true)
-            ->where('active','=',true)
+            ->where('is_ts3_start', '=', true)
+            ->where('is_active', '=', true)
             ->get(['id']);
 
-        foreach ($activeServerIds as $activeServerId)
-        {
+        foreach ($activeServerIds as $activeServerId) {
             Bus::chain([
                 new ts3BannerWorkerQueue($activeServerId->id),
                 new ts3BotAfkWorkerQueue($activeServerId->id),
                 new ts3BotChannelRemoveWorkerQueue($activeServerId->id),
                 new ts3BotPoliceWorkerQueue($activeServerId->id),
             ])
-            ->catch(function (Throwable $e)
-            {
+            ->catch(function (Throwable $e) {
                 Log::channel('busChain')->error($e);
             })
             ->onConnection('worker')

@@ -7,20 +7,19 @@ use App\Models\ts3Bot\ts3BotLog;
 
 class Ts3LogController extends Controller
 {
-    protected int $serverID;
+    protected int $server_id;
+
     protected string $botFunctionName;
 
-    public function __construct($botFunctionName, $serverID)
+    public function __construct($botFunctionName, $server_id)
     {
+        $this->server_id = $server_id;
         $this->botFunctionName = $botFunctionName;
-        $this->serverID = $serverID;
     }
 
-    public function setLog($ts3Exception,$botStatus,$job): void
+    public function setLog($ts3Exception, $botStatus, $job): void
     {
-
-        switch ($ts3Exception->getCode())
-        {
+        switch ($ts3Exception->getCode()) {
             case 10061:
                 //server not found
                 $this->setLogDatabaseEntry(
@@ -83,10 +82,9 @@ class Ts3LogController extends Controller
         }
 
         //debug log
-        if (config('app.bot_debug') == true)
-        {
+        if (config('app.bot_debug') == true) {
             // print the error message returned by the server
-            $errorCodeMsg = "Server: ".$this->serverID." | Status: ".$botStatus." | Bot: ".$this->botFunctionName." | Job: ".$job." | Error " . $ts3Exception->getCode() . ": " . $ts3Exception->getMessage() . "\n";
+            $errorCodeMsg = 'Server: '.$this->serverID.' | Status: '.$botStatus.' | Bot: '.$this->botFunctionName.' | Job: '.$job.' | Error '.$ts3Exception->getCode().': '.$ts3Exception->getMessage()."\n";
             echo $errorCodeMsg;
         }
     }
@@ -104,7 +102,11 @@ class Ts3LogController extends Controller
         ]);
     }
 
-    public function setCustomLog(int $serverID, int $statusID, string $job, string $desc, $errCode = NULL, $errMsg = NULL): void
+    /**
+     * @param  null  $errCode
+     * @param  null  $errMsg
+     */
+    public function setCustomLog(int $serverID, int $statusID, string $job, string $desc, $errCode = null, $errMsg = null): void
     {
         ts3BotLog::query()->create([
             'server_id'=>$serverID,
@@ -116,10 +118,9 @@ class Ts3LogController extends Controller
             'worker'=> $this->botFunctionName,
         ]);
 
-        if (config('app.bot_debug') == true)
-        {
+        if (config('app.bot_debug') == true) {
             // print the error message returned by the server
-            $errorMsg = "Server: ".$serverID." | Status: ".$statusID." | Job: ".$job." | Desc: ".$desc." | Bot: ".$this->botFunctionName."\n";
+            $errorMsg = 'Server: '.$serverID.' | Status: '.$statusID.' | Job: '.$job.' | Desc: '.$desc.' | Bot: '.$this->botFunctionName."\n";
             echo $errorMsg;
         }
     }

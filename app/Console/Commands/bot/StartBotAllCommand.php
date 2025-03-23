@@ -4,6 +4,7 @@ namespace App\Console\Commands\bot;
 
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Jobs\ts3BotStartQueue;
+use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Console\Command;
 
@@ -30,27 +31,24 @@ class StartBotAllCommand extends Command
     {
         //get all bots with stopped status
         $startBots = ts3ServerConfig::query()
-            ->where('system_running_before_update','=',true)
+            ->where('is_system_running_before_update', '=', true)
             ->get();
 
-        foreach ($startBots as $startBot)
-        {
+        foreach ($startBots as $startBot) {
             $logController = new Ts3LogController('ServerCLI', $startBot->id);
             $logController->setCustomLog(
                 $startBot->id,
-                5,
+                ts3BotLog::SUCCESS,
                 'BotUpdateProcess',
-                'Bot wird via CLI gestartet',
-                null,
-                null,
+                'Bot wird via CLI gestartet'
             );
 
             //set status
-            ts3ServerConfig::query()->where('id','=',$startBot->id)->update([
-                'ts3_start_stop'=>true,
-                'active'=>true,
-                'system_running_before_update'=>false,
-                'bot_update'=>false,
+            ts3ServerConfig::query()->where('id', '=', $startBot->id)->update([
+                'is_ts3_start'=>true,
+                'is_active'=>true,
+                'is_system_running_before_update'=>false,
+                'is_bot_update'=>false,
             ]);
 
             //start bot

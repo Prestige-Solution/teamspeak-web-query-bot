@@ -4,6 +4,7 @@ namespace App\Http\Requests\Backend;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UpsertServerRequest extends FormRequest
 {
@@ -12,7 +13,11 @@ class UpsertServerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -36,18 +41,18 @@ class UpsertServerRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
-            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
-            'ServerName.required'=>'Bitte gib einen Servernamen an',
-            'server_ip.required' => 'Bitte gib eine IP Adresse an',
-            'server_ip.not_regex' => 'Die IP Adresse enthält nicht erlaubte Zeichen',
-            'QaName.required' => 'Bitte gib einen Query Admin Namen ein',
-            'QaName.min'=>'Der Query Admin Name muss mindestens 3 Zeichen enthalten',
-            'QaName.not_regex' => 'Der Server Query Admin Name enthält nicht erlaubte Zeichen',
-            'QaName.not_in'=>'Der Account serveradmin ist nicht erlaubt',
-            'QaPW.required' => 'Bitte gib das Server Query Passwort an',
-            'ServerQueryPort.numeric' => 'Der Server Query Port darf nur aus Zahlen bestehen',
-            'ServerPort.numeric' => 'Der Server Port darf nur aus Zahlen bestehen',
+            'ServerID.required'=>'Oops, something went wrong',
+            'ServerID.numeric'=>'Oops, something went wrong',
+            'ServerName.required'=>'Enter a server name',
+            'server_ip.required' => 'Enter an IP address',
+            'server_ip.not_regex' => 'The IP address contains non-permitted characters',
+            'QaName.required' => 'Enter a query admin name',
+            'QaName.min'=>'The query admin name must contain at least 3 characters',
+            'QaName.not_regex' => 'The server query admin name contains non-permitted characters',
+            'QaName.not_in'=>'The serveradmin account is not allowed',
+            'QaPW.required' => 'Enter the server query password',
+            'ServerQueryPort.numeric' => 'The server query port may only consist of numbers',
+            'ServerPort.numeric' => 'The server port may only consist of numbers',
         ];
     }
 

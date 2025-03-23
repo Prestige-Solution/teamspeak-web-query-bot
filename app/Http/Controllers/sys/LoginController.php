@@ -21,15 +21,14 @@ class LoginController extends Controller
 
     public function authenticate(AuthenticateRequest $request): RedirectResponse
     {
-        if(Auth::attempt(['nickname'=>$request->validated('NickName'),'password'=>$request->validated('Password')]))
-        {
+        if (Auth::attempt(['nickname'=>$request->validated('nickname'), 'password'=>$request->validated('password')])) {
             $request->session()->regenerate();
 
             return redirect()->route('backend.view.botControlCenter');
         }
 
         return redirect()->back()->withErrors([
-            'error'=>'Name oder Passwort falsch'
+            'error'=>'Name oder Passwort falsch',
         ]);
     }
 

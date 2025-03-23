@@ -2,10 +2,10 @@
 
 namespace App\Models\ts3BotWorkers;
 
-use App\Http\Controllers\ts3Config\Ts3ConfigController;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ts3BotWorkerAfk extends Model
 {
@@ -16,14 +16,14 @@ class ts3BotWorkerAfk extends Model
         'max_client_idle_time',
         'afk_channel_cid',
         'excluded_servergroup',
-        'active',
+        'is_afk_active',
         'afk_kicker_max_idle_time',
         'afk_kicker_slots_online',
-        'afk_kicker_active',
+        'is_afk_kicker_active',
     ];
 
-    public function rel_servers()
+    public function rel_servers(): HasMany
     {
-        return $this->hasMany(ts3ServerConfig::class,'id','server_id');
+        return $this->hasMany(ts3ServerConfig::class, 'id', 'server_id');
     }
 }

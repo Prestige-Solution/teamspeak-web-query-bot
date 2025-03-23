@@ -3,27 +3,41 @@
          xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         cacheDirectory=".phpunit.cache"
 >
     <testsuites>
         <testsuite name="Unit">
-            <directory>./tests/Unit</directory>
+            <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
-            <directory>./tests/Feature</directory>
+            <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <coverage ignoreDeprecatedCodeUnits="true"
+              disableCodeCoverageIgnore="true">
+        <report>
+            <clover outputFile=".phpunit.cache/clover.xml"/>
+        </report>
+    </coverage>
     <php>
-        <env name="APP_NAME" value="PS-Bot-Testing"/>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:B8I3NaGXJvL3O/1A6gGmjT1pXazRPXlGcRMA4dV14WU="/>
         <env name="APP_DEBUG" value="true"/>
         <env name="APP_URL" value="http://localhost"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
-        <env name="BROADCAST_DRIVER" value="array"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
-        <env name="SESSION_LIFETIME" value="120"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 </phpunit>

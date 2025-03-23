@@ -1,7 +1,7 @@
 @extends('template')
 
 @section('site-title')
-    Login | PS-Bot
+    Login | {{ config('app.project') }}
 @endsection
 
 @section('content')
@@ -15,17 +15,17 @@
             <div class="col-lg-6">
                 <div class="card border-0">
                     <div class="card-body">
-                        <h1 class="fw-bold fs-5 mb-3">Teamspeak3 Web Query Bot | Login</h1>
+                        <h1 class="fw-bold fs-5 mb-3">Web Query Bot | Login</h1>
                         @include('form-components.alertHandlingLogin')
                         <form method="post" action="{{Route('logging-in')}}">
                             @csrf
                             <div class="mb-3">
-                                <label class="form-label fw-bold" for="NickName">Benutzername:</label>
-                                <input class="form-control" type="text" id="NickName" name="NickName" placeholder="Hansi">
+                                <label class="form-label fw-bold" for="nickname">Nickname:</label>
+                                <input class="form-control" type="text" id="nickname" name="nickname" placeholder="Nickname">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold" for="Password">Passwort:</label>
-                                <input class="form-control" type="password" id="Password" name="Password" placeholder="Gib dein Passwort ein">
+                                <label class="form-label fw-bold" for="password">Password:</label>
+                                <input class="form-control" type="password" id="password" name="password" placeholder="Password">
                             </div>
                             <div class="row mb-3">
                                 <div class="col-6 d-grid mx-auto">

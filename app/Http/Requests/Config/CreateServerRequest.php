@@ -4,6 +4,7 @@ namespace App\Http\Requests\Config;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CreateServerRequest extends FormRequest
 {
@@ -12,7 +13,24 @@ class CreateServerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (str_replace(' ', '', $this->input('qa_nickname') == '')) {
+            $this->merge([
+                'qa_nickname' => 'web-query-bot',
+            ]);
+        } else {
+            $this->merge([
+                'qa_nickname' => str_replace(' ', '', $this->input('qa_nickname')),
+            ]);
+        }
     }
 
     /**
@@ -21,34 +39,34 @@ class CreateServerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerName'=>'required',
-            'ServerIP' => 'required|unique:ts3_server_configs,server_ip',
-            'QaName' => 'required|not_in:serveradmin|not_regex:/[#&$=\'\:"]+/i|min:3',
-            'QaPW' => 'required',
-            'ServerQueryPort' => 'nullable|numeric',
-            'ServerPort' => 'nullable|numeric',
-            'Description'=>'nullable',
-            'QueryNickname'=>'nullable',
-            'ConMode'=>'required|numeric',
+            'server_name'=>'required',
+            'server_ip' => 'required|unique:ts3_server_configs,server_ip',
+            'qa_name' => 'required|not_in:serveradmin|not_regex:/[#&$=\'\:"]+/i|min:3',
+            'qa_pw' => 'required',
+            'server_query_port' => 'nullable|numeric',
+            'server_port' => 'nullable|numeric',
+            'description'=>'nullable',
+            'qa_nickname'=>'nullable',
+            'mode'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'ServerName.required'=>'Bitte gib einen Servernamen an',
-            'ServerIP.required' => 'Bitte gib eine IP Adresse an',
-            'ServerIP.not_regex' => 'Die IP Adresse enthält nicht erlaubte Zeichen',
-            'ServerIP.unique' => 'Die IP Adresse ist bereits vorhanden',
-            'QaName.required' => 'Bitte gib einen Query Admin Namen ein',
-            'QaName.min'=>'Der Query Admin Name muss mindestens 3 Zeichen enthalten',
-            'QaName.not_regex' => 'Der Server Query Admin Name enthält nicht erlaubte Zeichen',
-            'QaName.not_in'=>'Der Account serveradmin ist nicht erlaubt',
-            'QaPW.required' => 'Bitte gib das Server Query Passwort an',
-            'ServerQueryPort.numeric' => 'Der Server Query Port darf nur aus Zahlen bestehen',
-            'ServerPort.numeric' => 'Der Server Port darf nur aus Zahlen bestehen',
-            'ConMode.required' => 'Hoppla, da lief etwas schief',
-            'ConMode.numeric' => 'Hoppla, da lief etwas schief',
+            'server_name.required'=>'Enter a server name',
+            'server_ip.required' => 'Enter an IP address',
+            'server_ip.not_regex' => 'The IP address contains non-permitted characters',
+            'server_ip.unique' => 'The IP address already exists',
+            'qa_name.required' => 'Enter a query admin name',
+            'qa_name.min'=>'The query admin name must contain at least 3 characters',
+            'qa_name.not_regex' => 'The server query admin name contains non-permitted characters',
+            'qa_name.not_in'=>'The serveradmin account is not allowed',
+            'qa_pw.required' => 'Enter the server query password',
+            'server_query_port.numeric' => 'The server query port may only consist of numbers',
+            'server_port.numeric' => 'The server port may only consist of numbers',
+            'mode.required' => 'Oops, something went wrong',
+            'mode.numeric' => 'Oops, something went wrong',
         ];
     }
 

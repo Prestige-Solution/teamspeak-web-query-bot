@@ -10,6 +10,7 @@ class badName extends Model
     use HasFactory;
 
     public const stringContains = 1;
+
     public const stringRegex = 2;
 
     protected $fillable = [
@@ -17,6 +18,6 @@ class badName extends Model
         'description',
         'value_option',
         'value',
-        'failed',
+        'is_failed',
     ];
 }

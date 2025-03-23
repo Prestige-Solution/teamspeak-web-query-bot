@@ -43,6 +43,14 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+
+        'banner' => [
+            'driver' => 'local',
+            'root' => storage_path('app/banner'),
+            'url' => env('APP_URL').'/banner',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
     ],
 
     /*
@@ -58,6 +66,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('banner') => storage_path('app/banner'),
     ],
 
 ];

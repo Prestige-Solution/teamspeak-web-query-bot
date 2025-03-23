@@ -4,6 +4,7 @@ namespace App\Http\Requests\Ts3Config;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CreateStartBotRequest extends FormRequest
 {
@@ -12,7 +13,18 @@ class CreateStartBotRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,15 +33,15 @@ class CreateStartBotRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerID'=>'required|numeric',
+            'server_id'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
-            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.numeric'=>'Oops, something went wrong',
         ];
     }
 

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\App;
 
 class ValidateHttpsSignature
 {
-    var $keyResolver;
+    public $keyResolver;
 
     public function __construct()
     {
@@ -27,8 +27,8 @@ class ValidateHttpsSignature
      *
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  Request  $request
+     * @param  Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -37,14 +37,13 @@ class ValidateHttpsSignature
             return $next($request);
         }
         throw new InvalidSignatureException;
-
     }
 
     /**
      * Determine if the given request has a valid signature.
      * copied and modified from
      * vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php:363
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @param  bool  $absolute
      * @return bool
      */
@@ -53,11 +52,11 @@ class ValidateHttpsSignature
         $url = $absolute ? $request->url() : '/'.$request->path();
 
         // THE FIX:
-        $url = str_replace("http://","https://", $url);
+        $url = str_replace('http://', 'https://', $url);
 
         $original = rtrim($url.'?'.Arr::query(
-                Arr::except($request->query(), 'signature')
-            ), '?');
+            Arr::except($request->query(), 'signature')
+        ), '?');
 
         $expires = $request->query('expires');
 

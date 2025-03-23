@@ -13,10 +13,10 @@ class catBannerOptionSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         catBannerOption::query()->create([
-            'name'=>'Keine Optionen',
+            'name'=>'No options',
             'pes_code'=>'get_no_options',
             'ts3_attribut'=>'no_options',
             'category'=>'no_options',
@@ -30,7 +30,7 @@ class catBannerOptionSeeder extends Seeder
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Max. Slot Anzahl',
+            'name'=>'Max. Number of slots',
             'pes_code'=>'get_max_slots',
             'ts3_attribut'=>'virtualserver_maxclients',
             'category'=>'server',
@@ -44,31 +44,45 @@ class catBannerOptionSeeder extends Seeder
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Server Plattform',
+            'name'=>'Server plattform',
             'pes_code'=>'get_server_plattform',
             'ts3_attribut'=>'virtualserver_platform',
             'category'=>'server',
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Server Latenz',
+            'name'=>'Server latenz',
             'pes_code'=>'get_sever_latency',
             'ts3_attribut'=>'virtualserver_total_ping',
             'category'=>'server',
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Clients in Gruppe online',
+            'name'=>'Clients in group online',
             'pes_code'=>'get_server_group_online',
             'ts3_attribut'=>'sgid',
             'category'=>'server_groups',
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Clients in Gruppe',
+            'name'=>'Clients in group',
             'pes_code'=>'get_server_group_max_clients',
             'ts3_attribut'=>'sgid',
             'category'=>'server_groups',
+        ]);
+
+        catBannerOption::query()->create([
+            'name'=>'Server status',
+            'pes_code'=>'get_server_status',
+            'ts3_attribut'=>'virtualserver_status',
+            'category'=>'server',
+        ]);
+
+        catBannerOption::query()->create([
+            'name'=>'Server online since',
+            'pes_code'=>'get_online_time',
+            'ts3_attribut'=>'virtualserver_uptime',
+            'category'=>'server',
         ]);
     }
 }

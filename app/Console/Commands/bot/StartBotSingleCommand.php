@@ -4,6 +4,7 @@ namespace App\Console\Commands\bot;
 
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Jobs\ts3BotStartQueue;
+use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Console\Command;
 
@@ -31,22 +32,19 @@ class StartBotSingleCommand extends Command
         $logController = new Ts3LogController('ServerCLI', $this->argument('serverID'));
         $logController->setCustomLog(
             $this->argument('serverID'),
-            1,
+            ts3BotLog::RUNNING,
             'Bot start process',
-            'Bot wurde via CLI gestartet',
-            null,
-            null,
+            'Bot wurde via CLI gestartet'
         );
 
-        ts3ServerConfig::query()->where('id','=',$this->argument('serverID'))->update([
-            'ts3_start_stop'=>true,
-            'active'=>true,
+        ts3ServerConfig::query()->where('id', '=', $this->argument('serverID'))->update([
+            'is_ts3_start'=>true,
+            'is_active'=>true,
         ]);
 
-        $botConfig = ts3ServerConfig::query()->where('id','=',$this->argument('serverID'))->first();
+        $botConfig = ts3ServerConfig::query()->where('id', '=', $this->argument('serverID'))->first();
 
-        if ($botConfig->ts3_start_stop == true && $botConfig->bot_confirmed == true)
-        {
+        if ($botConfig->is_ts3_start == true) {
             //create bot class
             ts3BotStartQueue::dispatch($this->argument('serverID'))->onConnection('bot')->onQueue('bot');
         }

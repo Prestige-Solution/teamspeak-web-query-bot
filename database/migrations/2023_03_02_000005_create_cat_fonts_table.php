@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('cat_fonts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('storage_path',2042);
+            $table->string('storage_path', 2042);
             $table->timestamps();
         });
     }

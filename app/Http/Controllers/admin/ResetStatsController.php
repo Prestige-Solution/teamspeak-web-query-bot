@@ -9,7 +9,7 @@ class ResetStatsController extends Controller
 {
     public function resetStats()
     {
-        //goto function to reset statistics
+        //TODO prepared for future implementations
     }
 
     public function resetVPNQueryCountPerMinute(): void

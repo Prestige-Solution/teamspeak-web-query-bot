@@ -4,6 +4,7 @@ namespace App\Models\ts3Bot;
 
 use App\Models\category\catBotStatus;
 use App\Models\User;
+use Database\Factories\CreateServerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -11,9 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class ts3ServerConfig extends Model
 {
     use HasFactory;
+
     public const BotReconnectTrue = 1;
+
     public const BotReconnectFalse = 0;
+
     public const TS3ConnectModeRAW = 1;
+
     public const TS3ConnectModeSSH = 2;
 
     protected $fillable = [
@@ -27,23 +32,24 @@ class ts3ServerConfig extends Model
         'bot_status_id',
         'description',
         'qa_nickname',
-        'ts3_start_stop',
-        'bot_confirmed',
-        'bot_confirm_token',
-        'bot_confirmed_at',
-        'active',
-        'default',
+        'is_ts3_start',
+        'is_active',
+        'is_default',
         'mode',
     ];
 
     public function rel_bot_status(): HasOne
     {
-        return $this->hasOne(catBotStatus::class,'id','bot_status_id');
+        return $this->hasOne(catBotStatus::class, 'id', 'bot_status_id');
     }
 
     public function rel_ts3serverConfig(): HasOne
     {
-        return $this->hasOne(User::class,'id','user_id');
+        return $this->hasOne(User::class, 'id', 'user_id');
     }
 
+    protected static function newFactory(): CreateServerFactory
+    {
+        return CreateServerFactory::new();
+    }
 }

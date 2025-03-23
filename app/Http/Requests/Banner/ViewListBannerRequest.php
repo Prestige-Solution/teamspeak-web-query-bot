@@ -19,7 +19,7 @@ class ViewListBannerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'ServerID'=>Auth::user()->server_id,
+            'ServerID'=>Auth::user()->default_server_id,
         ]);
     }
 

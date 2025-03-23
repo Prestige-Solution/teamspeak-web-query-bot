@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('job');
             $table->string('description')->nullable();
             $table->string('error_code')->nullable();
-            $table->string('error_message')->nullable();
+            $table->text('error_message')->nullable();
             $table->string('worker');
             $table->timestamps();
         });
@@ -32,7 +32,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ts3_bot_logs');
     }

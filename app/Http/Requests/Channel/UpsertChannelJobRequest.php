@@ -4,6 +4,7 @@ namespace App\Http\Requests\Channel;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UpsertChannelJobRequest extends FormRequest
 {
@@ -12,7 +13,18 @@ class UpsertChannelJobRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,32 +33,32 @@ class UpsertChannelJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerID'=>'required|numeric',
-            'ChannelTarget'=>'required|numeric',
-            'ChannelEvent'=>'required',
-            'ChannelAction'=>'required|numeric',
-            'ChannelActionUserInChannel'=>'required|numeric',
-            'ChannelActionUserInChannelGroup'=>'required|numeric',
-            'ChannelTemplate'=>'required|numeric',
-            'NotifyServerGroupBool'=>'required|bool',
-            'NotifyServerGroupSgid'=>'required|numeric',
-            'NotifyServerGroupMessage'=>'nullable',
-            'ChannelActionMinClientCount'=>'required|numeric',
-            'MaxChannels'=>'required|numeric',
+            'server_id'=>'required|numeric',
+            'on_cid'=>'required|numeric',
+            'on_event'=>'required',
+            'action_id'=>'required|numeric',
+            'action_user_id'=>'required|numeric',
+            'channel_cgid'=>'required|numeric',
+            'channel_template_id'=>'required|numeric',
+            'is_notify_message_server_group'=>'required|bool',
+            'notify_message_server_group_sgid'=>'required|numeric',
+            'notify_message_server_group_message'=>'nullable',
+            'action_min_clients'=>'required|numeric',
+            'create_max_channels'=>'required|numeric',
+            'is_active'=>'required|boolean',
         ];
     }
 
     public function messages(): array
     {
-        //TODO create messages
         return [
-            'ChannelTarget.required'=>'Bitte wähle einen Channel aus',
-            'ChannelEvent.required'=>'Bitte wähle ein Ereignis aus',
-            'ChannelAction.required'=>'Bitte wähle ein Aktion aus',
-            'ChannelActionUserInChannel.required'=>'Bitte wähle eine Client Aktion aus',
-            'ChannelActionUserInChannelGroup.required'=>'Bitte wähle eine Client Channel Group aus',
-            'ChannelTemplate.required'=>'Bitte wähle ein Channel Template aus',
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
+            'on_cid.required'=>'Select a channel',
+            'on_event.required'=>'Select an event',
+            'action_id.required'=>'Select an action',
+            'action_min_clients.required'=>'Select a client action',
+            'channel_cgid.required'=>'Select a Client Channel Group',
+            'channel_template_id.required'=>'Select a channel template',
+            'server_id.required'=>'Oops, something went wrong',
         ];
     }
 

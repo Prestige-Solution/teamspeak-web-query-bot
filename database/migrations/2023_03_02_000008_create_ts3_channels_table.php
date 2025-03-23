@@ -35,7 +35,7 @@ return new class extends Migration
             $table->integer('channel_maxfamilyclients');
             $table->integer('total_clients');
             $table->integer('channel_needed_subscribe_power');
-            $table->string('channel_banner_gfx_url',2048)->nullable();
+            $table->string('channel_banner_gfx_url', 2048)->nullable();
             $table->integer('channel_banner_mode');
             $table->text('channel_description')->nullable();
             $table->string('channel_password')->nullable();
@@ -47,7 +47,7 @@ return new class extends Migration
             $table->integer('channel_flag_maxclients_unlimited');
             $table->integer('channel_flag_maxfamilyclients_unlimited');
             $table->integer('channel_flag_maxfamilyclients_inherited');
-            $table->string('channel_filepath',2048);
+            $table->string('channel_filepath', 2048);
             $table->integer('channel_forced_silence');
             $table->string('channel_name_phonetic')->nullable();
             $table->integer('seconds_empty');

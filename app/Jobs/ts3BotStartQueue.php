@@ -34,13 +34,13 @@ class ts3BotStartQueue implements ShouldQueue, ShouldBeUnique
      * @return void
      * @throws \Exception
      */
-    public function handle()
+    public function handle(): void
     {
         //start bot
         new Ts3BotController($this->serverID);
     }
 
-    public function uniqueID()
+    public function uniqueID(): int
     {
         return $this->serverID;
     }

@@ -5,44 +5,48 @@ namespace App\Http\Controllers\botWorker;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
+use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ServerConfig;
-use App\Models\ts3BotJobs\ts3BotJobCreateChannels;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelRemover;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use Exception;
+use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
+use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
+use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
-use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
-use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 
 class ClearingWorkerController extends Controller
 {
-    protected int $serverID;
+    protected int $server_id;
+
     protected string $qaName;
+
     protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
     protected Ts3LogController $logController;
 
+    public function __construct($server_id)
+    {
+        //declare
+        $this->server_id = $server_id;
+        $this->logController = new Ts3LogController('Clearing-Worker', $this->server_id);
+    }
+
     /**
      * @throws Exception
      */
-    public function startClearing($serverID): void
+    public function startClearing(): void
     {
-        //declare
-        $this->serverID = $serverID;
-        $this->logController = new Ts3LogController('Clearing-Worker', $this->serverID);
-
         //get Server config
         $ts3ServerConfig = ts3ServerConfig::query()
-            ->where('id','=', $this->serverID)->first();
+            ->where('id', '=', $this->server_id)->first();
 
-        if ($ts3ServerConfig->qa_nickname != NULL)
-        {
+        if ($ts3ServerConfig->qa_nickname != null) {
             $this->qaName = $ts3ServerConfig->qa_nickname;
-        }else
-        {
+        } else {
             $this->qaName = $ts3ServerConfig->qa_name;
         }
 
@@ -55,42 +59,22 @@ class ClearingWorkerController extends Controller
             $ts3ServerConfig->server_query_port,
             $ts3ServerConfig->server_port,
             $this->qaName.'-Clearing-Worker',
-            $ts3ServerConfig->mode,
+            $this->server_id,
+            $ts3ServerConfig->mode
         );
 
-        //stop if return uri = 0
-        if ($uri == 0)
-        {
-            $this->logController->setCustomLog(
-                $this->serverID,
-                4,
-                'Initialising Clearing Worker',
-                'Invalid Server IP Address',
-            );
-
-            throw new Exception('Invalid Server IP');
-        }
-
-        try
-        {
+        try {
             //connect to above specified server
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-
-            //update db from ts3 server
-            $this->updateChannelList();
-
-            //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
-
-        }
-        catch(TeamSpeak3Exception | Exception $e)
-        {
+        } catch(TeamSpeak3Exception $e) {
             //set log
-            $this->logController->setLog($e->getMessage(),4,'Connect to Server failed');
-
+            $this->logController->setLog($e->getMessage(), ts3BotLog::FAILED, 'Start Clearing-Worker');
             //disconnect from server
             $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
+
+        //update db from ts3 server
+        $this->updateChannelList();
     }
 
     private function updateChannelList(): void
@@ -102,8 +86,7 @@ class ClearingWorkerController extends Controller
             //get array from existing channels
             $channelList = [];
 
-            foreach ($updateTsChannels->keys()->all() as $cid)
-            {
+            foreach ($updateTsChannels->keys()->all() as $cid) {
                 $channelList[] = $cid;
             }
 
@@ -114,40 +97,37 @@ class ClearingWorkerController extends Controller
                 //get channel info
                 $channelInfo = $channel->getInfo();
                 //update or create channel information
-                $this->updateChannelInDatabase($cid,$channelInfo,$channel->toString());
+                $this->updateChannelInDatabase($cid, $channelInfo, $channel->toString());
             }
 
             //get channels where not found at server side and delete in database
             $deletingChannelList = ts3Channel::query()
-                ->where('server_id','=',$this->serverID)
-                ->whereNotIn('cid',$channelList)
+                ->where('server_id', '=', $this->server_id)
+                ->whereNotIn('cid', $channelList)
                 ->get();
 
             //update channel information
-            foreach ($deletingChannelList as $deleteChannelsFromDB)
-            {
+            foreach ($deletingChannelList as $deleteChannelsFromDB) {
                 $this->deleteChannelFromDB($deleteChannelsFromDB->cid);
             }
-
-        }
-        catch(TeamSpeak3Exception | Exception $e)
-        {
+        } catch(TeamSpeak3Exception | Exception $e) {
             //set log
-            $this->logController->setLog($e,4,'Update Channel List');
+            $this->logController->setLog($e, ts3BotLog::FAILED, 'Update Channel List');
+            //disconnect from server
+            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         }
-
     }
 
     private function updateChannelInDatabase($cid, $channelInfo, $channelName): void
     {
         //store channel information in bot brain db
         ts3Channel::query()
-            ->where('server_id','=',$this->serverID)
-            ->where('cid','=',$cid)
+            ->where('server_id', '=', $this->server_id)
+            ->where('cid', '=', $cid)
             ->updateOrCreate(
                 [
                     'cid'=>$cid,
-                    'server_id'=>$this->serverID,
+                    'server_id'=>$this->server_id,
                 ],
                 [
                     'pid'=>$channelInfo['pid'],
@@ -169,7 +149,7 @@ class ClearingWorkerController extends Controller
                     'channel_needed_subscribe_power'=>$channelInfo['channel_needed_subscribe_power'],
                     'channel_banner_gfx_url'=>$channelInfo['channel_banner_gfx_url'],
                     'channel_banner_mode'=>$channelInfo['channel_banner_mode'],
-                    'channel_description'=>$channelInfo['channel_description'] ?? NULL,
+                    'channel_description'=>$channelInfo['channel_description'] ?? null,
                     'channel_password'=>$channelInfo['channel_password'],
                     'channel_codec_latency_factor'=>$channelInfo['channel_codec_latency_factor'],
                     'channel_codec_is_unencrypted'=>$channelInfo['channel_codec_is_unencrypted'],
@@ -182,26 +162,26 @@ class ClearingWorkerController extends Controller
                     'channel_filepath'=>$channelInfo['channel_filepath'],
                     'channel_forced_silence'=>$channelInfo['channel_forced_silence'],
                     'channel_name_phonetic'=>$channelInfo['channel_name_phonetic'],
-                    'seconds_empty'=>$channelInfo['seconds_empty'
-                ],
-            ]);
+                    'seconds_empty'=>$channelInfo['seconds_empty'],
+                ]
+            );
     }
 
     private function deleteChannelFromDB($cid): void
     {
         ts3Channel::query()
-            ->where('server_id','=',$this->serverID)
-            ->where('cid','=',$cid)
+            ->where('server_id', '=', $this->server_id)
+            ->where('cid', '=', $cid)
             ->delete();
 
-        ts3BotJobCreateChannels::query()
-            ->where('server_id','=',$this->serverID)
-            ->where('on_cid','=',$cid)
+        ts3BotWorkerChannelsCreate::query()
+            ->where('server_id', '=', $this->server_id)
+            ->where('on_cid', '=', $cid)
             ->delete();
 
-        ts3BotWorkerChannelRemover::query()
-            ->where('server_id','=',$this->serverID)
-            ->where('channel_cid','=',$cid)
+        ts3BotWorkerChannelsRemove::query()
+            ->where('server_id', '=', $this->server_id)
+            ->where('channel_cid', '=', $cid)
             ->delete();
     }
 }

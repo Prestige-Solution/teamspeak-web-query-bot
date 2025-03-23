@@ -27,7 +27,6 @@ class SetupCommand extends Command
      */
     public function handle(): int
     {
-
         $appURL = $this->ask('Enter your URL Address');
         $dbHost = $this->ask('Enter your Database Connection (URL or IP)');
         $dbName = $this->ask('Enter Database Name (Not the Username)');
@@ -36,26 +35,25 @@ class SetupCommand extends Command
 
         $path = base_path('.env');
 
-        if (file_exists($path))
-        {
+        if (file_exists($path)) {
             file_put_contents($path, str_replace(
-                'APP_URL='.$this->laravel['config']['url'],'APP_URL='.$appURL,file_get_contents($path)
+                'APP_URL='.$this->laravel['config']['url'], 'APP_URL='.$appURL, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                'DB_HOST='.config('database.connections.mysql.host'),'DB_HOST='.$dbHost,file_get_contents($path)
+                'DB_HOST='.config('database.connections.mysql.host'), 'DB_HOST='.$dbHost, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                'DB_DATABASE='.config('database.connections.mysql.database'),'DB_DATABASE='.$dbName,file_get_contents($path)
+                'DB_DATABASE='.config('database.connections.mysql.database'), 'DB_DATABASE='.$dbName, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                'DB_USERNAME='.config('database.connections.mysql.username'),'DB_USERNAME='.$dbUsername,file_get_contents($path)
+                'DB_USERNAME='.config('database.connections.mysql.username'), 'DB_USERNAME='.$dbUsername, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                'DB_PASSWORD='.config('database.connections.mysql.password'),'DB_PASSWORD='.$dbPassword,file_get_contents($path)
+                'DB_PASSWORD='.config('database.connections.mysql.password'), 'DB_PASSWORD='.$dbPassword, file_get_contents($path)
             ));
         }
 

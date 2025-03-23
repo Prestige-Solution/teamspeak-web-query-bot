@@ -1,7 +1,7 @@
 @extends('template')
 
 @section('site-title')
-    Create Banner | PS-Bot
+    Create Banner | {{ config('app.project') }}
 @endsection
 
 @section('js-footer')
@@ -12,20 +12,20 @@
 <div class="container mt-3">
     <div class="row">
         <div class="col-lg-12">
-            <h1 class="fs-2 fw-bold">Banner Creator</h1>
+            <h1 class="fs-2 fw-bold">Banner Konfiguration | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }}</h1>
         </div>
     </div>
     <hr>
-    <form method="get" action="{{Route('banner.update.updateBanner')}}">
+    <form method="post" action="{{Route('banner.upsert.configBanner')}}">
         <div class="row mb-3">
             <div class="col-lg-6">
                 <label class="form-label fw-bold">Vorlage:</label>
-                <img class="img-thumbnail" id="BannerImage" src="{{asset($banner->banner_original)}}" alt="BannerImage" onclick="imageCoordinates()">
+                <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/'.$banner->banner_original)}}" alt="BannerImage" onclick="imageCoordinates()">
             </div>
             <div class="col-lg-6">
                 <label class="form-label fw-bold">Preview:</label>
                 @if($banner->banner_viewer != NULL)
-                    <img class="img-thumbnail" id="BannerImagePreview" src="{{asset($banner->banner_viewer)}}" alt="BannerImagePreview">
+                    <img class="img-thumbnail" id="BannerImagePreview" src="{{asset('banner/'.$banner->banner_viewer)}}" alt="BannerImagePreview">
                 @endif
             </div>
         </div>
@@ -189,9 +189,6 @@
             <div class="row">
                 <div class="col-lg-auto">
                     <button class="btn btn-primary" name="bannerID" value="{{$banner->id}}">Speichern</button>
-                </div>
-                <div class="col-lg-auto">
-                    <button class="btn btn-danger" name="DeleteBannerID" value="{{$banner->id}}">Löschen</button>
                 </div>
             </div>
         </div>

@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\AfkWorkerController;
+use App\Http\Controllers\sys\Ts3LogController;
+use App\Models\ts3Bot\ts3BotLog;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,17 +16,18 @@ class ts3BotAfkWorkerQueue implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-
     public int $tries = 1;
-    protected int $serverID;
+
+    protected int $server_id;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($serverID)
+    public function __construct($server_id)
     {
-        $this->serverID = $serverID;
+        $this->server_id = $server_id;
     }
 
     /**
@@ -32,11 +35,17 @@ class ts3BotAfkWorkerQueue implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         //declare class
-        $afkWorker = new AfkWorkerController();
-        $afkWorker->afkMoverWorker($this->serverID);
+
+        try {
+            $afkWorker = new AfkWorkerController($this->server_id);
+            $afkWorker->afkMoverWorker();
+        } catch (\Exception $exception) {
+            $ts3Logging = new Ts3LogController('Afk-Worker', $this->serverID);
+            $ts3Logging->setLog($exception->getMessage(), ts3BotLog::SUCCESS, 'Start Queue Afk-Worker failed');
+        }
     }
 
     public function uniqueId(): string

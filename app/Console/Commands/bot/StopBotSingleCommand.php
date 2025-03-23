@@ -3,6 +3,7 @@
 namespace App\Console\Commands\bot;
 
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Console\Command;
 
@@ -29,25 +30,23 @@ class StopBotSingleCommand extends Command
     {
         //get bot config
         $runningBot = ts3ServerConfig::query()
-            ->where('id','=',$this->argument('serverID'))
+            ->where('id', '=', $this->argument('serverID'))
             ->first();
 
         //set stop
-        $logController = new Ts3LogController('ServerCLI',$runningBot->id);
+        $logController = new Ts3LogController('ServerCLI', $runningBot->id);
         $logController->setCustomLog(
             $runningBot->id,
-            5,
+            ts3BotLog::SUCCESS,
             'BotUpdateProcess',
-            'Bot wird via CLI gestoppt',
-            null,
-            null,
+            'Bot wird via CLI gestoppt'
         );
 
         ts3ServerConfig::query()
-            ->where('id','=',$runningBot->id)
+            ->where('id', '=', $runningBot->id)
             ->update([
-                'ts3_start_stop'=>false,
-                'active'=>false,
+                'is_ts3_start'=>false,
+                'is_active'=>false,
             ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Ts3Config;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class DeleteBadNameRequest extends FormRequest
 {
@@ -12,7 +13,18 @@ class DeleteBadNameRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,15 +33,18 @@ class DeleteBadNameRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'DeleteBadNameID'=>'required|numeric',
+            'server_id' => 'required|integer|exists:ts3_server_configs,id',
+            'id'=>'required|integer',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'DeleteBadNameID.required'=>'Hoppla, da lief etwas schief',
-            'DeleteBadNameID.numeric'=>'Hoppla, da lief etwas schief',
+            'server_id.required' => 'Oops, something went wrong',
+            'server_id.integer' => 'Oops, something went wrong',
+            'id.required'=>'Oops, something went wrong',
+            'id.integer'=>'Oops, something went wrong',
         ];
     }
 

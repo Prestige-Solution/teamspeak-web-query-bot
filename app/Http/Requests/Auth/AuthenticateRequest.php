@@ -21,22 +21,23 @@ class AuthenticateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'NickName'=>'required|not_regex:/[#&$=\'\"]+/i',
-            'Password'=>'required',
+            'nickname'=>'required|not_regex:/[#&$=\'\"]+/i|exists:users,nickname',
+            'password'=>'required',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'NickName.required'=>'Name oder Passwort falsch',
-            'NickName.not_regex'=>'Name oder Passwort falsch',
-            'Password.required'=>'Name oder Passwort falsch',
+            'nickname.required'=>'Incorrect name or password',
+            'nickname.not_regex'=>'Incorrect name or password',
+            'password.required'=>'Incorrect name or password',
+            'password.exists'=>'Incorrect name or password',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        return redirect()->back()->withErrors($validator)->withInput();
+        return redirect()->back()->withErrors(['error'=>'Incorrect name or password'])->withInput();
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Client;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UpdateAfkWorkerSettingsRequest extends FormRequest
 {
@@ -12,7 +13,18 @@ class UpdateAfkWorkerSettingsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,22 +33,35 @@ class UpdateAfkWorkerSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerID'=>'required|numeric',
-            'MaxIdleTimeSec'=>'required|numeric',
-            'AfkChannelCid'=>'required|numeric',
-            'ServerGroupSgid'=>'array',
-            'AfkWorkerActive'=>'required|numeric',
-            'AfkKickClientIdleTime'=>'required|numeric',
-            'AfkKickClientSlotsOnline'=>'required|numeric',
-            'AfkKickClientsActive'=>'required|numeric',
+            'server_id'=>'required|integer',
+            'is_afk_active'=>'required|boolean',
+            'max_client_idle_time'=>'required|numeric',
+            'afk_channel_cid'=>'required_if:is_afk_active,true|integer',
+            'is_afk_kicker_active'=>'required|boolean',
+            'afk_kicker_max_idle_time'=>'required|numeric',
+            'afk_kicker_slots_online'=>'required|numeric',
+            'excluded_servergroup'=>'array',
         ];
     }
 
     public function messages(): array
     {
-        //TODO create messages
         return [
-
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'is_afk_active.required'=>'Oops, something went wrong',
+            'is_afk_active.boolean'=>'Oops, something went wrong',
+            'max_client_idle_time.required'=>'Oops, something went wrong',
+            'max_client_idle_time.numeric'=>'Oops, something went wrong',
+            'afk_channel_cid.required_if'=>'Please enter an AFK channel',
+            'afk_channel_cid.integer'=>'Oops, something went wrong',
+            'is_afk_kicker_active.required'=>'Oops, something went wrong',
+            'is_afk_kicker_active.boolean'=>'Oops, something went wrong',
+            'afk_kicker_max_idle_time.required'=>'Oops, something went wrong',
+            'afk_kicker_max_idle_time.numeric'=>'Oops, something went wrong',
+            'afk_kicker_slots_online.required'=>'Oops, something went wrong',
+            'afk_kicker_slots_online.numeric'=>'Oops, something went wrong',
+            'excluded_servergroup.array'=>'Oops, something went wrong',
         ];
     }
 

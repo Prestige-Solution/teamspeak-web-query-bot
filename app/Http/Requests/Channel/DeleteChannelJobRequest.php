@@ -4,6 +4,7 @@ namespace App\Http\Requests\Channel;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class DeleteChannelJobRequest extends FormRequest
 {
@@ -12,7 +13,18 @@ class DeleteChannelJobRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,15 +33,18 @@ class DeleteChannelJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'JobID'=>'required|numeric',
+            'id'=>'required|numeric',
+            'server_id'=>'required|numeric',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'JobID.required'=>'Hoppla, da lief etwas schief',
-            'JobID.numeric'=>'Hoppla, da lief etwas schief',
+            'id.required'=>'Oops, something went wrong',
+            'id.numeric'=>'Oops, something went wrong',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.numeric'=>'Oops, something went wrong',
         ];
     }
 

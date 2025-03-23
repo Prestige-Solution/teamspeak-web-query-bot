@@ -15,7 +15,8 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Web-Query-Bot'),
+    'project' => 'Web-Query-Bot',
 
     /*
     |--------------------------------------------------------------------------
@@ -222,10 +223,8 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | DerraBot
+    | web-query-bot
     |--------------------------------------------------------------------------
     */
     'bot_debug'=>env('BOT_DEBUG', false),
-    'vpn_protection_mail'=>env('VPN_PROTECTION_MAIL', false),
-    'vpn_protection_max_query_per_day'=>env('VPN_PROTECTION_MAX_QUERY_PER_DAY',0),
 ];

@@ -14,20 +14,22 @@ use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3Bot\ts3ServerGroup;
 use App\Models\ts3Bot\ts3UserDatabase;
-use App\Models\ts3BotJobs\ts3BotJobCreateChannels;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelRemover;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 
 class ServerController extends Controller
 {
+    /**
+     * @return Factory|View|Application
+     */
     public function viewServerList(): Factory|View|Application
     {
         $servers = ts3ServerConfig::query()->orderBy('server_ip')->get();
@@ -37,38 +39,50 @@ class ServerController extends Controller
         ]);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function createServer(CreateServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        ts3ServerConfig::query()->create(
+        $serverID = ts3ServerConfig::query()->create(
             [
                 'user_id'=>Auth::user()->id,
-                'server_ip'=>$request->validated('ServerIP'),
-                'server_name'=>$request->validated('ServerName'),
-                'qa_name'=>$request->validated('QaName'),
-                'qa_pw'=>Crypt::encryptString(($request->validated('QaPW'))),
-                'server_query_port'=>$request->validated('ServerQueryPort') ?? 10011,
-                'server_port'=>$request->validated('ServerPort') ?? 9987,
-                'description'=>$request->validated('Description'),
-                'qa_nickname'=>str_replace(' ','',$request->input('QueryNickname')),
-                'mode'=>$request->validated('ConMode'),
-                'bot_confirmed'=>true,
-                'bot_confirmed_at'=>Carbon::now()->format('Y-m-d H:i:s'),
+                'server_ip'=>$request->validated('server_ip'),
+                'server_name'=>$request->validated('server_name'),
+                'qa_name'=>$request->validated('qa_name'),
+                'qa_pw'=>Crypt::encryptString($request->validated('qa_pw')),
+                'server_query_port'=>$request->validated('server_query_port') ?? null,
+                'server_port'=>$request->validated('server_port') ?? 9987,
+                'description'=>$request->validated('description'),
+                'qa_nickname'=>$request->input('qa_nickname'),
+                'mode'=>$request->validated('mode'),
             ]
-        );
-
-        $newCreatedServerID = ts3ServerConfig::query()->get(['id']);
+        )->id;
 
         //setup police worker
         ts3BotWorkerPolice::query()->create([
-            'server_id'=>$newCreatedServerID->last()->id,
+            'server_id'=>$serverID,
         ]);
 
-        if ($newCreatedServerID->count() == 1)
-        {
-            ts3ServerConfig::query()->where('id','=',$newCreatedServerID->last()->id)->update([
-                'default'=>true,
+        if (! empty($serverID)) {
+            ts3ServerConfig::query()->where('id', '=', $serverID)->update([
+                'is_default'=>true,
             ]);
-            User::query()->where('id','=', Auth::user()->id)->update(['server_id' => $newCreatedServerID->last()->id]);
+
+            User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $serverID]);
+        }
+
+        //initialising server only in production mode
+        if (config('app.env') !== 'testing') {
+            $status = $this->initialisingTs3Server($serverID);
+
+            if ($status != 0) {
+                if ($status['status'] == 1) {
+                    return redirect()->route('serverConfig.view.serverList')->with('success', 'Der Server wurde erfolgreich neu eingerichtet');
+                } else {
+                    return redirect()->back()->withErrors(['error' => $status['msg']]);
+                }
+            }
         }
 
         return redirect()->route('serverConfig.view.serverList');
@@ -76,58 +90,55 @@ class ServerController extends Controller
 
     public function updateServer(UpdateServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        ts3ServerConfig::query()->where('id','=',$request->validated('ServerID'))->update(
+        ts3ServerConfig::query()->where('id', '=', $request->validated('server_id'))->update(
             [
-                'server_ip'=>$request->validated('ServerIP'),
-                'server_name'=>$request->validated('ServerName'),
-                'qa_name'=>$request->validated('QaName'),
-                'qa_pw'=>Crypt::encryptString(($request->validated('QaPW'))),
-                'server_query_port'=>$request->validated('ServerQueryPort') ?? 10011,
-                'server_port'=>$request->validated('ServerPort') ?? 9987,
-                'description'=>$request->input('Description'),
-                'qa_nickname'=>str_replace(' ','',$request->input('QueryNickname')),
-                'mode'=>$request->validated('ConMode'),
+                'server_ip'=>$request->validated('server_ip'),
+                'server_name'=>$request->validated('server_name'),
+                'qa_name'=>$request->validated('qa_name'),
+                'qa_pw'=>Crypt::encryptString(($request->validated('qa_pw'))),
+                'server_query_port'=>$request->validated('server_query_port') ?? null,
+                'server_port'=>$request->validated('server_port') ?? 9987,
+                'description'=>$request->input('description'),
+                'qa_nickname'=>str_replace(' ', '', $request->input('qa_nickname')),
+                'mode'=>$request->validated('mode'),
             ]
         );
 
         return redirect()->route('serverConfig.view.serverList');
     }
 
-    public function updateServerInit(UpdateServerInitRequest $request)
+    /**
+     * @throws \Exception
+     */
+    public function updateServerInit(UpdateServerInitRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $server = ts3ServerConfig::query()
-            ->where('id', '=', $request->validated('ServerID'))
-            ->first();
+        $status = $this->initialisingTs3Server($request->validated('server_id'));
 
-        if ($server !== null) {
-            $reInit = new Ts3ConfigController();
-            $returnCode = $reInit->ts3ServerInitializing($request->validated('ServerID'));
-
-            if ($returnCode['status'] == 1) {
+        if ($status != 0) {
+            if ($status['status'] == 1) {
                 return redirect()->back()->with('success', 'Der Server wurde erfolgreich neu eingerichtet');
             } else {
-                return redirect()->back()->withErrors(['error' => $returnCode['msg']]);
+                return redirect()->back()->withErrors(['error' => $status['msg']]);
             }
         }
 
-        //TODO define default back statement
         return redirect()->back();
     }
 
     public function updateSwitchDefaultServer(SwitchDefaultServerRequest $request): \Illuminate\Http\RedirectResponse
     {
         //normalize
-        ts3ServerConfig::query()->where('default','=',true)->update([
-            'default'=>false,
+        ts3ServerConfig::query()->where('is_default', '=', true)->update([
+            'is_default'=>false,
         ]);
 
-        ts3ServerConfig::query()->where('id','=',$request->validated('ServerID'))->update([
-            'default'=>true,
+        ts3ServerConfig::query()->where('id', '=', $request->validated('server_id'))->update([
+            'is_default'=>true,
         ]);
 
-        User::query()->where('id','=', Auth::user()->id)->update(['server_id' => $request->validated('ServerID')]);
+        User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $request->validated('server_id')]);
 
-        return redirect()->back();
+        return redirect()->route('serverConfig.view.serverList');
     }
 
     public function deleteServer(DeleteServerRequest $request): \Illuminate\Http\RedirectResponse
@@ -135,20 +146,41 @@ class ServerController extends Controller
         //TODO Delete Banner config an data
 
         //delete all relations ins used tables
-        ts3Channel::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3ServerGroup::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3ChannelGroup::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3UserDatabase::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3BotJobCreateChannels::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3BotWorkerAfk::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3BotWorkerChannelRemover::query()->where('server_id','=',$request->validated('ServerID'))->delete();
-        ts3BotWorkerPolice::query()->where('server_id','=',$request->validated('ServerID'))->delete();
+        ts3Channel::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3ServerGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3ChannelGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3UserDatabase::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3BotWorkerAfk::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        ts3BotWorkerPolice::query()->where('server_id', '=', $request->validated('server_id'))->delete();
 
         //delete server from table server configs
-        ts3ServerConfig::query()->where('id','=',$request->validated('ServerID'))->delete();
+        ts3ServerConfig::query()->where('id', '=', $request->validated('server_id'))->delete();
 
-        //TODO switch to an active Server if available
+        //Check if a server available else set 0
+        $serverlist = ts3ServerConfig::query()->get();
+
+        if ($serverlist->count() > 0) {
+            User::query()->update(['default_server_id' => $serverlist->first()->id]);
+        } else {
+            User::query()->update(['default_server_id' => 0]);
+        }
 
         return redirect()->route('serverConfig.view.serverList');
+    }
+
+    /**
+     * @param  int|null  $server_id
+     * @throws \Exception
+     */
+    private function initialisingTs3Server(int $server_id = null): array|int
+    {
+        if ($server_id !== null) {
+            $reInit = new Ts3ConfigController();
+            $returnCode = $reInit->ts3ServerInitializing($server_id);
+        }
+
+        return $returnCode ?? 0;
     }
 }

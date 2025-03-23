@@ -6,15 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Requests\Ts3Config\CreateStartBotRequest;
 use App\Http\Requests\Ts3Config\CreateStopBotRequest;
+use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3Bot\ts3ServerGroup;
 use App\Models\ts3Bot\ts3UserDatabase;
-use App\Models\ts3BotJobs\ts3BotJobCreateChannels;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelRemover;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
+use Exception;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
@@ -24,57 +26,63 @@ class Ts3ConfigController extends Controller
 {
     protected Ts3LogController $ts3LogController;
 
-    public function ts3ServerInitializing($serverID): array
+    protected null|string $uri = null;
+
+    public function ts3ServerCheckConfig($serverID)
     {
-        $this->ts3LogController = new Ts3LogController('Server Initialising', Auth::user()->server_id);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function ts3ServerInitializing($server_id): array
+    {
+        $this->ts3LogController = new Ts3LogController('Server Initialising', Auth::user()->default_server_id);
 
         $ts3ServerConfig = ts3ServerConfig::query()
-            ->where('id','=',$serverID)
+            ->where('id', '=', $server_id)
             ->first();
-        $serverID = $ts3ServerConfig->id;
 
         //clear databases for re-init routine
-        ts3Channel::query()->where('server_id','=',$serverID)->delete();
-        ts3ServerGroup::query()->where('server_id','=',$serverID)->delete();
-        ts3ChannelGroup::query()->where('server_id','=',$serverID)->delete();
-        ts3UserDatabase::query()->where('server_id','=',$serverID)->delete();
-        ts3BotJobCreateChannels::query()->where('server_id','=',$serverID)->delete();
-        ts3BotWorkerAfk::query()->where('server_id','=',$serverID)->delete();
-        ts3BotWorkerChannelRemover::query()->where('server_id','=',$serverID)->delete();
-        ts3BotWorkerPolice::query()->where('server_id','=',$serverID)->update(['allow_sgid_vpn'=>1]);
+        ts3Channel::query()->where('server_id', '=', $server_id)->delete();
+        ts3ServerGroup::query()->where('server_id', '=', $server_id)->delete();
+        ts3ChannelGroup::query()->where('server_id', '=', $server_id)->delete();
+        ts3UserDatabase::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->update(['allow_sgid_vpn'=>1]);
 
         //TODO Delete Banner configs and data
 
-        $uri = new Ts3UriStringHelperController();
-        $uri = $uri->getStandardUriString(
-            $ts3ServerConfig->qa_name,
-            $ts3ServerConfig->qa_pw,
-            $ts3ServerConfig->server_ip,
-            $ts3ServerConfig->server_query_port,
-            $ts3ServerConfig->server_port,
-            $ts3ServerConfig->qa_name,
-            $ts3ServerConfig->mode,
-        );
-
-        if ($uri == false)
-        {
-            redirect()->back()->withErrors(['ipAddress'=>'Die eingetragene IP oder Hostname ist nicht gültig.']);
+        try {
+            $uri = new Ts3UriStringHelperController();
+            $this->uri = $uri->getStandardUriString(
+                $ts3ServerConfig->qa_name,
+                $ts3ServerConfig->qa_pw,
+                $ts3ServerConfig->server_ip,
+                $ts3ServerConfig->server_query_port,
+                $ts3ServerConfig->server_port,
+                $ts3ServerConfig->qa_name,
+                $server_id,
+                $ts3ServerConfig->mode
+            );
+        } catch (TeamSpeak3Exception) {
+            redirect()->back()->withErrors(['ipAddress'=>'The ip address or dns name you entered is invalid.']);
         }
 
         try {
-            // Create new object of TS3 PHP Framework class
-            $ts3_VirtualServer = TeamSpeak3::factory($uri);
-
-        }catch (TeamSpeak3Exception|\Exception $e)
-        {
+            TeamSpeak3::init();
+            $ts3_VirtualServer = TeamSpeak3::factory($this->uri);
+        } catch (TeamSpeak3Exception $e) {
             $this->ts3LogController->setLog(
                 $e,
-                4,
+                ts3BotLog::FAILED,
                 'Setup - Initialising Server',
             );
 
             // print the error message returned by the server
-            return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
+            return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
         try {
@@ -82,34 +90,31 @@ class Ts3ConfigController extends Controller
             //get all channels as collection without SubChannels
             $ts3Channels = collect($ts3_VirtualServer->channelList(['pid'=>0]));
             //get for each key - channelID connection the channel info and store in db
-            foreach ($ts3Channels->keys()->all() as $cid)
-            {
+            foreach ($ts3Channels->keys()->all() as $cid) {
                 //get channel by id
                 $channel = $ts3_VirtualServer->channelGetById($cid);
                 //get channel info
                 $channelInfo = $channel->getInfo();
                 //store info
-                $this->createChannels($serverID,$channelInfo,$channel->toString());
+                $this->createChannels($server_id, $channelInfo, $channel->toString());
 
                 //sub-channels available
                 $subChannels = collect($channel->subChannelList());
-                foreach ($subChannels->keys()->all() as $subChannelCid)
-                {
+                foreach ($subChannels->keys()->all() as $subChannelCid) {
                     $subChannel = $ts3_VirtualServer->channelGetById($subChannelCid);
                     $subChannelInfo = $subChannel->getInfo();
-                    $this->createChannels($serverID,$subChannelInfo,$subChannel->toString());
+                    $this->createChannels($server_id, $subChannelInfo, $subChannel->toString());
                 }
             }
-        }catch (TeamSpeak3Exception $e)
-        {
+        } catch (TeamSpeak3Exception $e) {
             $this->ts3LogController->setLog(
                 $e,
-                4,
+                ts3BotLog::FAILED,
                 'Setup - Channels',
             );
 
             // print the error message returned by the server
-            return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
+            return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
         try {
@@ -117,24 +122,22 @@ class Ts3ConfigController extends Controller
             //get server groups as collection
             $ts3ServerGroups = collect($ts3_VirtualServer->serverGroupList());
             //insert server groups in db
-            foreach ($ts3ServerGroups->keys()->all() as $sgid)
-            {
+            foreach ($ts3ServerGroups->keys()->all() as $sgid) {
                 //get server group by id
                 $serverGroup = $ts3_VirtualServer->serverGroupGetById($sgid);
                 $serverGroupInfo = $serverGroup->getInfo();
                 //store info
-                $this->createServerGroups($serverID,$serverGroupInfo);
+                $this->createServerGroups($server_id, $serverGroupInfo);
             }
-        }catch (TeamSpeak3Exception $e)
-        {
+        } catch (TeamSpeak3Exception $e) {
             $this->ts3LogController->setLog(
                 $e,
-                4,
+                ts3BotLog::FAILED,
                 'Setup - Server Groups',
             );
 
             // print the error message returned by the server
-            return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
+            return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
         try {
@@ -142,25 +145,22 @@ class Ts3ConfigController extends Controller
             //get channel Groups
             $ts3ChannelGroups = collect($ts3_VirtualServer->channelGroupList());
             //insert channel groups in db
-            foreach ($ts3ChannelGroups->keys()->all() as $cgid)
-            {
+            foreach ($ts3ChannelGroups->keys()->all() as $cgid) {
                 //get channel group by id
                 $channelGroup = $ts3_VirtualServer->channelGroupGetById($cgid);
                 $channelGroupInfo = $channelGroup->getInfo();
                 //store info
-                $this->createChannelGroups($serverID,$channelGroupInfo);
-
+                $this->createChannelGroups($server_id, $channelGroupInfo);
             }
-        }catch (TeamSpeak3Exception $e)
-        {
+        } catch (TeamSpeak3Exception $e) {
             $this->ts3LogController->setLog(
                 $e,
-                4,
+                ts3BotLog::FAILED,
                 'Setup - Channel Groups',
             );
 
             // print the error message returned by the server
-            return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
+            return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
         try {
@@ -168,59 +168,53 @@ class Ts3ConfigController extends Controller
             $usersTs3DB = collect($ts3_VirtualServer->clientListDb());
 
             //insert users
-            foreach ($usersTs3DB->keys()->all() as $cldbid)
-            {
+            foreach ($usersTs3DB->keys()->all() as $cldbid) {
                 //get userinfo by db id
                 $userDbInfo = $ts3_VirtualServer->clientInfoDb($cldbid);
                 //store info
-                $this->createUserDatabase($serverID,$userDbInfo);
+                $this->createUserDatabase($server_id, $userDbInfo);
             }
-        }catch (TeamSpeak3Exception $e)
-        {
+        } catch (TeamSpeak3Exception $e) {
             $this->ts3LogController->setLog(
                 $e,
-                4,
+                ts3BotLog::FAILED,
                 'Setup - TS3 Database',
             );
 
             // print the error message returned by the server
-            return ['status'=>0,'msg'=>'Fehler: ' . $e->getCode() . ': ' . $e->getMessage()];
+            return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
         $this->ts3LogController->setCustomLog(
-            $serverID,
-            '5',
+            $server_id,
+            ts3BotLog::SUCCESS,
             'Config Initialisation',
             'Der Server wurde erfolgreich initialisiert',
-            NULL,
-            NULL,
         );
 
-        return ['status'=>1,'msg'=>'success'];
+        return ['status'=>1, 'msg'=>'success'];
     }
 
     public function ts3StartBot(CreateStartBotRequest $request): \Illuminate\Http\RedirectResponse
     {
         //set log
-        $logController = new Ts3LogController('Webinterface',$request->validated('ServerID'));
+        $logController = new Ts3LogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
-            $request->validated('ServerID'),
-            1,
+            $request->validated('server_id'),
+            ts3BotLog::RUNNING,
             'startBot',
             'Bot wurde via Webinterface gestartet',
-            null,
-            null,
         );
 
-        //set bot active status
+        //set bot is_active status
         ts3ServerConfig::query()
-            ->where('id','=',$request->validated('ServerID'))
+            ->where('id', '=', $request->validated('server_id'))
             ->update([
-                'ts3_start_stop'=>1,
-                'active'=>1,
+                'is_ts3_start'=>1,
+                'is_active'=>1,
             ]);
 
-        Artisan::call('app:start-bot '.$request->validated('ServerID'));
+        Artisan::call('app:start-bot '.$request->validated('server_id'));
 
         return redirect()->back()->with('success', 'Der Bot wird gestartet und loggt sich gleich auf den Server ein.');
     }
@@ -228,32 +222,30 @@ class Ts3ConfigController extends Controller
     public function ts3StopBot(CreateStopBotRequest $request): \Illuminate\Http\RedirectResponse
     {
         //set log
-        $logController = new Ts3LogController('Webinterface',$request->validated('ServerID'));
+        $logController = new Ts3LogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
-            $request->validated('ServerID'),
-            1,
+            $request->validated('server_id'),
+            ts3BotLog::RUNNING,
             'botStop',
             'Bot durch das Webinterface gestoppt',
-            null,
-            null,
         );
 
-        //set bot active status
+        //set bot is_active status
         ts3ServerConfig::query()
-            ->where('id','=',$request->validated('ServerID'))
+            ->where('id', '=', $request->validated('server_id'))
             ->update([
-                'ts3_start_stop'=>0,
-                'active'=>0,
+                'is_ts3_start'=>0,
+                'is_active'=>0,
             ]);
 
         return redirect()->back()->with('success', 'Bot wird gestoppt. Dies kann einen Moment dauern.');
     }
 
-    public function createChannels(int $serverID, array $channelInfo, string $channelName): void
+    public function createChannels(int $server_id, array $channelInfo, string $channelName): void
     {
         //store channel information in bot brain db
         ts3Channel::query()->create([
-            'server_id'=>$serverID,
+            'server_id'=>$server_id,
             'cid'=>$channelInfo['cid'],
             'pid'=>$channelInfo['pid'],
             'channel_order'=>$channelInfo['channel_order'],
@@ -272,29 +264,29 @@ class Ts3ConfigController extends Controller
             'channel_maxfamilyclients'=>$channelInfo['channel_maxfamilyclients'],
             'total_clients'=>$channelInfo['total_clients'],
             'channel_needed_subscribe_power'=>$channelInfo['channel_needed_subscribe_power'],
-            'channel_banner_gfx_url'=>$channelInfo['channel_banner_gfx_url'] ?? 0, //weg
-            'channel_banner_mode'=>$channelInfo['channel_banner_mode'] ?? 0, // weg
-            'channel_description'=>$channelInfo['channel_description'] ?? NULL,
-            'channel_password'=>$channelInfo['channel_password'] ?? 0, // weg
-            'channel_codec_latency_factor'=>$channelInfo['channel_codec_latency_factor'] ?? 0, // weg
-            'channel_codec_is_unencrypted'=>$channelInfo['channel_codec_is_unencrypted'] ?? 0, // weg
-            'channel_security_salt'=>$channelInfo['channel_security_salt'] ?? 0, //weg
-            'channel_delete_delay'=>$channelInfo['channel_delete_delay'] ?? 0, //weg
-            'channel_unique_identifier'=>$channelInfo['channel_unique_identifier'] ?? 0, //weg
-            'channel_flag_maxclients_unlimited'=>$channelInfo['channel_flag_maxclients_unlimited'] ?? 0, //weg
-            'channel_flag_maxfamilyclients_unlimited'=>$channelInfo['channel_flag_maxfamilyclients_unlimited'] ?? 0, //weg
-            'channel_flag_maxfamilyclients_inherited'=>$channelInfo['channel_flag_maxfamilyclients_inherited'] ?? 0, //weg
-            'channel_filepath'=>$channelInfo['channel_filepath'] ?? 0, //weg
-            'channel_forced_silence'=>$channelInfo['channel_forced_silence'] ?? 0, //weg
-            'channel_name_phonetic'=>$channelInfo['channel_name_phonetic'] ?? 0, //weg
-            'seconds_empty'=>$channelInfo['seconds_empty'] ?? 0, //weg
+            'channel_banner_gfx_url'=>$channelInfo['channel_banner_gfx_url'] ?? 0,
+            'channel_banner_mode'=>$channelInfo['channel_banner_mode'] ?? 0,
+            'channel_description'=>$channelInfo['channel_description'] ?? null,
+            'channel_password'=>$channelInfo['channel_password'] ?? 0,
+            'channel_codec_latency_factor'=>$channelInfo['channel_codec_latency_factor'] ?? 0,
+            'channel_codec_is_unencrypted'=>$channelInfo['channel_codec_is_unencrypted'] ?? 0,
+            'channel_security_salt'=>$channelInfo['channel_security_salt'] ?? 0,
+            'channel_delete_delay'=>$channelInfo['channel_delete_delay'] ?? 0,
+            'channel_unique_identifier'=>$channelInfo['channel_unique_identifier'] ?? 0,
+            'channel_flag_maxclients_unlimited'=>$channelInfo['channel_flag_maxclients_unlimited'] ?? 0,
+            'channel_flag_maxfamilyclients_unlimited'=>$channelInfo['channel_flag_maxfamilyclients_unlimited'] ?? 0,
+            'channel_flag_maxfamilyclients_inherited'=>$channelInfo['channel_flag_maxfamilyclients_inherited'] ?? 0,
+            'channel_filepath'=>$channelInfo['channel_filepath'] ?? 0,
+            'channel_forced_silence'=>$channelInfo['channel_forced_silence'] ?? 0,
+            'channel_name_phonetic'=>$channelInfo['channel_name_phonetic'] ?? 0,
+            'seconds_empty'=>$channelInfo['seconds_empty'] ?? 0,
         ]);
     }
 
-    private function createServerGroups($serverID, $serverGroupInfo): void
+    private function createServerGroups($server_id, $serverGroupInfo): void
     {
         ts3ServerGroup::query()->create([
-            'server_id'=>$serverID,
+            'server_id'=>$server_id,
             'sgid'=>$serverGroupInfo['sgid'],
             'name'=>$serverGroupInfo['name'],
             'type'=>$serverGroupInfo['type'],
@@ -308,10 +300,10 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    private function createChannelGroups($serverID, $channelGroupInfo): void
+    private function createChannelGroups($server_id, $channelGroupInfo): void
     {
         ts3ChannelGroup::query()->create([
-            'server_id'=>$serverID,
+            'server_id'=>$server_id,
             'cgid'=>$channelGroupInfo['cgid'],
             'name'=>$channelGroupInfo['name'],
             'type'=>$channelGroupInfo['type'],
@@ -325,10 +317,10 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    private function createUserDatabase($serverID, $userDbInfo): void
+    private function createUserDatabase($server_id, $userDbInfo): void
     {
         ts3UserDatabase::query()->create([
-            'server_id'=>$serverID,
+            'server_id'=>$server_id,
             'client_unique_identifier'=>$userDbInfo['client_unique_identifier'],
             'client_nickname'=>$userDbInfo['client_nickname'],
             'client_database_id'=>$userDbInfo['client_database_id'],
@@ -346,49 +338,49 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    public function updateChannels($serverID, $channelInfo,$channelName, $cid): void
+    public function updateChannels($server_id, $channelInfo, $channelName, $cid): void
     {
         //store channel information in bot brain db
         ts3Channel::query()
-            ->where('server_id','=',$serverID)
-            ->where('cid','=',$cid)
+            ->where('server_id', '=', $server_id)
+            ->where('cid', '=', $cid)
             ->update([
-            'server_id'=>$serverID,
-            'cid'=>$channelInfo['cid'],
-            'pid'=>$channelInfo['pid'],
-            'channel_order'=>$channelInfo['channel_order'],
-            'channel_name'=>$channelName,
-            'channel_topic'=>$channelInfo['channel_topic'],
-            'channel_flag_default'=>$channelInfo['channel_flag_default'],
-            'channel_flag_password'=>$channelInfo['channel_flag_password'],
-            'channel_flag_permanent'=>$channelInfo['channel_flag_permanent'],
-            'channel_flag_semi_permanent'=>$channelInfo['channel_flag_semi_permanent'],
-            'channel_codec'=>$channelInfo['channel_codec'],
-            'channel_codec_quality'=>$channelInfo['channel_codec_quality'],
-            'channel_needed_talk_power'=>$channelInfo['channel_needed_talk_power'],
-            'channel_icon_id'=>$channelInfo['channel_icon_id'],
-            'total_clients_family'=>$channelInfo['total_clients_family'],
-            'channel_maxclients'=>$channelInfo['channel_maxclients'],
-            'channel_maxfamilyclients'=>$channelInfo['channel_maxfamilyclients'],
-            'total_clients'=>$channelInfo['total_clients'],
-            'channel_needed_subscribe_power'=>$channelInfo['channel_needed_subscribe_power'],
-            'channel_banner_gfx_url'=>$channelInfo['channel_banner_gfx_url'],
-            'channel_banner_mode'=>$channelInfo['channel_banner_mode'],
-            'channel_description'=>$channelInfo['channel_description'] ?? NULL,
-            'channel_password'=>$channelInfo['channel_password'],
-            'channel_codec_latency_factor'=>$channelInfo['channel_codec_latency_factor'],
-            'channel_codec_is_unencrypted'=>$channelInfo['channel_codec_is_unencrypted'],
-            'channel_security_salt'=>$channelInfo['channel_security_salt'],
-            'channel_delete_delay'=>$channelInfo['channel_delete_delay'],
-            'channel_unique_identifier'=>$channelInfo['channel_unique_identifier'],
-            'channel_flag_maxclients_unlimited'=>$channelInfo['channel_flag_maxclients_unlimited'],
-            'channel_flag_maxfamilyclients_unlimited'=>$channelInfo['channel_flag_maxfamilyclients_unlimited'],
-            'channel_flag_maxfamilyclients_inherited'=>$channelInfo['channel_flag_maxfamilyclients_inherited'],
-            'channel_filepath'=>$channelInfo['channel_filepath'],
-            'channel_forced_silence'=>$channelInfo['channel_forced_silence'],
-            'channel_name_phonetic'=>$channelInfo['channel_name_phonetic'],
-            'seconds_empty'=>$channelInfo['seconds_empty'],
-        ]);
+                'server_id'=>$server_id,
+                'cid'=>$channelInfo['cid'],
+                'pid'=>$channelInfo['pid'],
+                'channel_order'=>$channelInfo['channel_order'],
+                'channel_name'=>$channelName,
+                'channel_topic'=>$channelInfo['channel_topic'],
+                'channel_flag_default'=>$channelInfo['channel_flag_default'],
+                'channel_flag_password'=>$channelInfo['channel_flag_password'],
+                'channel_flag_permanent'=>$channelInfo['channel_flag_permanent'],
+                'channel_flag_semi_permanent'=>$channelInfo['channel_flag_semi_permanent'],
+                'channel_codec'=>$channelInfo['channel_codec'],
+                'channel_codec_quality'=>$channelInfo['channel_codec_quality'],
+                'channel_needed_talk_power'=>$channelInfo['channel_needed_talk_power'],
+                'channel_icon_id'=>$channelInfo['channel_icon_id'],
+                'total_clients_family'=>$channelInfo['total_clients_family'],
+                'channel_maxclients'=>$channelInfo['channel_maxclients'],
+                'channel_maxfamilyclients'=>$channelInfo['channel_maxfamilyclients'],
+                'total_clients'=>$channelInfo['total_clients'],
+                'channel_needed_subscribe_power'=>$channelInfo['channel_needed_subscribe_power'],
+                'channel_banner_gfx_url'=>$channelInfo['channel_banner_gfx_url'],
+                'channel_banner_mode'=>$channelInfo['channel_banner_mode'],
+                'channel_description'=>$channelInfo['channel_description'] ?? null,
+                'channel_password'=>$channelInfo['channel_password'],
+                'channel_codec_latency_factor'=>$channelInfo['channel_codec_latency_factor'],
+                'channel_codec_is_unencrypted'=>$channelInfo['channel_codec_is_unencrypted'],
+                'channel_security_salt'=>$channelInfo['channel_security_salt'],
+                'channel_delete_delay'=>$channelInfo['channel_delete_delay'],
+                'channel_unique_identifier'=>$channelInfo['channel_unique_identifier'],
+                'channel_flag_maxclients_unlimited'=>$channelInfo['channel_flag_maxclients_unlimited'],
+                'channel_flag_maxfamilyclients_unlimited'=>$channelInfo['channel_flag_maxfamilyclients_unlimited'],
+                'channel_flag_maxfamilyclients_inherited'=>$channelInfo['channel_flag_maxfamilyclients_inherited'],
+                'channel_filepath'=>$channelInfo['channel_filepath'],
+                'channel_forced_silence'=>$channelInfo['channel_forced_silence'],
+                'channel_name_phonetic'=>$channelInfo['channel_name_phonetic'],
+                'seconds_empty'=>$channelInfo['seconds_empty'],
+            ]);
     }
 
     public function deleteForgetClients()

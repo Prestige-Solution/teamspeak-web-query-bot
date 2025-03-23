@@ -13,10 +13,10 @@ class sysBadNameSeeder extends Seeder
     public function run(): void
     {
         badName::query()->create([
-           'server_id'=>0,
-           'description'=>'Global Forbidden',
-           'value_option'=>2,
-           'value'=>'/Hurensohn/i',
+            'server_id'=>0,
+            'description'=>'Global Forbidden',
+            'value_option'=>2,
+            'value'=>'/Hurensohn/i',
         ]);
 
         badName::query()->create([

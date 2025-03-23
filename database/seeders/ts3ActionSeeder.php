@@ -13,27 +13,27 @@ class ts3ActionSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         ts3BotAction::query()->create([
             'type_id'=>1,
             'action_bot'=>'create_channel_temp',
-            'action_name'=>'Neuen temporären Channel erstellen',
+            'action_name'=>'Create temporary channel',
         ]);
         ts3BotAction::query()->create([
             'type_id'=>1,
             'action_bot'=>'create_channel_semi',
-            'action_name'=>'Neuen semi-permanenten Channel erstellen',
+            'action_name'=>'Create semi-temporary channel',
         ]);
         ts3BotAction::query()->create([
             'type_id'=>1,
             'action_bot'=>'create_channel_perm',
-            'action_name'=>'Neuen permanenten Channel erstellen',
+            'action_name'=>'Create permanent channel',
         ]);
         ts3BotAction::query()->create([
             'type_id'=>3,
             'action_bot'=>'proof_bad_name',
-            'action_name'=>'Prüfe Namen auf unerwünschten Inhalt',
+            'action_name'=>'Check unwanted nicknames',
         ]);
     }
 }

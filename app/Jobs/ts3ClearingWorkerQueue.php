@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\ClearingWorkerController;
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Models\ts3Bot\ts3BotLog;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,16 +15,16 @@ class ts3ClearingWorkerQueue implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $serverID;
+    public int $server_id;
 
     public int $tries = 1;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($serverID)
+    public function __construct($server_id)
     {
-        $this->serverID = $serverID;
+        $this->server_id = $server_id;
     }
 
     /**
@@ -32,13 +33,11 @@ class ts3ClearingWorkerQueue implements ShouldQueue
     public function handle(): void
     {
         try {
-            //start clearing
-            $clearingController = new ClearingWorkerController();
-            $clearingController->startClearing($this->serverID);
-        }catch (\Exception $exception)
-        {
-            $ts3Logging = new Ts3LogController('Clearing-Worker',$this->serverID);
-            $ts3Logging->setLog($exception->getMessage(),5,'Start Queue Clearing-Worker failed');
+            $clearingController = new ClearingWorkerController($this->server_id);
+            $clearingController->startClearing();
+        } catch (\Exception $exception) {
+            $ts3Logging = new Ts3LogController('Clearing-Worker', $this->serverID);
+            $ts3Logging->setLog($exception->getMessage(), ts3BotLog::SUCCESS, 'Start Queue Clearing-Worker failed');
         }
     }
 
