@@ -26,7 +26,9 @@ class PoliceWorkerController extends Controller
 {
     protected int $server_id;
 
-    protected string $qaName;
+    protected string $qa_name;
+
+    protected bool $is_bot_alive = false;
 
     protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
@@ -51,9 +53,9 @@ class PoliceWorkerController extends Controller
             ->where('id', '=', $this->server_id)->first();
 
         if ($ts3ServerConfig->qa_nickname != null) {
-            $this->qaName = $ts3ServerConfig->qa_nickname;
+            $this->qa_name = $ts3ServerConfig->qa_nickname;
         } else {
-            $this->qaName = $ts3ServerConfig->qa_name;
+            $this->qa_name = $ts3ServerConfig->qa_name;
         }
 
         //get uri with StringHelper
@@ -64,7 +66,7 @@ class PoliceWorkerController extends Controller
             $ts3ServerConfig->server_ip,
             $ts3ServerConfig->server_query_port,
             $ts3ServerConfig->server_port,
-            $this->qaName.'-Police-Worker',
+            $this->qa_name.'-Police-Worker',
             $this->server_id,
             $ts3ServerConfig->mode
         );
@@ -91,7 +93,10 @@ class PoliceWorkerController extends Controller
         }
 
         //check bot is working
-        $this->checkBotKeepAlive($policeWorkerSetting->is_check_bot_alive_active == true);
+        if ($policeWorkerSetting->is_check_bot_alive_active == true)
+        {
+            $this->checkBotKeepAlive();
+        }
 
         //check bad names
         if ($policeWorkerSetting->is_bad_name_protection_active == true) {
@@ -222,60 +227,52 @@ class PoliceWorkerController extends Controller
         }
     }
 
-    private function checkBotKeepAlive($checkKeepAlive): void
+    private function checkBotKeepAlive(): void
     {
         try {
-            $botIsAlive = false;
-
-            //client list
-            $checkBotIsWorking = collect($this->ts3_VirtualServer->clientList(['client_nickname'=>$this->qaName]));
+            
+            $checkBotIsWorking = collect($this->ts3_VirtualServer->clientList(['client_nickname'=>$this->qa_name]));
 
             foreach ($checkBotIsWorking->keys()->all() as $clid) {
                 $BotQueryName = $this->ts3_VirtualServer->clientGetById($clid);
 
-                if ($BotQueryName['client_nickname'] == $this->qaName) {
-                    $botIsAlive = true;
+                if ($BotQueryName['client_nickname'] == $this->qa_name) {
+                    $this->is_bot_alive = true;
                 }
             }
 
-            if ($botIsAlive == false) {
-                //set custom log
+            if ($this->is_bot_alive === false) {
                 $this->logController->setCustomLog(
                     $this->server_id,
                     ts3BotLog::STOPPED,
                     'checkBotWork',
                     'Bot is missing on the server. He need a break?',
                 );
-                //set status id to 3
+
                 ts3ServerConfig::query()
                     ->where('id', '=', $this->server_id)
                     ->update([
                         'bot_status_id'=>ts3BotLog::STOPPED,
                     ]);
 
-                if ($checkKeepAlive == 1) {
-                    //send Discord
-                    $policeWorkerSetting = ts3BotWorkerPolice::query()
-                        ->where('server_id', '=', $this->server_id)
-                        ->first(['discord_webhook', 'is_discord_webhook_active']);
+                $policeWorkerSetting = ts3BotWorkerPolice::query()
+                    ->where('server_id', '=', $this->server_id)
+                    ->first(['discord_webhook_url', 'is_discord_webhook_active']);
 
-                    if ($policeWorkerSetting->is_discord_webhook_active == true) {
-                        $message = json_encode([
-                            'content' => $this->qaName.' is missing on Teamspeak Server. He has probably stopped working',
-                            'username' => $this->qaName.'-Police-Worker',
+                if ($policeWorkerSetting->is_discord_webhook_active == true) {
 
-                        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $response = Http::post(Crypt::decryptString($policeWorkerSetting->discord_webhook_url), [
+                        'content' => $this->qa_name.' is missing on Teamspeak Server. He has probably stopped working',
+                        'username' => $this->qa_name.'-Police-Worker',
+                    ]);
 
-                        $send = curl_init(Crypt::decryptString($policeWorkerSetting->discord_webhook));
-
-                        curl_setopt($send, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
-                        curl_setopt($send, CURLOPT_POST, 1);
-                        curl_setopt($send, CURLOPT_POSTFIELDS, $message);
-                        curl_setopt($send, CURLOPT_FOLLOWLOCATION, 1);
-                        curl_setopt($send, CURLOPT_HEADER, 0);
-                        curl_setopt($send, CURLOPT_RETURNTRANSFER, 1);
-
-                        curl_exec($send);
+                    if ($response->status() != 204) {
+                        $this->logController->setCustomLog(
+                            $this->server_id,
+                            ts3BotLog::FAILED,
+                            'checkBotAlive',
+                            'Webhook could not be send.',
+                        );
                     }
                 }
             }
