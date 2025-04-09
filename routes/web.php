@@ -83,14 +83,14 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('/bot-control')->name('ts3.')->group(function () {
-        Route::post('/start-bot', [Ts3ConfigController::class, 'ts3StartBot'])->name('start.ts3Bot');
-        Route::post('/stopp-bot', [Ts3ConfigController::class, 'ts3StopBot'])->name('stop.ts3Bot');
+        Route::post('/start', [Ts3ConfigController::class, 'ts3StartBot'])->name('start.ts3Bot');
+        Route::post('/stop', [Ts3ConfigController::class, 'ts3StopBot'])->name('stop.ts3Bot');
     });
 
     Route::prefix('/banner')->name('banner.')->group(function () {
         Route::get('/list', [BannerController::class, 'viewListBanner'])->name('view.listBanner');
-        Route::post('/upload', [BannerController::class, 'createUploadedTemplate'])->name('create.uploadedTemplate');
         Route::get('/config', [BannerController::class, 'viewConfigBanner'])->name('view.configBanner');
+        Route::post('/upload', [BannerController::class, 'createUploadedTemplate'])->name('create.uploadedTemplate');
         Route::post('/upsert', [BannerController::class, 'upsertConfigBanner'])->name('upsert.configBanner');
         Route::post('/delete', [BannerController::class, 'deleteBanner'])->name('delete.banner');
     });

@@ -2,7 +2,7 @@
 
 namespace App\Models\ts3BotWorkers;
 
-use Database\Factories\CreateServerFactory;
+use Database\Factories\CreateWorkerPoliceSettingsFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,8 +29,9 @@ class ts3BotWorkerPolice extends Model
         'is_bad_name_protection_global_list_active',
     ];
 
-    protected static function newFactory(): CreateServerFactory
+    protected static function newFactory(): CreateWorkerPoliceSettingsFactory
     {
-        return CreateServerFactory::new();
+        return CreateWorkerPoliceSettingsFactory::new();
     }
+
 }

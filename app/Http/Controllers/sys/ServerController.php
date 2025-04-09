@@ -9,6 +9,8 @@ use App\Http\Requests\Config\DeleteServerRequest;
 use App\Http\Requests\Config\SwitchDefaultServerRequest;
 use App\Http\Requests\Config\UpdateServerInitRequest;
 use App\Http\Requests\Config\UpdateServerRequest;
+use App\Models\bannerCreator\banner;
+use App\Models\bannerCreator\bannerOption;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
@@ -24,6 +26,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 
 class ServerController extends Controller
 {
@@ -78,7 +81,7 @@ class ServerController extends Controller
 
             if ($status != 0) {
                 if ($status['status'] == 1) {
-                    return redirect()->route('serverConfig.view.serverList')->with('success', 'Der Server wurde erfolgreich neu eingerichtet');
+                    return redirect()->route('serverConfig.view.serverList')->with('success', 'The server has been set up successfully');
                 } else {
                     return redirect()->back()->withErrors(['error' => $status['msg']]);
                 }
@@ -116,7 +119,7 @@ class ServerController extends Controller
 
         if ($status != 0) {
             if ($status['status'] == 1) {
-                return redirect()->back()->with('success', 'Der Server wurde erfolgreich neu eingerichtet');
+                return redirect()->back()->with('success', 'The server has been successfully reconfigured');
             } else {
                 return redirect()->back()->withErrors(['error' => $status['msg']]);
             }
@@ -138,14 +141,12 @@ class ServerController extends Controller
 
         User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $request->validated('server_id')]);
 
-        return redirect()->route('serverConfig.view.serverList');
+        return redirect()->back();
     }
 
     public function deleteServer(DeleteServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //TODO Delete Banner config an data
-
-        //delete all relations ins used tables
+        //delete all relations in used tables
         ts3Channel::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3ServerGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3ChannelGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
@@ -155,10 +156,27 @@ class ServerController extends Controller
         ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3BotWorkerPolice::query()->where('server_id', '=', $request->validated('server_id'))->delete();
 
-        //delete server from table server configs
+        //delete server banner
+        $banners = banner::query()->where('server_id', '=', $request->validated('server_id'))->get();
+
+        foreach ($banners as $banner) {
+
+            if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
+                Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
+            }
+
+            if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
+                Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
+            }
+
+            bannerOption::query()->where('banner_id', '=', $banner->id)->delete();
+            banner::query()->where('id', '=', $banner->id)->delete();
+        }
+
+        //delete server
         ts3ServerConfig::query()->where('id', '=', $request->validated('server_id'))->delete();
 
-        //Check if a server available else set 0
+        //check if a server is available else set users default server to 0
         $serverlist = ts3ServerConfig::query()->get();
 
         if ($serverlist->count() > 0) {

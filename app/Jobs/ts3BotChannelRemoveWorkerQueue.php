@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Controllers\botWorker\ChannelRemoveWorkerController;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Models\ts3Bot\ts3BotLog;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -38,14 +39,14 @@ class ts3BotChannelRemoveWorkerQueue implements ShouldQueue, ShouldBeUnique
         try {
             $worker = new ChannelRemoveWorkerController($this->server_id);
             $worker->channelRemoverWorker();
-        } catch (\Exception $exception) {
-            $ts3Logging = new Ts3LogController('Channel-Remover-Worker', $this->serverID);
-            $ts3Logging->setLog($exception->getMessage(), ts3BotLog::SUCCESS, 'Start Queue Channel-Remover-Worker failed');
+        } catch (Exception $e) {
+            $ts3Logging = new Ts3LogController('Channel-Remover-Worker', $this->server_id);
+            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::FAILED,'queue_worker', $e->getMessage());
         }
     }
 
     public function uniqueId(): string
     {
-        return $this->serverID;
+        return $this->server_id;
     }
 }

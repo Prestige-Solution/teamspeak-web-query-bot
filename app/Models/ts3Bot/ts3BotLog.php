@@ -30,7 +30,7 @@ class ts3BotLog extends Model
         'worker',
     ];
 
-    public function rel_bot_status()
+    public function rel_bot_status(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(catBotStatus::class, 'id', 'status_id');
     }

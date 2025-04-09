@@ -51,6 +51,13 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+
+        'fonts' => [
+            'driver' => 'local',
+            'root' => storage_path('app/fonts'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
     ],
 
     /*

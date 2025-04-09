@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Requests\Ts3Config\CreateStartBotRequest;
 use App\Http\Requests\Ts3Config\CreateStopBotRequest;
+use App\Jobs\ts3BotStartQueue;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
@@ -17,7 +18,6 @@ use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use Exception;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
@@ -28,14 +28,14 @@ class Ts3ConfigController extends Controller
 
     protected null|string $uri = null;
 
-    public function ts3ServerCheckConfig($serverID)
+    public function ts3ServerCheckConfig(int $serverID)
     {
     }
 
     /**
      * @throws Exception
      */
-    public function ts3ServerInitializing($server_id): array
+    public function ts3ServerInitializing(int $server_id): array
     {
         $this->ts3LogController = new Ts3LogController('Server Initialising', Auth::user()->default_server_id);
 
@@ -197,16 +197,14 @@ class Ts3ConfigController extends Controller
 
     public function ts3StartBot(CreateStartBotRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //set log
         $logController = new Ts3LogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
             $request->validated('server_id'),
             ts3BotLog::RUNNING,
             'startBot',
-            'Bot wurde via Webinterface gestartet',
+            'Bot was started via web interface',
         );
 
-        //set bot is_active status
         ts3ServerConfig::query()
             ->where('id', '=', $request->validated('server_id'))
             ->update([
@@ -214,23 +212,21 @@ class Ts3ConfigController extends Controller
                 'is_active'=>1,
             ]);
 
-        Artisan::call('app:start-bot '.$request->validated('server_id'));
+        ts3BotStartQueue::dispatch($request->validated('server_id'))->onConnection('bot')->onQueue('bot');
 
-        return redirect()->back()->with('success', 'Der Bot wird gestartet und loggt sich gleich auf den Server ein.');
+        return redirect()->back()->with('success', 'The bot is started and immediately logs onto the server.');
     }
 
     public function ts3StopBot(CreateStopBotRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //set log
         $logController = new Ts3LogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
             $request->validated('server_id'),
             ts3BotLog::RUNNING,
             'botStop',
-            'Bot durch das Webinterface gestoppt',
+            'Bot was stopped via web interface',
         );
 
-        //set bot is_active status
         ts3ServerConfig::query()
             ->where('id', '=', $request->validated('server_id'))
             ->update([
@@ -238,12 +234,11 @@ class Ts3ConfigController extends Controller
                 'is_active'=>0,
             ]);
 
-        return redirect()->back()->with('success', 'Bot wird gestoppt. Dies kann einen Moment dauern.');
+        return redirect()->back()->with('success', 'Bot is stopped. This may take a moment.');
     }
 
     public function createChannels(int $server_id, array $channelInfo, string $channelName): void
     {
-        //store channel information in bot brain db
         ts3Channel::query()->create([
             'server_id'=>$server_id,
             'cid'=>$channelInfo['cid'],
@@ -283,7 +278,7 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    private function createServerGroups($server_id, $serverGroupInfo): void
+    private function createServerGroups(int $server_id, array $serverGroupInfo): void
     {
         ts3ServerGroup::query()->create([
             'server_id'=>$server_id,
@@ -300,7 +295,7 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    private function createChannelGroups($server_id, $channelGroupInfo): void
+    private function createChannelGroups(int $server_id, array $channelGroupInfo): void
     {
         ts3ChannelGroup::query()->create([
             'server_id'=>$server_id,
@@ -317,7 +312,7 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    private function createUserDatabase($server_id, $userDbInfo): void
+    private function createUserDatabase(int $server_id, array $userDbInfo): void
     {
         ts3UserDatabase::query()->create([
             'server_id'=>$server_id,
@@ -338,9 +333,8 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    public function updateChannels($server_id, $channelInfo, $channelName, $cid): void
+    public function updateChannels(int $server_id, array $channelInfo, string $channelName, int $cid): void
     {
-        //store channel information in bot brain db
         ts3Channel::query()
             ->where('server_id', '=', $server_id)
             ->where('cid', '=', $cid)

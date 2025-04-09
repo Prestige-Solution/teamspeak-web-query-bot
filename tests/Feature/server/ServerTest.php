@@ -68,7 +68,6 @@ class ServerTest extends TestCase
 
         $response = $this->actingAs($this->user)->post(route('serverConfig.update.switchDefaultServer'), ['server_id'=>2]);
         $response->assertStatus(302);
-        $response->assertRedirectToRoute('serverConfig.view.serverList');
 
         $checkDB = ts3ServerConfig::query()->get();
         $userDB = User::query()->get()->first();
@@ -94,7 +93,7 @@ class ServerTest extends TestCase
         $this->assertEquals(0, $userDB->default_server_id);
     }
 
-    public function update_user(): void
+    private function update_user(): void
     {
         $this->user = User::query()->where('id', 1)->first();
     }

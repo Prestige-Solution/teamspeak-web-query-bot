@@ -34,17 +34,17 @@ class StartWorkerCommand extends Command
     public function handle(): void
     {
         //get all active servers
-        $activeServerIds = ts3ServerConfig::query()
+        $servers = ts3ServerConfig::query()
             ->where('is_ts3_start', '=', true)
             ->where('is_active', '=', true)
-            ->get(['id']);
+            ->get();
 
-        foreach ($activeServerIds as $activeServerId) {
+        foreach ($servers as $server) {
             Bus::chain([
-                new ts3BannerWorkerQueue($activeServerId->id),
-                new ts3BotAfkWorkerQueue($activeServerId->id),
-                new ts3BotChannelRemoveWorkerQueue($activeServerId->id),
-                new ts3BotPoliceWorkerQueue($activeServerId->id),
+//                new ts3BannerWorkerQueue($server->id),
+                new ts3BotAfkWorkerQueue($server->id),
+                new ts3BotChannelRemoveWorkerQueue($server->id),
+                new ts3BotPoliceWorkerQueue($server->id),
             ])
             ->catch(function (Throwable $e) {
                 Log::channel('busChain')->error($e);

@@ -33,7 +33,7 @@ class BannerWorkerController extends Controller
     /**
      * @throws Exception
      */
-    public function bannerWorkerCreateBanner($server_id): void
+    public function bannerWorkerCreateBanner(int $server_id): void
     {
         //declare
         $this->server_id = $server_id;
@@ -223,14 +223,14 @@ class BannerWorkerController extends Controller
                 }
 
                 //disconnect form server
-                $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+                $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
             }
         } catch(TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'bannerWorkerCreateBanner');
 
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
     }
 }

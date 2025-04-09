@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Controllers\botWorker\PoliceWorkerController;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Models\ts3Bot\ts3BotLog;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -38,14 +39,14 @@ class ts3BotPoliceWorkerQueue implements ShouldQueue, ShouldBeUnique
         try {
             $worker = new PoliceWorkerController($this->server_id);
             $worker->startPolice();
-        } catch (\Exception $exception) {
-            $ts3Logging = new Ts3LogController('Police-Worker', $this->serverID);
-            $ts3Logging->setLog($exception->getMessage(), ts3BotLog::SUCCESS, 'Start Queue Police-Worker failed');
+        } catch (Exception $e) {
+            $ts3Logging = new Ts3LogController('Police-Worker', $this->server_id);
+            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::SUCCESS, 'queue_worker' ,$e->getMessage());
         }
     }
 
     public function uniqueId(): string
     {
-        return $this->serverID;
+        return $this->server_id;
     }
 }

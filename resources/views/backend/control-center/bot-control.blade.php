@@ -84,7 +84,7 @@
                                 @if($server->is_ts3_start == 0 && $server->bot_status_id == 3)
                                     <form class="mb-2 ms-2" method="post" action="{{Route('ts3.start.ts3Bot')}}">
                                         @csrf
-                                        <button type="submit" class="btn btn-success"><i class="fa-solid fa-circle-play"></i> Run</button>
+                                        <button type="submit" class="btn btn-success"><i class="fa-solid fa-circle-play"></i> Start</button>
                                     </form>
                                 @elseif($server->is_ts3_start == 0 && $server->bot_status_id != 3)
                                     <div class="alert alert-warning mb-2 ms-2" role="alert">
@@ -160,7 +160,7 @@
                     <a href="{{Route('worker.view.upsertPoliceWorker')}}" class="text-decoration-none text-dark">
                         <div class="card-body">
                             <h5 class="card-title fs-3 fw-bold">
-                                <i class="fa-solid fa-gear mb-3"></i> Bot Settings
+                                <i class="fa-solid fa-gear mb-3"></i> Police Settings
                             </h5>
                             <p class="card-text">
                                 Monitor your server and be notified or errors. Use other functions to keep your server clean.
@@ -178,6 +178,20 @@
                             </h5>
                             <p class="card-text">
                                 Move inactive Clients to an specific channel or kick them from the server
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-2 d-flex align-items-stretch">
+                <div class="card flex-fill">
+                    <a href="{{Route('worker.view.badNames')}}" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <h5 class="card-title fs-3 fw-bold">
+                                <i class="fa-solid fa-users-slash mb-3"></i> Bad Nickname Settings
+                            </h5>
+                            <p class="card-text">
+                                Define and prevent Bad Names for Channel- and Usernames
                             </p>
                         </div>
                     </a>

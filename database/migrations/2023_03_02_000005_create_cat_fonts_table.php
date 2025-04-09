@@ -11,12 +11,12 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('cat_fonts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('storage_path', 2042);
+            $table->string('font_name');
             $table->timestamps();
         });
     }
@@ -26,7 +26,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('cat_fonts');
     }

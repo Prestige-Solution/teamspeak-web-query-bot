@@ -33,8 +33,8 @@ class DeleteChannelRemoverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id' => 'required|integer',
-            'id'=>'required|integer',
+            'server_id' => 'required|integer|exists:ts3_server_configs,id',
+            'id'=>'required|integer|exists:ts3_bot_worker_channels_removes,id',
         ];
     }
 
@@ -43,8 +43,10 @@ class DeleteChannelRemoverRequest extends FormRequest
         return [
             'server_id.required'=>'Oops, something went wrong',
             'server_id.integer'=>'Oops, something went wrong',
-            'id.required'=>'Channel could not be found',
+            'server_id.exists'=>'The server could not be found',
+            'id.required'=>'Oops, something went wrong',
             'id.integer'=>'Oops, something went wrong',
+            'id.exists'=>'The remover channel config could not be found',
         ];
     }
 

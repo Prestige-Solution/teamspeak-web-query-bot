@@ -4,6 +4,7 @@ namespace App\Http\Requests\Banner;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CreateUploadedTemplateRequest extends FormRequest
 {
@@ -12,7 +13,19 @@ class CreateUploadedTemplateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        }else
+        {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+           'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,20 +34,20 @@ class CreateUploadedTemplateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'BannerUploadFile'=>'required|mimes:png',
-            'ServerID'=>'required|numeric',
-            'BannerName' => 'required',
+            'banner_original_file_name'=>'required|mimes:png',
+            'server_id'=>'required|numeric',
+            'banner_name' => 'required',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'BannerUploadFile.required'=>'Bitte wähle eine Banner Vorlage aus.',
-            'BannerUploadFile.mimes'=>'Es können nur PNG Bannervorlagen hochgeladen werden.',
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
-            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
-            'BannerName.required'=>'Bitte gib einen Namen für den Banner ein.',
+            'banner_original_file_name.required'=>'Select a banner template',
+            'banner_original_file_name.mimes'=>'Only PNG banner templates can be uploaded',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.numeric'=>'Oops, something went wrong',
+            'banner_name.required'=>'Enter a name for the banner',
         ];
     }
 

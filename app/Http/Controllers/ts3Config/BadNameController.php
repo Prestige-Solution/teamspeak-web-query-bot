@@ -56,20 +56,16 @@ class BadNameController extends Controller
         return redirect()->route('worker.view.badNames');
     }
 
-    public function checkBadName($proofName, $serverID): bool
+    public function checkBadName(string $proofName, int $server_id): bool
     {
-        //declare variables
-        $badNameResult = false;
-
-        //proof if global list active
-        $globalListActive = ts3BotWorkerPolice::query()
-            ->where('server_id', '=', $serverID)
+        $is_globalListActive = ts3BotWorkerPolice::query()
+            ->where('server_id', '=', $server_id)
             ->first('is_bad_name_protection_global_list_active')->is_bad_name_protection_global_list_active;
 
-        if ($globalListActive == true) {
+        if ($is_globalListActive == true) {
             $checkNames = badName::query()
-                ->where(function ($query) use ($serverID) {
-                    $query->where('server_id', '=', $serverID)
+                ->where(function ($query) use ($server_id) {
+                    $query->where('server_id', '=', $server_id)
                         ->orWhere('server_id', '=', 0);
                 })
                 ->where('value_option', '=', badName::stringRegex)
@@ -77,7 +73,7 @@ class BadNameController extends Controller
                 ->get(['value', 'id']);
         } else {
             $checkNames = badName::query()
-                ->where('server_id', '=', $serverID)
+                ->where('server_id', '=', $server_id)
                 ->where('value_option', '=', badName::stringRegex)
                 ->where('is_failed', '=', false)
                 ->get(['value', 'id']);
@@ -87,9 +83,8 @@ class BadNameController extends Controller
             try {
                 $badNameResultRegex = preg_match($checkName->value, $proofName);
             } catch (Exception) {
-                //write log
                 ts3BotLog::query()->create([
-                    'server_id'=>$serverID,
+                    'server_id'=>$server_id,
                     'status_id'=>4,
                     'job'=>'checkBadName',
                     'description'=>'Bad Name Protection (Regex)',
@@ -97,7 +92,6 @@ class BadNameController extends Controller
                     'worker'=>'PoliceWorker',
                 ]);
 
-                //set entry to failed
                 badName::query()->where('id', '=', $checkName->id)
                     ->update([
                         'is_failed'=>true,
@@ -105,28 +99,24 @@ class BadNameController extends Controller
             }
 
             if ($badNameResultRegex == 1) {
-                $badNameResult = true;
-                break;
+                return true;
             }
         }
 
-        //proof option 1 with contains
-        if ($badNameResult == false) {
-            $checkNames = badName::query()
-                ->where('server_id', '=', $serverID)
-                ->orWhere('value_option', '=', badName::stringContains)
-                ->get('value');
+        //check contains
+        $checkNames = badName::query()
+            ->where('server_id', '=', $server_id)
+            ->where('value_option', '=', badName::stringContains)
+            ->get('value');
 
-            foreach ($checkNames as $checkName) {
-                $badNameResultContains = Str::contains($proofName, $checkName->value, true);
+        foreach ($checkNames as $checkName) {
+            $badNameResultContains = Str::contains($proofName, $checkName->value, true);
 
-                if ($badNameResultContains == true) {
-                    $badNameResult = true;
-                    break;
-                }
+            if ($badNameResultContains == true) {
+                return true;
             }
         }
 
-        return $badNameResult;
+        return false;
     }
 }

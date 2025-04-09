@@ -43,11 +43,11 @@ class CreateServerRequest extends FormRequest
             'server_ip' => 'required|unique:ts3_server_configs,server_ip',
             'qa_name' => 'required|not_in:serveradmin|not_regex:/[#&$=\'\:"]+/i|min:3',
             'qa_pw' => 'required',
-            'server_query_port' => 'nullable|numeric',
-            'server_port' => 'nullable|numeric',
+            'server_query_port' => 'nullable|integer',
+            'server_port' => 'nullable|integer',
             'description'=>'nullable',
             'qa_nickname'=>'nullable',
-            'mode'=>'required|numeric',
+            'mode'=>'required|integer',
         ];
     }
 
@@ -63,10 +63,10 @@ class CreateServerRequest extends FormRequest
             'qa_name.not_regex' => 'The server query admin name contains non-permitted characters',
             'qa_name.not_in'=>'The serveradmin account is not allowed',
             'qa_pw.required' => 'Enter the server query password',
-            'server_query_port.numeric' => 'The server query port may only consist of numbers',
-            'server_port.numeric' => 'The server port may only consist of numbers',
+            'server_query_port.integer' => 'The server query port may only consist of numbers',
+            'server_port.integer' => 'The server port may only consist of numbers',
             'mode.required' => 'Oops, something went wrong',
-            'mode.numeric' => 'Oops, something went wrong',
+            'mode.integer' => 'Oops, something went wrong',
         ];
     }
 

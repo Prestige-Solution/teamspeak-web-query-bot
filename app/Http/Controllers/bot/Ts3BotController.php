@@ -658,7 +658,7 @@ class Ts3BotController extends Controller
         }
     }
 
-    private function updateChannel($cid): void
+    private function updateChannel(int $cid): void
     {
         //check auto Update ist active
         $autoUpdateActive = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first()->is_channel_auto_update_active;
@@ -762,7 +762,7 @@ class Ts3BotController extends Controller
                 $this->botStopSignal(true);
                 break;
             case 0:
-                //TODO this is triggered by disconnect
+                //TODO this is triggered by disconnect also to when connection lost
                 //connection to server lost
 //                ts3ServerConfig::query()
 //                    ->where('id', '=', $this->server_id)
@@ -840,8 +840,8 @@ class Ts3BotController extends Controller
                 $this->logController->setCustomLog(
                     $this->server_id,
                     ts3BotLog::FAILED,
-                    'Unknown Exception',
-                    'Unknown Exception',
+                    'Exception error',
+                    $message,
                     $errorCode,
                     $message,
                 );
@@ -851,7 +851,7 @@ class Ts3BotController extends Controller
                 $this->logController->setCustomLog(
                     $this->server_id,
                     ts3BotLog::TRY_RECONNECT,
-                    'Unknown Exception',
+                    'Exception error',
                     'Unknown Exception',
                     $errorCode,
                     $message,

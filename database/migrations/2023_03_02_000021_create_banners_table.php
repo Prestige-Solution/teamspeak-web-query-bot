@@ -18,8 +18,6 @@ return new class extends Migration
             $table->foreignId('server_id');
             $table->foreign('server_id')->references('id')->on('ts3_server_configs');
             $table->string('banner_name');
-            $table->string('banner_original', 2042);
-            $table->string('banner_viewer', 2042)->nullable();
             $table->string('banner_original_file_name', 2042);
             $table->string('banner_viewer_file_name', 2042)->nullable();
             $table->string('banner_hostbanner_url', 2042)->nullable();

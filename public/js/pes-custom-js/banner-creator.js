@@ -1,11 +1,11 @@
 function addBannerOptionGroup()
 {
     let clone = document.querySelector('#BannerOptionGroup').cloneNode(true);
-    clone.querySelector('#BannerOption1').value = '1';
-    clone.querySelector('#BannerOption2').value = '0';
-    clone.querySelector('#Text').value ='';
-    clone.querySelector('#CoordX').value = '';
-    clone.querySelector('#CoordY').value = '';
+    clone.querySelector('#option_id').value = '1';
+    clone.querySelector('#extra_option').value = '0';
+    clone.querySelector('#text').value ='';
+    clone.querySelector('#coord_x').value = '';
+    clone.querySelector('#coord_y').value = '';
 
     document.querySelector('#AddOptionGroupButton').before(clone);
 }
@@ -28,6 +28,6 @@ function imageCoordinates()
     let mouseY = event.offsetY;
     let y = mouseY * scaleY;
 
-    document.getElementById('Xcoord').value = x.toFixed(0);
-    document.getElementById('Ycoord').value = y.toFixed(0);
+    document.getElementById('coord_x').value = x.toFixed(0);
+    document.getElementById('coord_y').value = y.toFixed(0);
 }

@@ -34,9 +34,9 @@ class CreateChannelRemoverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric',
-            'channel_cid'=>'required|numeric',
-            'channel_max_seconds_empty'=>'required|numeric|min:1',
+            'server_id'=>'required|integer',
+            'channel_cid'=>'required|integer',
+            'channel_max_seconds_empty'=>'required|integer|min:1',
             'channel_max_time_format'=>['required', Rule::in(['m', 'h', 'd'])],
             'is_active'=>'required|boolean',
         ];
@@ -46,13 +46,13 @@ class CreateChannelRemoverRequest extends FormRequest
     {
         return [
             'server_id.required'=>'Oops, something went wrong',
-            'server_id.numeric'=>'Oops, something went wrong',
-            'channel_cid.required'=>'Please choose a channel',
-            'channel_cid.numeric'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'channel_cid.required'=>'Choose a channel',
+            'channel_cid.integer'=>'Oops, something went wrong',
             'channel_max_seconds_empty.required'=>'Oops, something went wrong',
-            'channel_max_seconds_empty.numeric'=>'Oops, something went wrong',
+            'channel_max_seconds_empty.integer'=>'Oops, something went wrong',
             'channel_max_seconds_empty.min'=>'Oops, something went wrong',
-            'channel_max_time_format.required'=>'Please select a time format (minute, hour, day)',
+            'channel_max_time_format.required'=>'Select a time format (minute, hour, day)',
             'is_active.required'=>'Oops, something went wrong',
             'is_active.boolean'=>'Oops, something went wrong',
         ];

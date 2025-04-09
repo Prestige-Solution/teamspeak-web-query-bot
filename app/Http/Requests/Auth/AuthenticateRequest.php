@@ -29,10 +29,10 @@ class AuthenticateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nickname.required'=>'Incorrect name or password',
-            'nickname.not_regex'=>'Incorrect name or password',
-            'password.required'=>'Incorrect name or password',
-            'password.exists'=>'Incorrect name or password',
+            'nickname.required'=>'Incorrect nickname or password',
+            'nickname.not_regex'=>'Incorrect nickname or password',
+            'password.required'=>'Incorrect nickname or password',
+            'password.exists'=>'Incorrect nickname or password',
         ];
     }
 

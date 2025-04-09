@@ -14,7 +14,7 @@ class ts3BotStartQueue implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $serverID;
+    protected int $server_id;
 
     public int $tries = 1;
 
@@ -23,25 +23,23 @@ class ts3BotStartQueue implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($serverID)
+    public function __construct($server_id)
     {
-        $this->serverID = $serverID;
+        $this->server_id = $server_id;
     }
 
     /**
      * Execute the job.
      *
-     * @return void
      * @throws \Exception
      */
     public function handle(): void
     {
-        //start bot
-        new Ts3BotController($this->serverID);
+        new Ts3BotController($this->server_id);
     }
 
     public function uniqueID(): int
     {
-        return $this->serverID;
+        return $this->server_id;
     }
 }

@@ -38,7 +38,7 @@ class CreateNewBadNameRequest extends FormRequest
         return [
             'server_id' => 'required|integer|exists:ts3_server_configs,id',
             'description'=>'required',
-            'value_option'=>'required|numeric',
+            'value_option'=>'required|integer',
             'value'=>['required'], [
                 Rule::unique('bad_names')->where(function ($query) use ($value) {
                     return $query->where('value', '=', $value)
@@ -52,7 +52,7 @@ class CreateNewBadNameRequest extends FormRequest
     {
         //TODO create messages
         return [
-            'Value.unique'=>'The entered value already exists',
+            'value.unique'=>'The entered value already exists',
         ];
     }
 

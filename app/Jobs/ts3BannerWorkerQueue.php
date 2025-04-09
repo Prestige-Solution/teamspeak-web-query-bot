@@ -16,16 +16,16 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
 
     public int $tries = 1;
 
-    protected int $serverID;
+    protected int $server_id;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($serverID)
+    public function __construct($server_id)
     {
-        $this->serverID = $serverID;
+        $this->server_id = $server_id;
     }
 
     /**
@@ -38,11 +38,11 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
     {
         //declare Controller
         $bannerWorker = new BannerWorkerController();
-        $bannerWorker->bannerWorkerCreateBanner($this->serverID);
+        $bannerWorker->bannerWorkerCreateBanner($this->server_id);
     }
 
     public function uniqueId(): string
     {
-        return $this->serverID;
+        return $this->server_id;
     }
 }

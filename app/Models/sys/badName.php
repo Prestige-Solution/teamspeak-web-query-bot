@@ -2,6 +2,7 @@
 
 namespace App\Models\sys;
 
+use Database\Factories\CreateBadNicknameFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,4 +21,9 @@ class badName extends Model
         'value',
         'is_failed',
     ];
+
+    protected static function newFactory(): CreateBadNicknameFactory
+    {
+        return CreateBadNicknameFactory::new();
+    }
 }

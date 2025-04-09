@@ -13,13 +13,18 @@ class ViewListBannerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        }else
+        {
+            return false;
+        }
     }
 
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'ServerID'=>Auth::user()->default_server_id,
+            'server_id'=>Auth::user()->default_server_id,
         ]);
     }
 
@@ -29,15 +34,16 @@ class ViewListBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerID'=>'required|numeric',
+            'server_id'=>'required|integer|exists:ts3_server_configs,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
-            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'server_id.exits'=>'The server could not be found',
         ];
     }
 

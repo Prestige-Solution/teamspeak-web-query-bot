@@ -20,7 +20,6 @@ yarn-error.log
 identifier.sqlite
 storage/logs/chaining/*
 storage/logs/laravel.log
-storage/app/banner/template/*
 .php-cs-fixer.cache
 deploy.php
 .gitlab

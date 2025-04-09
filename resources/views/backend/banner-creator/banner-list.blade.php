@@ -12,21 +12,29 @@
             </div>
         </div>
         <hr>
-        <div class="row mb-3">
-            <div class="col-lg-auto">
-                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#BannerUpload">
-                    Banner Template hinzufügen
-                </button>
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <button type="button"
+                                class="btn btn-link m-0 p-0 text-start text-decoration-none text-dark fw-bold fs-5"
+                                data-bs-toggle="modal"
+                                data-bs-target="#BannerUpload">
+                            <i class="fa-solid fa-circle-plus"></i> Add Banner Template
+                        </button>
+                    </div>
+                </div>
             </div>
-            @include('backend.banner-creator.inc.banner-upload')
         </div>
         <hr>
         @include('form-components.alertCustomError')
         @include('form-components.successCustom')
         @if($banners->count() == 0)
             <div class="row">
-                <div class="alert alert-warning" role="alert">
-                    Es wurden noch keine Templates gefunden
+                <div class="col-lg-12">
+                    <div class="alert alert-primary" role="alert">
+                        No templates have been found yet
+                    </div>
                 </div>
             </div>
         @else
@@ -34,12 +42,12 @@
                 @foreach($banners as $banner)
                     <div class="col">
                         <div class="card">
-                            <a href="{{Route('banner.view.configBanner',['bannerID'=>$banner->id])}}">
-                                @if($banner->banner_viewer == null)
-                                    <img src="{{asset('banner/'. $banner->banner_original)}}" class="img-thumbnail"
+                            <a href="{{Route('banner.view.configBanner',['id'=>$banner->id])}}">
+                                @empty($banner->banner_viewer_file_name)
+                                    <img src="{{asset('banner/template/'. $banner->banner_original_file_name)}}" class="img-thumbnail"
                                          alt="Banner Templates">
                                 @else
-                                    <img src="{{asset('banner/'.$banner->banner_viewer)}}" class="img-thumbnail"
+                                    <img src="{{asset('banner/viewer/'.$banner->banner_viewer_file_name)}}" class="img-thumbnail"
                                          alt="Banner Templates">
                                 @endif
                             </a>
@@ -48,9 +56,12 @@
                     </div>
                 @endforeach
             </div>
-            @foreach($banners as $banner)
-                @include('backend.banner-creator.inc.banner-delete', ['banner'=>$banner])
-            @endforeach
         @endif
     </div>
+
+@include('backend.banner-creator.inc.banner-upload')
+
+@foreach($banners as $banner)
+    @include('backend.banner-creator.inc.banner-delete', ['banner'=>$banner])
+@endforeach
 @endsection

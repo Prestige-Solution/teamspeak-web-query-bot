@@ -4,6 +4,7 @@ namespace App\Http\Requests\Banner;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class DeleteBannerRequest extends FormRequest
 {
@@ -12,7 +13,12 @@ class DeleteBannerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        }else
+        {
+            return false;
+        }
     }
 
     /**
@@ -21,14 +27,16 @@ class DeleteBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'BannerID'=>'required|numeric',
+            'id'=>'required|integer|exists:banners,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'BannerID.required' => 'Hoppla, da lief etwas schief',
+            'id.required' => 'Oops, something went wrong',
+            'id.integer' => 'Oops, something went wrong',
+            'id.exists' => 'The banner could not be found',
         ];
     }
 

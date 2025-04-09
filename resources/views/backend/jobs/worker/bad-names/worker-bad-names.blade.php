@@ -11,14 +11,33 @@
                 <h1 class="fs-3 fw-bold">Bad Name List | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }}</h1>
             </div>
         </div>
-            <div class="row">
-                <div class="col-lg-auto">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#CreateBadName">Add</button>
-                </div>
-                <div class="col-lg-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#GlobalBadNameList">Show Global Bad Name List</button>
+        <hr>
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <button type="button"
+                                class="btn btn-link m-0 p-0 text-start text-decoration-none text-dark fw-bold fs-5"
+                                data-bs-toggle="modal"
+                                data-bs-target="#CreateBadName">
+                            <i class="fa-solid fa-circle-plus"></i> Add new bad name
+                        </button>
+                    </div>
                 </div>
             </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <button type="button"
+                                class="btn btn-link m-0 p-0 text-start text-decoration-none text-dark fw-bold fs-5"
+                                data-bs-toggle="modal"
+                                data-bs-target="#GlobalBadNameList">
+                            <i class="fa-solid fa-eye"></i> Show global bad name list
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <hr>
         @include('form-components.alertCustomError')
         <div class="row">

@@ -26,7 +26,7 @@ class UpdateServerInitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts3_server_configs,id',
         ];
     }
 
@@ -34,8 +34,8 @@ class UpdateServerInitRequest extends FormRequest
     {
         return [
             'server_id.required'=>'Oops, something went wrong',
-            'server_id.numeric'=>'Oops, something went wrong',
-            'server_id.exists'=>'The server does not exist in the server list',
+            'server_id.integer'=>'Oops, something went wrong',
+            'server_id.exists'=>'The server could not be found',
         ];
     }
 

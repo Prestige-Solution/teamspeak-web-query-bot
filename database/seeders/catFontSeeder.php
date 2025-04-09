@@ -17,17 +17,17 @@ class catFontSeeder extends Seeder
     {
         catFont::query()->create([
             'name'=>'Arial',
-            'storage_path'=>'app/fonts/Arial.ttf',
+            'font_name'=>'Arial.ttf',
         ]);
 
         catFont::query()->create([
-            'name'=>'Univers',
-            'storage_path'=>'app/fonts/Univers_CE_45_Light.ttf',
+            'name'=>'Univers Light',
+            'font_name'=>'Univers_CE_45_Light.ttf',
         ]);
 
         catFont::query()->create([
             'name'=>'Univers Bold Italic',
-            'storage_path'=>'app/fonts/Univers_LT_66_Bold_Italic.ttf',
+            'font_name'=>'Univers_LT_66_Bold_Italic.ttf',
         ]);
     }
 }

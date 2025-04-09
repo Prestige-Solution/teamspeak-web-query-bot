@@ -120,11 +120,11 @@
                         <div class="row">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <button class="btn btn-link text-primary m-0 p-0 me-2" type="button" data-bs-toggle="modal" data-bs-target="#UpdateServer{{$server->id}}"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#UpdateServer{{$server->id}}"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                                 </div>
                                 <div>
-                                    <button class="btn btn-link text-danger m-0 p-0 me-2" type="button" data-bs-toggle="modal" data-bs-target="#ServerReInit{{$server->id}}"><i class="fa-solid fa-recycle"></i></button>
-                                    <button class="btn btn-link text-danger m-0 p-0" type="button" data-bs-toggle="modal" data-bs-target="#ServerDelete{{$server->id}}"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="btn btn-danger me-2" type="button" data-bs-toggle="modal" data-bs-target="#ServerReInit{{$server->id}}"><i class="fa-solid fa-recycle"></i> Reinitialize</button>
+                                    <button class="btn btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#ServerDelete{{$server->id}}"><i class="fa-solid fa-trash"></i> Delete</button>
                                 </div>
                             </div>
                         </div>

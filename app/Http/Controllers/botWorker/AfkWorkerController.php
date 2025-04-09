@@ -20,13 +20,13 @@ class AfkWorkerController extends Controller
 {
     protected int $server_id;
 
-    protected string $qaName;
+    protected string $qa_name;
 
     protected Ts3LogController $logController;
 
     protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
-    public function __construct($server_id)
+    public function __construct(int $server_id)
     {
         $this->server_id = $server_id;
         $this->logController = new Ts3LogController('Afk-Worker', $this->server_id);
@@ -43,9 +43,9 @@ class AfkWorkerController extends Controller
                 ->where('id', '=', $this->server_id)->first();
 
             if ($ts3ServerConfig->qa_nickname != null) {
-                $this->qaName = $ts3ServerConfig->qa_nickname;
+                $this->qa_name = $ts3ServerConfig->qa_nickname;
             } else {
-                $this->qaName = $ts3ServerConfig->qa_name;
+                $this->qa_name = $ts3ServerConfig->qa_name;
             }
 
             //get uri with StringHelper
@@ -56,7 +56,7 @@ class AfkWorkerController extends Controller
                 $ts3ServerConfig->server_ip,
                 $ts3ServerConfig->server_query_port,
                 $ts3ServerConfig->server_port,
-                $this->qaName.'-AFK-Worker',
+                $this->qa_name.'-AFK-Worker',
                 $this->server_id,
                 $ts3ServerConfig->mode
             );
@@ -65,12 +65,12 @@ class AfkWorkerController extends Controller
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
 
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         } catch(TeamSpeak3Exception $e) {
             // set log
-            $this->logController->setLog($e->getMessage(), ts3BotLog::FAILED, 'AFK-Worker');
+            $this->logController->setLog($e, ts3BotLog::FAILED, 'AFK-Worker');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
 
         //proof if active
@@ -127,11 +127,11 @@ class AfkWorkerController extends Controller
                     }
                 }
             }
-        } catch(Exception $e) {
+        } catch(TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Afk-Mover');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
     }
 
@@ -187,11 +187,11 @@ class AfkWorkerController extends Controller
                     }
                 }
             }
-        } catch(Exception $e) {
+        } catch(TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Afk-Kicker');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
     }
 }

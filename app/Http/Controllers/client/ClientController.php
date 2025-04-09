@@ -104,7 +104,7 @@ class ClientController extends Controller
                 'is_bad_name_protection_global_list_active'=>$request->validated('is_bad_name_protection_global_list_active'),
             ]);
 
-        return redirect()->back()->with(['success'=>'Einstellungen erfolgreich aktualisiert.']);
+        return redirect()->route('worker.view.upsertPoliceWorker')->with(['success'=>'Settings successfully updated']);
     }
 
     public function updateAfkWorkerSettings(UpdateAfkWorkerSettingsRequest $request): RedirectResponse
@@ -149,6 +149,6 @@ class ClientController extends Controller
             ]);
         }
 
-        return redirect()->route('worker.view.createOrUpdateAfkWorker')->with(['success'=>'Einstellungen erfolgreich aktualisiert']);
+        return redirect()->route('worker.view.createOrUpdateAfkWorker')->with(['success'=>'Settings successfully updated']);
     }
 }

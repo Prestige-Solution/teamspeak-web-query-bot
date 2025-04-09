@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
 use App\Models\ts3Bot\ts3BotLog;
+use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use Exception;
@@ -22,11 +23,11 @@ class ChannelRemoveWorkerController extends Controller
 
     protected Ts3LogController $logController;
 
-    protected string $qaName;
+    protected string $qa_name;
 
     protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
-    public function __construct($server_id)
+    public function __construct(int $server_id)
     {
         $this->server_id = $server_id;
         $this->logController = new Ts3LogController('Channel-Remover-Worker', $this->server_id);
@@ -44,9 +45,9 @@ class ChannelRemoveWorkerController extends Controller
                 ->where('id', '=', $this->server_id)->first();
 
             if ($ts3ServerConfig->qa_nickname != null) {
-                $this->qaName = $ts3ServerConfig->qa_nickname;
+                $this->qa_name = $ts3ServerConfig->qa_nickname;
             } else {
-                $this->qaName = $ts3ServerConfig->qa_name;
+                $this->qa_name = $ts3ServerConfig->qa_name;
             }
 
             //get uri with StringHelper
@@ -57,7 +58,7 @@ class ChannelRemoveWorkerController extends Controller
                 $ts3ServerConfig->server_ip,
                 $ts3ServerConfig->server_query_port,
                 $ts3ServerConfig->server_port,
-                $this->qaName.'-Remover-Worker',
+                $this->qa_name.'-Remover-Worker',
                 $this->server_id,
                 $ts3ServerConfig->mode
             );
@@ -65,17 +66,18 @@ class ChannelRemoveWorkerController extends Controller
             // connect to the server
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
 
-            //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
         } catch(TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Channel-Remover-Worker');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
 
         //channel remover
         $this->channelRemover();
+
+        //disconnect from server
+        $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
     }
 
     /**
@@ -100,6 +102,11 @@ class ChannelRemoveWorkerController extends Controller
 
                     if ($subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty) {
                         $this->ts3_VirtualServer->channelDelete($subChannel);
+
+                        ts3Channel::query()
+                            ->where('server_id', '=', $this->server_id)
+                            ->where('cid', '=', $subChannelInfo['cid'])
+                            ->delete();
                     }
                 }
             }
@@ -110,7 +117,7 @@ class ChannelRemoveWorkerController extends Controller
         } catch (TeamSpeak3Exception $e) {
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Channel-Remover');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
     }
 }

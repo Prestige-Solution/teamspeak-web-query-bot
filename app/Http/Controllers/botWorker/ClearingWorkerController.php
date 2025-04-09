@@ -28,7 +28,7 @@ class ClearingWorkerController extends Controller
 
     protected Ts3LogController $logController;
 
-    public function __construct($server_id)
+    public function __construct(int $server_id)
     {
         //declare
         $this->server_id = $server_id;
@@ -68,9 +68,9 @@ class ClearingWorkerController extends Controller
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
         } catch(TeamSpeak3Exception $e) {
             //set log
-            $this->logController->setLog($e->getMessage(), ts3BotLog::FAILED, 'Start Clearing-Worker');
+            $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Clearing-Worker');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
 
         //update db from ts3 server
@@ -118,7 +118,7 @@ class ClearingWorkerController extends Controller
         }
     }
 
-    private function updateChannelInDatabase($cid, $channelInfo, $channelName): void
+    private function updateChannelInDatabase(int $cid, array $channelInfo, string $channelName): void
     {
         //store channel information in bot brain db
         ts3Channel::query()
@@ -167,7 +167,7 @@ class ClearingWorkerController extends Controller
             );
     }
 
-    private function deleteChannelFromDB($cid): void
+    private function deleteChannelFromDB(int $cid): void
     {
         ts3Channel::query()
             ->where('server_id', '=', $this->server_id)

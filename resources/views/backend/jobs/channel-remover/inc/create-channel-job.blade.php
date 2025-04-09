@@ -25,7 +25,7 @@
                                 @foreach($tsChannels->where('pid','=',0) as $tsChannel)
                                     <option value="{{$tsChannel->cid}}" >{{$tsChannel->channel_name}}</option>
                                     @foreach($tsChannels->where('pid','=',$tsChannel->cid) as $tsChannelPID)
-                                        <option value="{{$tsChannelPID->cid}}">{{$tsChannelPID->channel_name}}</option>
+                                        <option value="{{$tsChannelPID->cid}}">-{{$tsChannelPID->channel_name}}</option>
                                     @endforeach
                                 @endforeach
                             </select>

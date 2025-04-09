@@ -33,7 +33,7 @@ class ViewUpsertPoliceWorkerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric',
+            'server_id'=>'required|integer|exists:ts3_server_configs,id',
         ];
     }
 
@@ -41,7 +41,8 @@ class ViewUpsertPoliceWorkerRequest extends FormRequest
     {
         return [
             'server_id.required' => 'Oops, something went wrong',
-            'server_id.numeric' => 'Oops, something went wrong',
+            'server_id.integer' => 'Oops, something went wrong',
+            'server_id.exists'=>'The server could not be found',
         ];
     }
 

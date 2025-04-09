@@ -12,15 +12,21 @@
         </div>
     </div>
     <hr>
-    @include('form-components.alertCustomError')
-    @include('form-components.successCustom')
     <form method="post" action="{{Route('worker.create.updatePoliceWorkerSettings')}}">
         @csrf
-        <div class="row mb-3 mt-3">
-            <div class="col-lg-12">
-                <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <button type="submit"
+                            class="btn btn-link m-0 p-0 text-start text-decoration-none text-dark fw-bold fs-5">
+                        <i class="fa-solid fa-floppy-disk"></i> Submit
+                    </button>
+                </div>
             </div>
         </div>
+        <hr>
+        @include('form-components.alertCustomError')
+        @include('form-components.successCustom')
         <div class="row">
             <div class="col-lg-6 d-flex align-items-stretch">
                 <div class="card flex-fill">

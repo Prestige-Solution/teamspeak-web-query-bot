@@ -58,6 +58,9 @@
         ],
         "code-style": [
             "\"vendor/bin/php-cs-fixer\" fix --config .php-cs-fixer.php --diff"
+        ],
+        "check-code-style-pint": [
+            "\"vendor/bin/pint\" --test"
         ]
     },
     "extra": {

@@ -3,6 +3,7 @@
 namespace App\Models\ts3BotWorkers;
 
 use App\Models\ts3Bot\ts3ServerConfig;
+use Database\Factories\UpdateWorkerAfkSettingsFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,6 +22,11 @@ class ts3BotWorkerAfk extends Model
         'afk_kicker_slots_online',
         'is_afk_kicker_active',
     ];
+
+    protected static function newFactory(): UpdateWorkerAfkSettingsFactory
+    {
+        return UpdateWorkerAfkSettingsFactory::new();
+    }
 
     public function rel_servers(): HasMany
     {

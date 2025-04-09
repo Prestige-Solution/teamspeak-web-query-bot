@@ -27,7 +27,7 @@ class Ts3UriStringHelperController extends Controller
         } else {
             $logController = new Ts3LogController('validate uri', $server_id);
             $logController->setCustomLog(
-                $this->server_id,
+                $server_id,
                 ts3BotLog::FAILED,
                 'validate uri',
                 'invalid server address',

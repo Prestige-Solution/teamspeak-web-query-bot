@@ -33,8 +33,8 @@ class DeleteChannelJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id'=>'required|numeric',
-            'server_id'=>'required|numeric',
+            'id'=>'required|integer|exists:ts3_bot_worker_channels_creates,id',
+            'server_id'=>'required|integer|exists:ts3_server_configs,id',
         ];
     }
 
@@ -42,9 +42,11 @@ class DeleteChannelJobRequest extends FormRequest
     {
         return [
             'id.required'=>'Oops, something went wrong',
-            'id.numeric'=>'Oops, something went wrong',
+            'id.integer'=>'Oops, something went wrong',
+            'id.exists'=>'The channel creator config could not be found',
             'server_id.required'=>'Oops, something went wrong',
-            'server_id.numeric'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'server_id.exists'=>'The server could not be found',
         ];
     }
 

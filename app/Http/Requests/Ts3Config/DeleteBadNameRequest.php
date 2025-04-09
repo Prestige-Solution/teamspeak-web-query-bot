@@ -34,7 +34,7 @@ class DeleteBadNameRequest extends FormRequest
     {
         return [
             'server_id' => 'required|integer|exists:ts3_server_configs,id',
-            'id'=>'required|integer',
+            'id'=>'required|integer|exists:bad_names,id',
         ];
     }
 
@@ -43,8 +43,10 @@ class DeleteBadNameRequest extends FormRequest
         return [
             'server_id.required' => 'Oops, something went wrong',
             'server_id.integer' => 'Oops, something went wrong',
+            'server_id.exists' => 'The server could not be found',
             'id.required'=>'Oops, something went wrong',
             'id.integer'=>'Oops, something went wrong',
+            'id.exists'=>'The bad name entry could not be found',
         ];
     }
 

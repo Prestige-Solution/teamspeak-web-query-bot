@@ -30,7 +30,7 @@ class catBannerOptionSeeder extends Seeder
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Max. Number of slots',
+            'name'=>'Max. number of slots',
             'pes_code'=>'get_max_slots',
             'ts3_attribut'=>'virtualserver_maxclients',
             'category'=>'server',
@@ -44,14 +44,14 @@ class catBannerOptionSeeder extends Seeder
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Server plattform',
+            'name'=>'Plattform',
             'pes_code'=>'get_server_plattform',
             'ts3_attribut'=>'virtualserver_platform',
             'category'=>'server',
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Server latenz',
+            'name'=>'Latenz',
             'pes_code'=>'get_sever_latency',
             'ts3_attribut'=>'virtualserver_total_ping',
             'category'=>'server',
@@ -72,14 +72,14 @@ class catBannerOptionSeeder extends Seeder
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Server status',
+            'name'=>'Status',
             'pes_code'=>'get_server_status',
             'ts3_attribut'=>'virtualserver_status',
             'category'=>'server',
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Server online since',
+            'name'=>'Online since',
             'pes_code'=>'get_online_time',
             'ts3_attribut'=>'virtualserver_uptime',
             'category'=>'server',

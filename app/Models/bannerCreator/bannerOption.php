@@ -3,6 +3,7 @@
 namespace App\Models\bannerCreator;
 
 use App\Models\category\catBannerOption;
+use Database\Factories\CreateBannerViewerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,7 +23,12 @@ class bannerOption extends Model
         'coord_y',
     ];
 
-    public function rel_cat_banner_option()
+    protected static function newFactory(): CreateBannerViewerFactory
+    {
+        return CreateBannerViewerFactory::new();
+    }
+
+    public function rel_cat_banner_option(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(catBannerOption::class, 'id', 'option_id');
     }

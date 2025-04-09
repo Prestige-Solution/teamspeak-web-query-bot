@@ -41,16 +41,16 @@ class UpdateServerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|numeric',
+            'server_id'=>'required|integer|exists:ts3_server_configs,id',
             'server_name'=>'required',
             'server_ip' => 'required|unique:ts3_server_configs,server_ip,'.$this->input('server_id'),
             'qa_name' => 'required|not_in:serveradmin|not_regex:/[#&$=\'\:"]+/i|min:3',
             'qa_pw' => 'required',
-            'server_query_port' => 'nullable|numeric',
-            'server_port' => 'nullable|numeric',
+            'server_query_port' => 'nullable|integer',
+            'server_port' => 'nullable|integer',
             'description'=>'nullable',
             'qa_nickname'=>'nullable',
-            'mode'=>'required|numeric',
+            'mode'=>'required|integer',
         ];
     }
 
@@ -58,7 +58,8 @@ class UpdateServerRequest extends FormRequest
     {
         return [
             'server_id.required'=>'Oops, something went wrong',
-            'server_id.numeric'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'server_id.exists'=>'The server could not be found',
             'server_name.required'=>'Enter a server name',
             'server_ip.required' => 'Enter an IP address',
             'qa_name.required' => 'Enter a query admin name',
@@ -66,10 +67,10 @@ class UpdateServerRequest extends FormRequest
             'qa_name.not_regex' => 'The server query admin name contains non-permitted characters',
             'qa_name.not_in'=>'The serveradmin account is not allowed',
             'qa_pw.required' => 'Enter the server query user password for "'.$this->input('server_name').'"',
-            'server_query_port.numeric' => 'The server query port may only consist of numbers',
-            'server_port.numeric' => 'The server port may only consist of numbers',
+            'server_query_port.integer' => 'The server query port may only consist of numbers',
+            'server_port.integer' => 'The server port may only consist of numbers',
             'mode.required'=>'Oops, something went wrong',
-            'mode.numeric'=>'Oops, something went wrong',
+            'mode.integer'=>'Oops, something went wrong',
         ];
     }
 
