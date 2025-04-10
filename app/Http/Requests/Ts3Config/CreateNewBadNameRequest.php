@@ -50,8 +50,14 @@ class CreateNewBadNameRequest extends FormRequest
 
     public function messages(): array
     {
-        //TODO create messages
         return [
+            'server_id.required' => 'Oops, something went wrong!',
+            'server_id.integer' => 'Oops, something went wrong!',
+            'server_id.exists' => 'The server could not be found!',
+            'description.required' => 'Enter a bad name description',
+            'value_option.required' => 'Select a option',
+            'value_option.integer' => 'Oops, something went wrong!',
+            'value.required' => 'Enter a bad name value',
             'value.unique'=>'The entered value already exists',
         ];
     }

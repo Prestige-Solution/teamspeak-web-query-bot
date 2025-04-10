@@ -35,16 +35,16 @@ class UpsertChannelJobRequest extends FormRequest
         return [
             'server_id'=>'required|integer',
             'on_cid'=>'required|integer',
-            'on_event'=>'required',
+            'on_event'=>'required|string',
             'action_id'=>'required|integer',
             'action_user_id'=>'required|integer',
             'channel_cgid'=>'required|integer',
             'channel_template_id'=>'required|integer',
             'is_notify_message_server_group'=>'required|bool',
-            'notify_message_server_group_sgid'=>'required|integer',
+            'notify_message_server_group_sgid'=>'required|integer|required_if:is_notify_message_server_group,1',
             'notify_message_server_group_message'=>'nullable',
-            'action_min_clients'=>'required|integer',
-            'create_max_channels'=>'required|integer',
+            'action_min_clients'=>'required|integer|min:1',
+            'create_max_channels'=>'required|integer|min:0',
             'is_active'=>'required|boolean',
         ];
     }
@@ -52,14 +52,33 @@ class UpsertChannelJobRequest extends FormRequest
     public function messages(): array
     {
         return [
-            //TODO extend messages
-            'on_cid.required'=>'Select a channel',
-            'on_event.required'=>'Select an event',
-            'action_id.required'=>'Select an action',
-            'action_min_clients.required'=>'Select a client action',
-            'channel_cgid.required'=>'Select a Client Channel Group',
-            'channel_template_id.required'=>'Select a channel template',
             'server_id.required'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong!',
+            'on_cid.required'=>'Select a channel',
+            'on_cid.integer'=>'Oops, something went wrong!',
+            'on_event.required'=>'Select an event',
+            'on_event.string'=>'Oops, something went wrong!',
+            'action_id.required'=>'Select an action',
+            'action_id.integer'=>'Oops, something went wrong!',
+            'action_user_id.required'=>'Select an client action',
+            'action_user_id.integer'=>'Oops, something went wrong!',
+            'channel_cgid.required'=>'Select a client action channel group',
+            'channel_cgid.integer'=>'Oops, something went wrong!',
+            'channel_template_id.required'=>'Select a channel template',
+            'channel_template_id.integer'=>'Oops, something went wrong!',
+            'action_min_clients.required'=>'Enter a valid channel action number of clients',
+            'action_min_clients.integer'=>'Oops, something went wrong!',
+            'action_min_clients.min'=>'The minimum channel action number of clients is 1',
+            'is_notify_message_server_group.required'=>'Select a notify message server group',
+            'is_notify_message_server_group.bool'=>'Oops, something went wrong!',
+            'notify_message_server_group_sgid.required'=>'Select a server group they will be notified',
+            'notify_message_server_group_sgid.integer'=>'Oops, something went wrong!',
+            'notify_message_server_group_sgid.required_if'=>'Select a server group they will be notified',
+            'create_max_channels.required'=>'Enter a valid max. channels number',
+            'create_max_channels.integer'=>'Oops, something went wrong!',
+            'create_max_channels.min'=>'The minimum number of channels is 0',
+            'is_active.required'=>'Select the status',
+            'is_active.boolean'=>'Oops, something went wrong!',
         ];
     }
 
