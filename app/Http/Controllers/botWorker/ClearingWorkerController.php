@@ -30,7 +30,6 @@ class ClearingWorkerController extends Controller
 
     public function __construct(int $server_id)
     {
-        //declare
         $this->server_id = $server_id;
         $this->logController = new Ts3LogController('Clearing-Worker', $this->server_id);
     }
@@ -40,7 +39,6 @@ class ClearingWorkerController extends Controller
      */
     public function startClearing(): void
     {
-        //get Server config
         $ts3ServerConfig = ts3ServerConfig::query()
             ->where('id', '=', $this->server_id)->first();
 
@@ -50,7 +48,6 @@ class ClearingWorkerController extends Controller
             $this->qaName = $ts3ServerConfig->qa_name;
         }
 
-        //get uri with StringHelper
         $Ts3UriStringHelper = new Ts3UriStringHelperController();
         $uri = $Ts3UriStringHelper->getStandardUriString(
             $ts3ServerConfig->qa_name,
@@ -64,7 +61,6 @@ class ClearingWorkerController extends Controller
         );
 
         try {
-            //connect to above specified server
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
         } catch(TeamSpeak3Exception $e) {
             //set log
@@ -73,24 +69,25 @@ class ClearingWorkerController extends Controller
             $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
 
-        //update db from ts3 server
         $this->updateChannelList();
     }
 
+    /**
+     * Synchronize channels between ts3 server and bot
+     * @return void
+     */
     private function updateChannelList(): void
     {
         try {
             //get all channels as collection without SubChannels
             $updateTsChannels = collect($this->ts3_VirtualServer->channelList());
 
-            //get array from existing channels
             $channelList = [];
-
             foreach ($updateTsChannels->keys()->all() as $cid) {
                 $channelList[] = $cid;
             }
 
-            //get for each key - channelID connection the channel info and store in db
+            //get for each key - cid connection the channel info and store in db
             foreach ($updateTsChannels->keys()->all() as $cid) {
                 //get channel by id
                 $channel = $this->ts3_VirtualServer->channelGetById($cid);
@@ -106,7 +103,7 @@ class ClearingWorkerController extends Controller
                 ->whereNotIn('cid', $channelList)
                 ->get();
 
-            //update channel information
+            //delete channels from db
             foreach ($deletingChannelList as $deleteChannelsFromDB) {
                 $this->deleteChannelFromDB($deleteChannelsFromDB->cid);
             }

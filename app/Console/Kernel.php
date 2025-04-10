@@ -15,7 +15,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //define afk worker schedule
         if (config('app.env') === 'development') {
             $schedule->command('app:start-worker');
             $schedule->command('app:start-clearing');

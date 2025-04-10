@@ -33,7 +33,6 @@ class StartWorkerCommand extends Command
      */
     public function handle(): void
     {
-        //get all active servers
         $servers = ts3ServerConfig::query()
             ->where('is_ts3_start', '=', true)
             ->where('is_active', '=', true)

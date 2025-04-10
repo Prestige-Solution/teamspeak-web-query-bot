@@ -43,7 +43,7 @@ class Ts3ConfigController extends Controller
             ->where('id', '=', $server_id)
             ->first();
 
-        //clear databases for re-init routine
+        //clear tables
         ts3Channel::query()->where('server_id', '=', $server_id)->delete();
         ts3ServerGroup::query()->where('server_id', '=', $server_id)->delete();
         ts3ChannelGroup::query()->where('server_id', '=', $server_id)->delete();

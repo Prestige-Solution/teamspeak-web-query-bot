@@ -30,7 +30,6 @@ class StartClearingCommand extends Command
      */
     public function handle(): void
     {
-        //get all is_active servers
         $activeServerIds = ts3ServerConfig::query()
             ->where('is_ts3_start', '=', true)
             ->where('is_active', '=', true)
