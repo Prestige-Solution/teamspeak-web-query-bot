@@ -41,7 +41,7 @@ class StartWorkerCommand extends Command
 
         foreach ($servers as $server) {
             Bus::chain([
-//                new ts3BannerWorkerQueue($server->id),
+                new ts3BannerWorkerQueue($server->id),
                 new ts3BotAfkWorkerQueue($server->id),
                 new ts3BotChannelRemoveWorkerQueue($server->id),
                 new ts3BotPoliceWorkerQueue($server->id),

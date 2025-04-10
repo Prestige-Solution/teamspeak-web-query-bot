@@ -3,6 +3,9 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\BannerWorkerController;
+use App\Http\Controllers\sys\Ts3LogController;
+use App\Models\ts3Bot\ts3BotLog;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,15 +33,18 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
 
     /**
      * Execute the job.
-     *
      * @return void
-     * @throws \Exception
      */
     public function handle(): void
     {
-        //declare Controller
-        $bannerWorker = new BannerWorkerController();
-        $bannerWorker->bannerWorkerCreateBanner($this->server_id);
+        try {
+            $bannerWorker = new BannerWorkerController();
+            $bannerWorker->bannerWorkerCreateBanner($this->server_id);
+        }catch (Exception $e)
+        {
+            $ts3Logging = new Ts3LogController('Afk-Worker', $this->server_id);
+            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::FAILED,'queue_worker', $e->getMessage());
+        }
     }
 
     public function uniqueId(): string
