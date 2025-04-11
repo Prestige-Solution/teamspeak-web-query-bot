@@ -30,21 +30,21 @@ class StartClearingCommand extends Command
      */
     public function handle(): void
     {
-        $activeServerIds = ts3ServerConfig::query()
+        $servers = ts3ServerConfig::query()
             ->where('is_ts3_start', '=', true)
             ->where('is_active', '=', true)
             ->get(['id']);
 
-        foreach ($activeServerIds as $activeServerId) {
+        foreach ($servers as $server) {
             Bus::chain([
-                new ts3ClearingWorkerQueue($activeServerId->id),
+                new ts3ClearingWorkerQueue($server->id),
             ])
-                ->catch(function (Exception $e) {
-                    Log::channel('busChain')->error($e);
-                })
-                ->onConnection('worker')
-                ->onQueue('clearing')
-                ->dispatch();
+            ->catch(function (Exception $e) {
+                Log::channel('busChain')->error($e);
+            })
+            ->onConnection('worker')
+            ->onQueue('clearing')
+            ->dispatch();
         }
     }
 }
