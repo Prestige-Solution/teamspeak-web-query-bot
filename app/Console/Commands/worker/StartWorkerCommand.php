@@ -7,10 +7,10 @@ use App\Jobs\ts3BotAfkWorkerQueue;
 use App\Jobs\ts3BotChannelRemoveWorkerQueue;
 use App\Jobs\ts3BotPoliceWorkerQueue;
 use App\Models\ts3Bot\ts3ServerConfig;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class StartWorkerCommand extends Command
 {
@@ -45,7 +45,7 @@ class StartWorkerCommand extends Command
                 new ts3BotChannelRemoveWorkerQueue($server->id),
                 new ts3BotPoliceWorkerQueue($server->id),
             ])
-            ->catch(function (Throwable $e) {
+            ->catch(function (Exception $e) {
                 Log::channel('busChain')->error($e);
             })
             ->onConnection('worker')

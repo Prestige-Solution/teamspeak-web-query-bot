@@ -4,10 +4,10 @@ namespace App\Console\Commands\worker;
 
 use App\Jobs\ts3ClearingWorkerQueue;
 use App\Models\ts3Bot\ts3ServerConfig;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class StartClearingCommand extends Command
 {
@@ -39,7 +39,7 @@ class StartClearingCommand extends Command
             Bus::chain([
                 new ts3ClearingWorkerQueue($activeServerId->id),
             ])
-                ->catch(function (Throwable $e) {
+                ->catch(function (Exception $e) {
                     Log::channel('busChain')->error($e);
                 })
                 ->onConnection('worker')
