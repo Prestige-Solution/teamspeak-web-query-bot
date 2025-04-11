@@ -26,7 +26,7 @@ class StartWorkerCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Start worker jobs';
 
     /**
      * Execute the console command.

@@ -23,7 +23,7 @@ class StartClearingCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Start clearing jobs';
 
     /**
      * Execute the console command.
