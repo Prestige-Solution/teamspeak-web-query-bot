@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\admin\ResetStatsController;
+use Illuminate\Support\Facades\Schedule;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +13,40 @@ use Illuminate\Support\Facades\Artisan;
 | simple approach to interacting with each command's IO methods.
 |
 */
+if (config('app.env') === 'development'){
+    Schedule::command('app:start-worker');
+    Schedule::command('app:start-clearing');
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+    Schedule::call(function () {
+        $statsController = new ResetStatsController();
+        $statsController->resetVPNQueryCountPerMinute();
+    })->name('reset vpn query count per minute');
+
+    Schedule::call(function () {
+        $statsController = new ResetStatsController();
+        $statsController->resetVPNQueryPerDay();
+    })->name('reset vpn query count per day');
+
+    Schedule::call(function () {
+        $statsController = new ResetStatsController();
+        $statsController->deleteBotLogs();
+    })->name('delete bot logs');
+}else{
+    Schedule::command('app:start-worker')->everyMinute();
+    Schedule::command('app:start-clearing')->everyFifteenMinutes();
+
+    Schedule::call(function () {
+        $statsController = new ResetStatsController();
+        $statsController->resetVPNQueryCountPerMinute();
+    })->name('reset vpn query count per minute')->everyMinute();
+
+    Schedule::call(function () {
+        $statsController = new ResetStatsController();
+        $statsController->resetVPNQueryPerDay();
+    })->name('reset vpn query count per day')->daily();
+
+    Schedule::call(function () {
+        $statsController = new ResetStatsController();
+        $statsController->deleteBotLogs();
+    })->name('delete bot logs')->everyMinute();
+}
