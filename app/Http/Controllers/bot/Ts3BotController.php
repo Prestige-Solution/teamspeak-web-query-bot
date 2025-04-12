@@ -725,17 +725,9 @@ class Ts3BotController extends Controller
                 $this->botStopSignal(true);
                 break;
             case 0:
-                //TODO this is triggered by disconnect also to when connection lost
-                //connection to server lost
-//                ts3ServerConfig::query()
-//                    ->where('id', '=', $this->server_id)
-//                    ->update([
-//                        'bot_status_id'=>ts3BotLog::TRY_RECONNECT,
-//                    ]);
-                //set log
-//                $this->logController->setLog($e, ts3BotLog::TRY_RECONNECT, 'startBot');
-                //try restart
-//                $this->reconnectCode = $this->reconnectBot();
+                //connection to server lost will also be triggered if the bot is stopped.
+                //code 0 is also already fine and we do not handle it as error.
+                //this comment is also a reminder
                 break;
             case 513:
                 //explanation: queryNickname already in use
