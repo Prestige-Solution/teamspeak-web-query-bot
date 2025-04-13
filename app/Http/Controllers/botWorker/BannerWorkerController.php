@@ -12,7 +12,7 @@ use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
@@ -30,15 +30,18 @@ class BannerWorkerController extends Controller
 
     protected Server|Adapter|Host|Node $ts3_VirtualServer;
 
-    /**
-     * @throws Exception
-     */
-    public function bannerWorkerCreateBanner(int $server_id): void
+    public function __construct(int $server_id)
     {
         //declare
         $this->server_id = $server_id;
         $this->logController = new Ts3LogController('Banner-Worker', $this->server_id);
+    }
 
+    /**
+     * @throws Exception
+     */
+    public function bannerWorkerCreateBanner(): void
+    {
         try {
             $bannerAvailable = banner::query()
                 ->where('server_id', '=', $this->server_id)
@@ -55,11 +58,22 @@ class BannerWorkerController extends Controller
                     $this->qaName = $ts3ServerConfig->qa_name;
                 }
 
-                //get the latest unused banner / touch for update updated_at
+                //get the latest unused banner
                 $banner = banner::query()
                     ->where('server_id', '=', $this->server_id)
                     ->orderBy('next_check_at')
                     ->first();
+
+                if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name) == false) {
+                    $this->logController->setCustomLog(
+                        $this->server_id,
+                        ts3BotLog::FAILED,
+                        'bannerWorkerCreateBanner',
+                        'Original banner template file could not be found.',
+                    );
+
+                    return;
+                }
 
                 //check if delay arrived
                 if (Carbon::now() >= $banner->next_check_at) {
@@ -87,18 +101,18 @@ class BannerWorkerController extends Controller
                         ])
                         ->where('banner_id', '=', $banner->id)
                         ->get();
+
                     if ($bannerOptions->count() != 0) {
                         //get create banner dynamic
-                        $img = imagecreatefrompng(public_path($banner->banner_original));
+                        $img = imagecreatefrompng(Storage::disk('banner')->path('template/'.$banner->banner_original_file_name));
 
-                        //get banner options //TODO Fonts
+                        //get banner options
                         foreach ($bannerOptions as $bannerOption) {
                             //font Color
                             list($r, $g, $b) = sscanf($bannerOption->color_hex, '#%02x%02x%02x');
                             $fontColor = imagecolorallocate($img, $r, $g, $b);
                             //get font
-                            $fontStyle = storage_path(catFont::query()->where('id', '=',
-                                $bannerOption->font_id)->first(['storage_path'])->storage_path);
+                            $fontStyle = Storage::disk('fonts')->path(catFont::query()->where('id', '=', $bannerOption->font_id)->first()->font_name);
                             //get fontsize
                             $fontSize = $bannerOption->font_size;
                             //get coordinates
@@ -139,68 +153,60 @@ class BannerWorkerController extends Controller
                                     $minutes = floor(($timeSeconds / 60) % 60);
                                     $text = '';
                                     if ($day != 0) {
-                                        $text = $text.$day.' Tag/e ';
+                                        $text = $text.$day.' Day/s ';
                                     }
                                     if ($hours != 0) {
-                                        $text = $text.$hours.' Stunde/n ';
+                                        $text = $text.$hours.' Hour/s ';
                                     }
                                     if ($minutes != 0) {
-                                        $text = $text.$minutes.' Minute/n';
+                                        $text = $text.$minutes.' Minute/s';
                                     }
                                     break;
                                 default:
                                     $text = $bannerOption->text;
                             }
 
-                            //merge options to image
+                            //merge options with image
                             imagettftext($img, $fontSize, 0, $coordX, $coordY, $fontColor, $fontStyle, $text);
                         }
 
                         //renew banner viewer
-                        if (File::exists(public_path($banner->banner_viewer)) == true) {
-                            //get filename
+                        if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name) === false) {
                             $fileName = $banner->banner_viewer_file_name;
-                            //get storage path
-                            $file = storage_path('app/public/banner-viewer/server-'.$banner->server_id.'/'.$fileName);
-                            $storagePathAsset = 'storage/banner-viewer/server-'.$banner->server_id.'/'.$fileName;
                         } else {
-                            //generate new filename
-                            $fileName = $banner->server_id.uniqid().'.png';
-                            //get storage path
-                            $storagePath = storage_path('app/public/banner-viewer/server-'.$banner->server_id);
-                            $file = storage_path('app/public/banner-viewer/server-'.$banner->server_id.'/'.$fileName);
-                            $storagePathAsset = 'storage/banner-viewer/server-'.$banner->server_id.'/'.$fileName;
+                            $this->logController->setCustomLog(
+                                $this->server_id,
+                                ts3BotLog::FAILED,
+                                'bannerWorkerCreateBanner',
+                                'Viewer file name could not be found.');
 
-                            if (File::exists($storagePath) == false) {
-                                File::makeDirectory($storagePath, 0777, true, true);
-                            }
+                            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+                            return;
                         }
+
+                        $filePath = Storage::disk('banner')->path('viewer/'.$fileName);
 
                         //set header type
                         header('Content-Type:image/png');
                         //create banner
-                        $successCreated = imagepng($img, $file);
+                        $successCreated = imagepng($img, $filePath);
                         imagedestroy($img);
 
                         //update database
                         if ($successCreated == true) {
-                            //update banner
+
                             banner::query()->where('id', '=', $banner->id)->update([
-                                'banner_viewer' => $storagePathAsset,
-                                'banner_viewer_file_name' => $fileName,
                                 'next_check_at'=>Carbon::now()->addMinutes($banner->delay),
-                                'updated_at'=>Carbon::now(),
                             ]);
                         }
 
-                        //set banner location
-                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] != config('app.url').'/'.$storagePathAsset) {
-                            $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = config('app.url').'/'.$storagePathAsset;
+                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] != asset('banner/viewer/'.$banner->banner_viewer_file_name)) {
+                            $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = asset('banner/viewer/'.$banner->banner_viewer_file_name);
                         }
                         if ($this->ts3_VirtualServer['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url) {
                             $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
                         }
-                        //update every 5 minutes value is seconds
+                        //update every x minutes - ts3 server side
                         if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] != 180) {
                             $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
                         }
@@ -209,26 +215,22 @@ class BannerWorkerController extends Controller
                             $this->ts3_VirtualServer['virtualserver_hostbanner_mode'] = 2;
                         }
                     } else {
-                        //set new delay and check to banner
+
                         banner::query()->where('id', '=', $banner->id)->update([
                             'next_check_at'=>Carbon::now()->addMinutes($banner->delay),
-                            'updated_at'=>Carbon::now(),
                         ]);
 
-                        //set banner to virtual server
-                        $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = config('app.url').'/'.$banner->banner_viewer;
-                        $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
+                        $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = '';
+                        $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = '';
                     }
+                    //update updated_at
+                    $banner->touch();
                 }
 
-                //disconnect form server
                 $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
             }
         } catch(TeamSpeak3Exception $e) {
-            //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'bannerWorkerCreateBanner');
-
-            //disconnect from server
             $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         }
     }

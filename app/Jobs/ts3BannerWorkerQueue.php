@@ -38,11 +38,11 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
     public function handle(): void
     {
         try {
-            $bannerWorker = new BannerWorkerController();
-            $bannerWorker->bannerWorkerCreateBanner($this->server_id);
+            $bannerWorker = new BannerWorkerController($this->server_id);
+            $bannerWorker->bannerWorkerCreateBanner();
         }catch (Exception $e)
         {
-            $ts3Logging = new Ts3LogController('Afk-Worker', $this->server_id);
+            $ts3Logging = new Ts3LogController('Banner-Worker', $this->server_id);
             $ts3Logging->setCustomLog($this->server_id, ts3BotLog::FAILED,'queue_worker', $e->getMessage());
         }
     }
