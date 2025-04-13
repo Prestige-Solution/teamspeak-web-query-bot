@@ -28,6 +28,7 @@
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:B8I3NaGXJvL3O/1A6gGmjT1pXazRPXlGcRMA4dV14WU="/>
         <env name="APP_DEBUG" value="true"/>
+        <env name="BOT_DEBUG" value="false"/>
         <env name="APP_URL" value="http://localhost"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
