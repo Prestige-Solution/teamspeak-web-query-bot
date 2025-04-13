@@ -30,10 +30,6 @@ return new class extends Migration
             $table->integer('vpn_protection_api_register_mail')->nullable();
             $table->timestamp('vpn_protection_next_check_available_at')->default(Carbon::now());
             $table->boolean('is_channel_auto_update_active')->default(false);
-            $table->integer('client_forget_offline_time')->default(8);
-            $table->integer('client_forget_time_type')->default(1);
-            $table->timestamp('client_forget_after_at')->default(Carbon::now()->addWeekdays(8));
-            $table->boolean('is_client_forget_active')->default(false);
             $table->boolean('is_bad_name_protection_active')->default(false);
             $table->boolean('is_bad_name_protection_global_list_active')->default(false);
             $table->timestamps();

@@ -15,7 +15,6 @@ use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3Bot\ts3ServerGroup;
-use App\Models\ts3Bot\ts3UserDatabase;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
@@ -150,7 +149,6 @@ class ServerController extends Controller
         ts3Channel::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3ServerGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3ChannelGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3UserDatabase::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3BotWorkerAfk::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $request->validated('server_id'))->delete();

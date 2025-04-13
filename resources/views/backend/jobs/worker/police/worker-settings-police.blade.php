@@ -111,33 +111,6 @@
                 <div class="card flex-fill">
                     <div class="card-body">
                         <div class="row mb-3">
-                            <p class="fs-4 fw-bold"><i class="fa-solid fa-user-slash"></i> Permanently delete clients</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" for="is_client_forget_active">Status:</label>
-                            <select class="form-select" name="is_client_forget_active" id="is_client_forget_active">
-                                <option value="1" @if($policeWorker->is_client_forget_active == true) selected @endif>Active</option>
-                                <option value="0" @if($policeWorker->is_client_forget_active == false) selected @endif>Inactive</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" for="client_forget_offline_time">Client offline since:</label>
-                            <input class="form-control mb-2" type="number" name="client_forget_offline_time" id="client_forget_offline_time" min="1" value="{{$policeWorker->client_forget_offline_time}}">
-                            <select class="form-select" name="client_forget_time_type" id="client_forget_time_type" aria-label="client_forget_time_type">
-                                <option value="1" @if($policeWorker->client_forget_time_type == 1) selected @endif>day/s</option>
-                                <option value="2" @if($policeWorker->client_forget_time_type == 2) selected @endif>week/s</option>
-                                <option value="3" @if($policeWorker->client_forget_time_type == 3) selected @endif>month/s</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-lg-6 d-flex align-items-stretch">
-                <div class="card flex-fill">
-                    <div class="card-body">
-                        <div class="row mb-3">
                             <p class="fs-4 fw-bold"><i class="fa-solid fa-ban"></i> Bad Name Protection</p>
                         </div>
                         <div class="mb-3">
@@ -157,6 +130,8 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="row mt-3">
             <div class="col-lg-6 d-flex align-items-stretch">
                 <div class="card flex-fill">
                     <div class="card-body">

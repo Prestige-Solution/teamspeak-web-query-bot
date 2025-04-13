@@ -14,7 +14,6 @@ use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3Bot\ts3ServerGroup;
-use App\Models\ts3Bot\ts3UserDatabase;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
@@ -50,7 +49,6 @@ class Ts3ConfigController extends Controller
         ts3Channel::query()->where('server_id', '=', $server_id)->delete();
         ts3ServerGroup::query()->where('server_id', '=', $server_id)->delete();
         ts3ChannelGroup::query()->where('server_id', '=', $server_id)->delete();
-        ts3UserDatabase::query()->where('server_id', '=', $server_id)->delete();
         ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
         ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
         ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
@@ -174,28 +172,6 @@ class Ts3ConfigController extends Controller
                 $e,
                 ts3BotLog::FAILED,
                 'Setup - Channel Groups',
-            );
-
-            // print the error message returned by the server
-            return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
-        }
-
-        try {
-            //TS3 DATABASE
-            $usersTs3DB = collect($ts3_VirtualServer->clientListDb());
-
-            //insert users
-            foreach ($usersTs3DB->keys()->all() as $cldbid) {
-                //get userinfo by db id
-                $userDbInfo = $ts3_VirtualServer->clientInfoDb($cldbid);
-                //store info
-                $this->createUserDatabase($server_id, $userDbInfo);
-            }
-        } catch (TeamSpeak3Exception $e) {
-            $this->ts3LogController->setLog(
-                $e,
-                ts3BotLog::FAILED,
-                'Setup - TS3 Database',
             );
 
             // print the error message returned by the server
@@ -329,27 +305,6 @@ class Ts3ConfigController extends Controller
         ]);
     }
 
-    private function createUserDatabase(int $server_id, array $userDbInfo): void
-    {
-        ts3UserDatabase::query()->create([
-            'server_id'=>$server_id,
-            'client_unique_identifier'=>$userDbInfo['client_unique_identifier'],
-            'client_nickname'=>$userDbInfo['client_nickname'],
-            'client_database_id'=>$userDbInfo['client_database_id'],
-            'client_created'=>Carbon::parse($userDbInfo['client_created'])->format('Y-m-d H:i:s'),
-            'client_lastconnected'=>Carbon::parse($userDbInfo['client_lastconnected'])->format('Y-m-d H:i:s'),
-            'client_totalconnections'=>$userDbInfo['client_totalconnections'],
-            'client_flag_avatar'=>$userDbInfo['client_flag_avatar'],
-            'client_description'=>$userDbInfo['client_description'],
-            'client_month_bytes_uploaded'=>$userDbInfo['client_month_bytes_uploaded'],
-            'client_month_bytes_downloaded'=>$userDbInfo['client_month_bytes_downloaded'],
-            'client_total_bytes_uploaded'=>$userDbInfo['client_total_bytes_uploaded'],
-            'client_total_bytes_downloaded'=>$userDbInfo['client_total_bytes_downloaded'],
-            'client_base64HashClientUID'=>$userDbInfo['client_base64HashClientUID'],
-            'client_lastip'=>$userDbInfo['client_lastip'],
-        ]);
-    }
-
     public function updateChannels(int $server_id, array $channelInfo, string $channelName, int $cid): void
     {
         ts3Channel::query()
@@ -392,10 +347,5 @@ class Ts3ConfigController extends Controller
                 'channel_name_phonetic'=>$channelInfo['channel_name_phonetic'],
                 'seconds_empty'=>$channelInfo['seconds_empty'],
             ]);
-    }
-
-    public function deleteForgetClients()
-    {
-        //TODO forget clients from database
     }
 }

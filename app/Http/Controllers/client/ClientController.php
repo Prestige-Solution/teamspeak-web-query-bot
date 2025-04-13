@@ -77,14 +77,6 @@ class ClientController extends Controller
 
     public function updatePoliceWorkerSettings(UpdatePoliceWorkerSettingsRequest $request): RedirectResponse
     {
-        //create forget date // 1 = day 2 = weeks
-        $forgetDate = match ($request->validated('client_forget_time_type')) {
-            1 => Carbon::now()->addDays($request->validated('client_forget_offline_time')),
-            2 => Carbon::now()->addWeekdays($request->validated('client_forget_offline_time')),
-            3 => Carbon::now()->addMonths($request->validated('client_forget_offline_time')),
-            default => Carbon::now(),
-        };
-
         //set settings
         ts3BotWorkerPolice::query()
             ->where('server_id', '=', $request->validated('server_id'))
@@ -96,10 +88,6 @@ class ClientController extends Controller
                 'discord_webhook_url'=>Crypt::encryptString($request->validated('discord_webhook_url')),
                 'allow_sgid_vpn'=>$request->validated('allow_sgid_vpn'),
                 'is_channel_auto_update_active'=>$request->validated('is_channel_auto_update_active'),
-                'client_forget_offline_time'=>$request->validated('client_forget_offline_time'),
-                'client_forget_time_type'=>$request->validated('client_forget_time_type'),
-                'client_forget_after_at'=>$forgetDate,
-                'is_client_forget_active'=>$request->validated('is_client_forget_active'),
                 'is_bad_name_protection_active'=>$request->validated('is_bad_name_protection_active'),
                 'is_bad_name_protection_global_list_active'=>$request->validated('is_bad_name_protection_global_list_active'),
             ]);

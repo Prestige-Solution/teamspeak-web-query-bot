@@ -21,10 +21,6 @@ class ts3BotWorkerPolice extends Model
         'vpn_protection_next_check_available_at',
         'discord_webhook_url',
         'allow_sgid_vpn',
-        'client_forget_offline_time',
-        'client_forget_time_type',
-        'client_forget_after_at',
-        'is_client_forget_active',
         'is_bad_name_protection_active',
         'is_bad_name_protection_global_list_active',
     ];
