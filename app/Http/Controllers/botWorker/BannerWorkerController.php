@@ -180,7 +180,7 @@ class BannerWorkerController extends Controller
                                 'bannerWorkerCreateBanner',
                                 'Viewer file name could not be found.');
 
-                            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+                            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
                             return;
                         }
 
@@ -227,11 +227,11 @@ class BannerWorkerController extends Controller
                     $banner->touch();
                 }
 
-                $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+                $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
         } catch(TeamSpeak3Exception $e) {
             $this->logController->setLog($e, ts3BotLog::FAILED, 'bannerWorkerCreateBanner');
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

@@ -66,10 +66,12 @@ class ClearingWorkerController extends Controller
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Clearing-Worker');
             //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
         $this->updateChannelList();
+
+        $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     /**
@@ -111,7 +113,7 @@ class ClearingWorkerController extends Controller
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Update Channel List');
             //disconnect from server
-            $this->ts3_VirtualServer->getAdapter()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 

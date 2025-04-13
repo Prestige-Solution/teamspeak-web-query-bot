@@ -78,7 +78,7 @@ class PoliceWorkerController extends Controller
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Police-Worker');
             //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
         //policeWorker Settings
@@ -220,7 +220,7 @@ class PoliceWorkerController extends Controller
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Check VPN');
             //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -277,7 +277,7 @@ class PoliceWorkerController extends Controller
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Check Bot Keep Alive');
             //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -309,7 +309,7 @@ class PoliceWorkerController extends Controller
             //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Check Bad Name');
             //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

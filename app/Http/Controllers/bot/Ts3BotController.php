@@ -259,7 +259,7 @@ class Ts3BotController extends Controller
             $this->isBotStop = true;
             $this->reconnectCode = ts3ServerConfig::BotReconnectFalse;
 
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 

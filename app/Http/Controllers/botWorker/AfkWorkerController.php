@@ -61,30 +61,23 @@ class AfkWorkerController extends Controller
                 $ts3ServerConfig->mode
             );
 
-            // connect to above specified server, authenticate and spawn an object for the virtual server
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
 
-            //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
         } catch(TeamSpeak3Exception $e) {
-            // set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'AFK-Worker');
-            //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
-        //proof if active
         $functionIsActive = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id);
-
-        //afk mover is active
         if ($functionIsActive->count() > 0 && $functionIsActive->first(['is_active'])->is_active == true) {
             $this->afkMover();
         }
 
-        //afk kicker is active
         if ($functionIsActive->count() > 0 && $functionIsActive->first(['is_afk_kicker_active'])->afk_kicker_active == true) {
             $this->afkKicker();
         }
+
+        $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     /**
@@ -128,10 +121,8 @@ class AfkWorkerController extends Controller
                 }
             }
         } catch(TeamSpeak3Exception $e) {
-            //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Afk-Mover');
-            //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -188,10 +179,8 @@ class AfkWorkerController extends Controller
                 }
             }
         } catch(TeamSpeak3Exception $e) {
-            //set log
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Afk-Kicker');
-            //disconnect from server
-            $this->ts3_VirtualServer->getParent()->getTransport()->disconnect();
+            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }
