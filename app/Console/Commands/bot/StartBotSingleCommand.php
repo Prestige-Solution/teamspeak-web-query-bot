@@ -15,38 +15,61 @@ class StartBotSingleCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:start-bot {serverID}';
+    protected $signature = 'app:start-bot';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Start bot instance';
 
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
-        $logController = new Ts3LogController('ServerCLI', $this->argument('serverID'));
-        $logController->setCustomLog(
-            $this->argument('serverID'),
-            ts3BotLog::RUNNING,
-            'Bot start process',
-            'Bot wurde via CLI gestartet'
+        $choice = ts3ServerConfig::query()
+            ->where('is_ts3_start','=',false)
+            ->orderBy('server_id')
+            ->get();
+
+        if ($choice->isNotEmpty()) {
+            $choice = $choice->pluck('server_ip')->toArray();
+        }else{
+            $this->info('There no instances available or all marked as started');
+            return;
+        }
+
+        $instanceResult = $this->choice(
+            'Which instance should be started?',
+            $choice,
+            null,
+            2
         );
 
-        ts3ServerConfig::query()->where('id', '=', $this->argument('serverID'))->update([
+        $server_id = ts3ServerConfig::query()->where('server_ip','=',$instanceResult)->get()->first()->id;
+        $this->start_single_instance($server_id);
+
+        $logController = new Ts3LogController('CLI-Commands', $server_id);
+
+        $logController->setCustomLog(
+            $server_id,
+            ts3BotLog::SUCCESS,
+            'startBot',
+            'Bot was started via cli'
+        );
+
+        $this->info('Bot is starting');
+    }
+
+    private function start_single_instance(int $server_id): void
+    {
+        ts3ServerConfig::query()->where('id', '=', $server_id)->update([
             'is_ts3_start'=>true,
             'is_active'=>true,
         ]);
 
-        $botConfig = ts3ServerConfig::query()->where('id', '=', $this->argument('serverID'))->first();
-
-        if ($botConfig->is_ts3_start == true) {
-            //create bot class
-            ts3BotStartQueue::dispatch($this->argument('serverID'))->onConnection('bot')->onQueue('bot');
-        }
+        ts3BotStartQueue::dispatch($server_id)->onConnection('bot')->onQueue('bot');
     }
 }
