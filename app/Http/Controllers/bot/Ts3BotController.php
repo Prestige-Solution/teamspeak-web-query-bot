@@ -88,7 +88,7 @@ class Ts3BotController extends Controller
                 $ts3ServerConfig->server_ip,
                 $ts3ServerConfig->server_query_port,
                 $ts3ServerConfig->server_port,
-                $qaName.'-Remover-Worker',
+                $qaName,
                 $this->server_id,
                 $ts3ServerConfig->mode
             );
