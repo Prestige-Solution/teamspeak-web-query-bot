@@ -7,6 +7,8 @@ use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Requests\Ts3Config\CreateStartBotRequest;
 use App\Http\Requests\Ts3Config\CreateStopBotRequest;
 use App\Jobs\ts3BotStartQueue;
+use App\Models\bannerCreator\banner;
+use App\Models\bannerCreator\bannerOption;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
@@ -19,6 +21,7 @@ use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
@@ -53,7 +56,21 @@ class Ts3ConfigController extends Controller
         ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
         ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->update(['allow_sgid_vpn'=>1]);
 
-        //TODO Delete Banner configs and data
+        //delete all configured banners
+        $banners = banner::query()->where('server_id', '=', $server_id)->get();
+        foreach ($banners as $banner) {
+
+            if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
+                Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
+            }
+
+            if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
+                Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
+            }
+
+            bannerOption::query()->where('banner_id', '=', $banner->id)->delete();
+            banner::query()->where('id', '=', $banner->id)->delete();
+        }
 
         try {
             $uri = new Ts3UriStringHelperController();
