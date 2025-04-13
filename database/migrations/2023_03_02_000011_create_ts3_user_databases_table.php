@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('client_unique_identifier');
             $table->string('client_nickname');
             $table->integer('client_database_id');
-            $table->integer('client_created');
-            $table->integer('client_lastconnected');
-            $table->integer('client_totalconnections');
+            $table->timestamp('client_created')->nullable();
+            $table->timestamp('client_lastconnected')->nullable();
+            $table->integer('client_totalconnections')->default(0);
             $table->text('client_flag_avatar')->nullable();
             $table->text('client_description')->nullable();
             $table->bigInteger('client_month_bytes_uploaded');
