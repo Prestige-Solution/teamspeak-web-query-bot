@@ -20,7 +20,7 @@ class CreateJobChannelRemoverFactory extends Factory
             'channel_cid'=>54,
             'channel_max_seconds_empty'=> 60 ,
             'channel_max_time_format'=>'m',
-            'is_active'=>1,
+            'is_active'=>true,
         ];
     }
 }

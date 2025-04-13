@@ -89,7 +89,7 @@ class ChannelRemoveWorkerController extends Controller
             //get sub-channels
             $subChannelRemoves = ts3BotWorkerChannelsRemove::query()
                 ->where('server_id', '=', $this->server_id)
-                ->where('is_active', '=', 1)
+                ->where('is_active', '=', true)
                 ->get();
 
             foreach ($subChannelRemoves as $subChannelRemove) {

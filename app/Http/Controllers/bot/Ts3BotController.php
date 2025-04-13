@@ -252,8 +252,8 @@ class Ts3BotController extends Controller
                 ->where('id', '=', $this->server_id)
                 ->update([
                     'bot_status_id'=>ts3BotLog::STOPPED,
-                    'is_ts3_start'=>0,
-                    'is_active'=>0,
+                    'is_ts3_start'=>false,
+                    'is_active'=>false,
                 ]);
 
             $this->logController->setCustomLog(
@@ -717,8 +717,8 @@ class Ts3BotController extends Controller
                     ->where('id', '=', $this->server_id)
                     ->update([
                         'bot_status_id'=>ts3BotLog::FAILED,
-                        'is_ts3_start'=>0,
-                        'is_active'=>0,
+                        'is_ts3_start'=>false,
+                        'is_active'=>false,
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');
@@ -746,8 +746,8 @@ class Ts3BotController extends Controller
                     ->where('id', '=', $this->server_id)
                     ->update([
                         'bot_status_id'=>ts3BotLog::FAILED,
-                        'is_ts3_start'=>0,
-                        'is_active'=>0,
+                        'is_ts3_start'=>false,
+                        'is_active'=>false,
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');
@@ -759,8 +759,8 @@ class Ts3BotController extends Controller
                     ->where('id', '=', $this->server_id)
                     ->update([
                         'bot_status_id'=>ts3BotLog::FAILED,
-                        'is_ts3_start'=>0,
-                        'is_active'=>0,
+                        'is_ts3_start'=>false,
+                        'is_active'=>false,
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');

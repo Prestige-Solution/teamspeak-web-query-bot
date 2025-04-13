@@ -201,8 +201,8 @@ class Ts3ConfigController extends Controller
         ts3ServerConfig::query()
             ->where('id', '=', $request->validated('server_id'))
             ->update([
-                'is_ts3_start'=>1,
-                'is_active'=>1,
+                'is_ts3_start'=>true,
+                'is_active'=>true,
             ]);
 
         ts3BotStartQueue::dispatch($request->validated('server_id'))->onConnection('bot')->onQueue('bot');
@@ -223,8 +223,8 @@ class Ts3ConfigController extends Controller
         ts3ServerConfig::query()
             ->where('id', '=', $request->validated('server_id'))
             ->update([
-                'is_ts3_start'=>0,
-                'is_active'=>0,
+                'is_ts3_start'=>false,
+                'is_active'=>false,
             ]);
 
         return redirect()->back()->with('success', 'Bot is stopped. This may take a moment.');

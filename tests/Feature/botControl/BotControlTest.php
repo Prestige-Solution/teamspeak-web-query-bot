@@ -44,8 +44,8 @@ class BotControlTest extends TestCase
 
         //check server config
         $configDB = ts3ServerConfig::query()->get();
-        $this->assertEquals(1, $configDB->first()->is_ts3_start);
-        $this->assertEquals(1, $configDB->first()->is_active);
+        $this->assertTrue((boolean)$configDB->first()->is_ts3_start);
+        $this->assertTrue((boolean)$configDB->first()->is_active);
 
         //check log config
         $logDB = ts3botLog::query()->get();
@@ -74,8 +74,8 @@ class BotControlTest extends TestCase
 
         //check server config
         $configDB = ts3ServerConfig::query()->get();
-        $this->assertEquals(0, $configDB->first()->is_ts3_start);
-        $this->assertEquals(0, $configDB->first()->is_active);
+        $this->assertFalse((boolean)$configDB->first()->is_ts3_start);
+        $this->assertFalse((boolean)$configDB->first()->is_active);
 
         //check log config
         $logDB = ts3botLog::query()->get();
