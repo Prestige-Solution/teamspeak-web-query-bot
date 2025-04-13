@@ -8,13 +8,14 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 
 class ts3BotStartQueue implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected int $server_id;
+    public int $server_id;
 
     public int $tries = 1;
 
@@ -26,6 +27,11 @@ class ts3BotStartQueue implements ShouldQueue, ShouldBeUnique
     public function __construct($server_id)
     {
         $this->server_id = $server_id;
+    }
+
+    public function middleware(): array
+    {
+        return [(new WithoutOverlapping($this->server_id))->dontRelease()];
     }
 
     /**

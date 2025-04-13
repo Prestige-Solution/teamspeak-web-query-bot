@@ -7,12 +7,14 @@ use App\Http\Controllers\sys\Ts3LogController;
 use App\Models\ts3Bot\ts3BotLog;
 use Exception;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 
-class ts3ClearingWorkerQueue implements ShouldQueue
+class ts3ClearingWorkerQueue implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -26,6 +28,11 @@ class ts3ClearingWorkerQueue implements ShouldQueue
     public function __construct($server_id)
     {
         $this->server_id = $server_id;
+    }
+
+    public function middleware(): array
+    {
+        return [(new WithoutOverlapping($this->server_id))->dontRelease()];
     }
 
     /**
@@ -47,7 +54,7 @@ class ts3ClearingWorkerQueue implements ShouldQueue
         }
     }
 
-    public function uniqueId(): string
+    public function uniqueId(): int
     {
         return $this->server_id;
     }
