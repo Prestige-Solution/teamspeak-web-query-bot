@@ -101,11 +101,9 @@ class Ts3BotController extends Controller
 
             Signal::getInstance()->subscribe('serverqueryWaitTimeout', [$this, 'checkKeepAlive']);
             Signal::getInstance()->subscribe('notifyEvent', [$this, 'EventListener']);
-            Signal::getInstance()->subscribe('notifyTextmessage', [$this, 'EventListenerTextmassageOnServer']);
 
             $this->ts3_VirtualServer->serverGetSelected()->notifyRegister('server');
             $this->ts3_VirtualServer->serverGetSelected()->notifyRegister('channel');
-            $this->ts3_VirtualServer->serverGetSelected()->notifyRegister('textserver');
 
             ts3ServerConfig::query()->where('id', '=', $this->server_id)->update([
                 'bot_status_id'=> ts3BotLog::RUNNING,
@@ -231,11 +229,6 @@ class Ts3BotController extends Controller
         if ($getEvent == 'channeldeleted') {
             $this->eventChannelDeleted($event);
         }
-    }
-
-    public function EventListenerTextmassageOnServer($event)
-    {
-        //currently no functions
     }
 
     /**
