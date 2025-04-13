@@ -193,7 +193,7 @@ class Ts3ConfigController extends Controller
         $logController = new Ts3LogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
             $request->validated('server_id'),
-            ts3BotLog::RUNNING,
+            ts3BotLog::SUCCESS,
             'startBot',
             'Bot was started via web interface',
         );
@@ -215,7 +215,7 @@ class Ts3ConfigController extends Controller
         $logController = new Ts3LogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
             $request->validated('server_id'),
-            ts3BotLog::RUNNING,
+            ts3BotLog::SUCCESS,
             'botStop',
             'Bot was stopped via web interface',
         );
