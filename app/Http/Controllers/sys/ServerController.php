@@ -156,7 +156,6 @@ class ServerController extends Controller
 
         //delete server banner
         $banners = banner::query()->where('server_id', '=', $request->validated('server_id'))->get();
-
         foreach ($banners as $banner) {
 
             if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {

@@ -40,7 +40,6 @@ class BannerWorkerController extends Controller
         $this->logController = new Ts3LogController('Banner-Worker', $this->server_id);
 
         try {
-            //proof if banners configured
             $bannerAvailable = banner::query()
                 ->where('server_id', '=', $this->server_id)
                 ->count();

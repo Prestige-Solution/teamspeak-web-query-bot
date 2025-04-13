@@ -77,7 +77,6 @@ class ClientController extends Controller
 
     public function updatePoliceWorkerSettings(UpdatePoliceWorkerSettingsRequest $request): RedirectResponse
     {
-        //set settings
         ts3BotWorkerPolice::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->update([
