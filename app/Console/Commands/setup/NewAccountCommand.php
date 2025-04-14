@@ -13,36 +13,37 @@ class NewAccountCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:create-account';
+    protected $signature = 'app:setup-account';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Create or update admin account';
 
     public function handle(): int
     {
-        //ask and validate information from user
-        $nickname = $this->ask('Enter your Nickname?');
-        $mail = $this->ask('Enter your E-Mail Adresse');
+        $nickname = $this->ask('Enter your nickname');
+        $mail = $this->ask('Enter your E-Mail adresse');
 
-        $password = $this->secret('Enter your Password');
-        $passwordConfirm = $this->secret('Confirm your Password');
+        $password = $this->secret('Enter your password');
+        $passwordConfirm = $this->secret('Confirm your password');
 
         while ($password != $passwordConfirm) {
             $this->info('Passwords are different.');
-            $password = $this->secret('Enter your Password');
-            $passwordConfirm = $this->secret('Confirm your Password');
+            $password = $this->secret('Enter your password');
+            $passwordConfirm = $this->secret('Confirm your password');
         }
 
-        //create new user in db
-        User::query()->updateOrCreate([
-            'nickname'=>$nickname,
-            'password'=>$password,
-            'email'=>$mail,
-        ]);
+        User::query()->updateOrCreate(
+            [
+                'nickname'=>$nickname,
+                'email'=>$mail,
+            ],
+            [
+                'password'=>$password,
+            ]);
 
         return CommandAlias::SUCCESS;
     }
