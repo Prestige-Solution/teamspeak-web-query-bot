@@ -49,7 +49,7 @@ class BotControlTest extends TestCase
 
         //check log config
         $logDB = ts3botLog::query()->get();
-        $this->assertEquals(1, $logDB->last()->status_id);
+        $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('startBot', $logDB->last()->job);
         $this->assertEquals('Bot was started via web interface', $logDB->last()->description);
 
@@ -79,7 +79,7 @@ class BotControlTest extends TestCase
 
         //check log config
         $logDB = ts3botLog::query()->get();
-        $this->assertEquals(1, $logDB->last()->status_id);
+        $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('botStop', $logDB->last()->job);
         $this->assertEquals('Bot was stopped via web interface', $logDB->last()->description);
 
