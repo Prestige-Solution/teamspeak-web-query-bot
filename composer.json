@@ -1,12 +1,12 @@
 {
-    "name": "majoroli/teamspeak-web-query-bot",
+    "name": "prestige-solution/teamspeak-web-query-bot",
     "type": "project",
     "description": "Teamspeak Web Query Bot",
-    "keywords": [
-        "teamspeak3",
-        "query-bot"
-    ],
+    "keywords": ["teamspeak3","query","teamspeak3 bot","ts", "teamspeak","server","query","management","interface","api"],
     "license": "MIT",
+    "support": {
+        "issues": "https://github.com/Prestige-Solution/teamspeak-web-query-bot/issues"
+    },
     "require": {
         "php": "^8.2",
         "ext-curl": "*",
