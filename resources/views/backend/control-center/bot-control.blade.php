@@ -127,7 +127,7 @@
                             <i class="fa-solid fa-list-check mb-3"></i> Channel Remover
                         </h5>
                         <p class="card-text">
-                            You can use the Channel Remover to automatically delete unused suv-channels
+                            You can use the Channel Remover to automatically delete unused sub-channels
                         </p>
                     </div>
                     </a>
@@ -177,7 +177,7 @@
                                 <i class="fa-solid fa-user-minus mb-3"></i> AFK Settings
                             </h5>
                             <p class="card-text">
-                                Move inactive Clients to an specific channel or kick them from the server
+                                Move inactive Clients to a specific channel or kick them from the server
                             </p>
                         </div>
                     </a>

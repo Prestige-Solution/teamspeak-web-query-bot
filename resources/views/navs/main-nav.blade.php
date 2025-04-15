@@ -43,8 +43,10 @@
                             Settings
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{Route('worker.view.upsertPoliceWorker')}}">Bot Settings</a></li>
                             <li><a class="dropdown-item" href="{{Route('worker.view.badNames')}}">Bad Nicknames</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.upsertPoliceWorker')}}">Bot Settings</a></li>
+                            <li><a class="dropdown-item" href="{{Route('backend.view.botLogs')}}">Bot Logs</a></li>
                         </ul>
                     </li>
                 @endif
@@ -54,8 +56,6 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{Route('backend.view.changePassword')}}">Change Password</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{Route('backend.view.botLogs')}}">Bot Logs</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{{Route('logout')}}">Logout</a></li>
                         </ul>
