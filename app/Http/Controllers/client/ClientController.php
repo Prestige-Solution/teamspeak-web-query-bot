@@ -15,7 +15,6 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
 class ClientController extends Controller
@@ -116,7 +115,7 @@ class ClientController extends Controller
             }
         }
 
-        //exclude // Vorlagengruppen => Typ 0 //Normale Gruppen => Typ 1 //ServerQuery Gruppen => Typ 2
+        //exclude // Vorlagengruppen > Typ 0 //Normale Gruppen > Typ 1 //ServerQuery Gruppen > Typ 2
         $excludeStandardServerGroups = ts3ServerGroup::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->where('type', '=', 0)
