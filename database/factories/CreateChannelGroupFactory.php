@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CreateChannelGroupFactory extends Factory
 {
     protected $model = ts3ChannelGroup::class;
+
     /**
      * Define the model's default state.
      *
@@ -18,7 +19,7 @@ class CreateChannelGroupFactory extends Factory
         return [
             'server_id'=>1,
             'cgid'=>9,
-            'name'=>"Channel Admin",
+            'name'=>'Channel Admin',
             'type'=>1,
             'iconid'=>0,
             'savedb'=>1,

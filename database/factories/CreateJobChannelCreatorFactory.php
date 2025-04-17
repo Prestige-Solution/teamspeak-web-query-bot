@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CreateJobChannelCreatorFactory extends Factory
 {
     protected $model = ts3BotWorkerChannelsCreate::class;
+
     /**
      * Define the model's default state.
      *
@@ -19,7 +20,7 @@ class CreateJobChannelCreatorFactory extends Factory
             'server_id'=>1,
             'type_id'=>1,
             'on_cid'=>54,
-            'on_event'=>"clientmoved",
+            'on_event'=>'clientmoved',
             'action_id'=>3,
             'action_min_clients'=>1,
             'create_max_channels'=>10,

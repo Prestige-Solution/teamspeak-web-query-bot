@@ -30,14 +30,15 @@ class StopBotSingleCommand extends Command
     public function handle(): void
     {
         $choice = ts3ServerConfig::query()
-            ->where('is_ts3_start','=',true)
+            ->where('is_ts3_start', '=', true)
             ->orderBy('server_id')
             ->get();
 
         if ($choice->isNotEmpty()) {
             $choice = $choice->pluck('server_ip')->toArray();
-        }else{
+        } else {
             $this->info('There are no running instances');
+
             return;
         }
 
@@ -48,7 +49,7 @@ class StopBotSingleCommand extends Command
             2
         );
 
-        $server_id = ts3ServerConfig::query()->where('server_ip','=',$instanceResult)->get()->first()->id;
+        $server_id = ts3ServerConfig::query()->where('server_ip', '=', $instanceResult)->get()->first()->id;
         $this->stop_single_instance($server_id);
 
         $logController = new Ts3LogController('CLI-Commands', $server_id);

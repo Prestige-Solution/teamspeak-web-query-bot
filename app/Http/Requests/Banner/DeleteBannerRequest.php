@@ -15,8 +15,7 @@ class DeleteBannerRequest extends FormRequest
     {
         if (Auth::check()) {
             return true;
-        }else
-        {
+        } else {
             return false;
         }
     }

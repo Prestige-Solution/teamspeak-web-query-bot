@@ -62,7 +62,7 @@ class BannerController extends Controller
     public function createUploadedTemplate(CreateUploadedTemplateRequest $request): RedirectResponse
     {
         $uploaded = Storage::disk('banner')->putFileAs('template', $request->file('banner_original_file_name'), $request->file('banner_original_file_name')->getClientOriginalName());
-        if ($uploaded === false ) {
+        if ($uploaded === false) {
             return redirect()->back()->withErrors(['errors'=>'Unable to create banner original image.']);
         }
 
@@ -79,7 +79,7 @@ class BannerController extends Controller
             'next_check_at'=>Carbon::now(),
         ]);
 
-        return redirect()->route('banner.view.listBanner')->with('success','Banner created successfully');
+        return redirect()->route('banner.view.listBanner')->with('success', 'Banner created successfully');
     }
 
     public function upsertConfigBanner(UpsertConfigBannerRequest $request): RedirectResponse
@@ -155,8 +155,7 @@ class BannerController extends Controller
             ]);
 
             return redirect()->back()->with('success', 'Configuration successfully updated.');
-        }else
-        {
+        } else {
             return redirect()->back()->with('errors', 'Create Viewer Image failed. Please try again.');
         }
     }

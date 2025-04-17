@@ -71,8 +71,8 @@ class ResetStatsTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
 
-        $logController = new ts3logController('factory', 1);
-        for ($i=1; $i <= 50; $i++) {
+        $logController = new Ts3LogController('factory', 1);
+        for ($i = 1; $i <= 50; $i++) {
             $logController->setCustomLog(
                 1,
                 ts3BotLog::SUCCESS,
@@ -93,8 +93,7 @@ class ResetStatsTest extends TestCase
         $this->assertEquals('factory entry 1', $checkDB->first()->description);
         $this->assertEquals('factory entry 50', $checkDB->last()->description);
 
-
-        for ($i=51; $i <= 120; $i++) {
+        for ($i = 51; $i <= 120; $i++) {
             $logController->setCustomLog(
                 1,
                 ts3BotLog::SUCCESS,

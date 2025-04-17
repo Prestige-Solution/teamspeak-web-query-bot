@@ -47,7 +47,7 @@ class ts3BotChannelRemoveWorkerQueue implements ShouldQueue, ShouldBeUnique
             $worker->channelRemoverWorker();
         } catch (Exception $e) {
             $ts3Logging = new Ts3LogController('Channel-Remover-Worker', $this->server_id);
-            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::FAILED,'queue_worker', $e->getMessage());
+            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::FAILED, 'queue_worker', $e->getMessage());
         }
     }
 

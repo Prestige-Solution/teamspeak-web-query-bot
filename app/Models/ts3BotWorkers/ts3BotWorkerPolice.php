@@ -29,5 +29,4 @@ class ts3BotWorkerPolice extends Model
     {
         return CreateWorkerPoliceSettingsFactory::new();
     }
-
 }

@@ -15,8 +15,7 @@ class CreateUploadedTemplateRequest extends FormRequest
     {
         if (Auth::check()) {
             return true;
-        }else
-        {
+        } else {
             return false;
         }
     }
@@ -24,7 +23,7 @@ class CreateUploadedTemplateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-           'server_id' => Auth::user()->default_server_id,
+            'server_id' => Auth::user()->default_server_id,
         ]);
     }
 

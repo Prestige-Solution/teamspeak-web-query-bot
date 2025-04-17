@@ -62,7 +62,6 @@ class ChannelRemoveWorkerController extends Controller
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-
         } catch(TeamSpeak3Exception $e) {
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Channel-Remover-Worker');
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
@@ -105,7 +104,6 @@ class ChannelRemoveWorkerController extends Controller
 
             //update column updated_at
             ts3BotWorkerChannelsRemove::query()->touch();
-
         } catch (TeamSpeak3Exception $e) {
             $this->logController->setLog($e, ts3BotLog::FAILED, 'Channel-Remover');
             //disconnect from server

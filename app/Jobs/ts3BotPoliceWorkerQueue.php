@@ -47,7 +47,7 @@ class ts3BotPoliceWorkerQueue implements ShouldQueue, ShouldBeUnique
             $worker->startPolice();
         } catch (Exception $e) {
             $ts3Logging = new Ts3LogController('Police-Worker', $this->server_id);
-            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::SUCCESS, 'queue_worker' ,$e->getMessage());
+            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::SUCCESS, 'queue_worker', $e->getMessage());
         }
     }
 

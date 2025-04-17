@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class UpdateWorkerAfkSettingsFactory extends Factory
 {
-    protected $model = ts3botworkerafk::class;
+    protected $model = ts3BotWorkerAfk::class;
+
     /**
      * Define the model's default state.
      *
@@ -23,7 +24,7 @@ class UpdateWorkerAfkSettingsFactory extends Factory
             'is_afk_kicker_active'=>false,
             'afk_kicker_max_idle_time'=>1,
             'afk_kicker_slots_online'=>10,
-            'excluded_servergroup'=>[0=>"27"],
+            'excluded_servergroup'=>[0=>'27'],
         ];
     }
 }

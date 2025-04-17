@@ -52,16 +52,16 @@ class AfkWorkerTest extends TestCase
         $response = $this->actingAs($this->user)->post(route('worker.update.afkWorker'), $updateArray);
         $response->assertRedirectToRoute('worker.view.createOrUpdateAfkWorker');
 
-        $updateArray = UpdateWorkerAfkSettingsFactory::new()->make(['is_afk_active'=>true, 'is_afk_kicker_active'=>true,'afk_kicker_max_idle_time'=>2])->toArray();
+        $updateArray = UpdateWorkerAfkSettingsFactory::new()->make(['is_afk_active'=>true, 'is_afk_kicker_active'=>true, 'afk_kicker_max_idle_time'=>2])->toArray();
         $response = $this->actingAs($this->user)->post(route('worker.update.afkWorker'), $updateArray);
         $response->assertRedirectToRoute('worker.view.createOrUpdateAfkWorker');
 
         //checks
         $dbResult = ts3BotWorkerAfk::query()->get();
         $this->assertCount(1, $dbResult);
-        $this->assertEquals(1,$dbResult->first()->is_afk_active);
-        $this->assertEquals(1,$dbResult->first()->is_afk_kicker_active);
-        $this->assertEquals(2*1000*60,$dbResult->first()->afk_kicker_max_idle_time);
+        $this->assertEquals(1, $dbResult->first()->is_afk_active);
+        $this->assertEquals(1, $dbResult->first()->is_afk_kicker_active);
+        $this->assertEquals(2 * 1000 * 60, $dbResult->first()->afk_kicker_max_idle_time);
     }
 
     private function update_user(): void

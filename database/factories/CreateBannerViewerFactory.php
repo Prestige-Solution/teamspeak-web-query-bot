@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CreateBannerViewerFactory extends Factory
 {
     protected $model = bannerOption::class;
+
     /**
      * Define the model's default state.
      *

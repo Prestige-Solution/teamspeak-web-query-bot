@@ -85,13 +85,12 @@ class PoliceWorkerController extends Controller
         $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first();
 
         //check VPN
-        if ($policeWorkerSetting->is_vpn_protection_active == true && !empty($policeWorkerSetting->vpn_protection_api_register_mail)) {
+        if ($policeWorkerSetting->is_vpn_protection_active == true && ! empty($policeWorkerSetting->vpn_protection_api_register_mail)) {
             $this->checkVpn($policeWorkerSetting);
         }
 
         //check bot is working
-        if ($policeWorkerSetting->is_check_bot_alive_active == true)
-        {
+        if ($policeWorkerSetting->is_check_bot_alive_active == true) {
             $this->checkBotKeepAlive();
         }
 
@@ -160,7 +159,7 @@ class PoliceWorkerController extends Controller
                     }
 
                     //api checks available
-                    if ($apiQueryCountSum <= $apiQueryMaxCount && !empty($policeWorkerSetting->vpn_protection_api_register_mail) && $checked == false && Carbon::now() >= $policeWorkerSetting->vpn_protection_next_check_available_at) {
+                    if ($apiQueryCountSum <= $apiQueryMaxCount && ! empty($policeWorkerSetting->vpn_protection_api_register_mail) && $checked == false && Carbon::now() >= $policeWorkerSetting->vpn_protection_next_check_available_at) {
                         //api www.getipintel.net/free-proxy-vpn-tor-detection-api
                         $checkIP = Http::get('http://check.getipintel.net/check.php?ip='.$clidIP.'&contact='.$policeWorkerSetting->vpn_protection_api_register_mail.'&flags=m&format=json');
 
@@ -227,7 +226,6 @@ class PoliceWorkerController extends Controller
     private function checkBotKeepAlive(): void
     {
         try {
-            
             $checkBotIsWorking = collect($this->ts3_VirtualServer->clientList(['client_nickname'=>$this->qa_name]));
 
             foreach ($checkBotIsWorking->keys()->all() as $clid) {
@@ -257,7 +255,6 @@ class PoliceWorkerController extends Controller
                     ->first(['discord_webhook_url', 'is_discord_webhook_active']);
 
                 if ($policeWorkerSetting->is_discord_webhook_active == true) {
-
                     $response = Http::post(Crypt::decryptString($policeWorkerSetting->discord_webhook_url), [
                         'content' => $this->qa_name.' is missing on Teamspeak Server. He has probably stopped working',
                         'username' => $this->qa_name.'-Police-Worker',

@@ -28,7 +28,8 @@ class ChannelTest extends TestCase
         $this->user = User::query()->where('id', 1)->first();
     }
 
-    public function test_view_created_channel_creator_job(){
+    public function test_view_created_channel_creator_job()
+    {
         CreateServerFactory::new()->create();
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
@@ -46,10 +47,10 @@ class ChannelTest extends TestCase
         $response->assertSeeText('Move client to channel');
         $response->assertSeeText('Create permanent channel');
         $response->assertSeeText('Client enters channel');
-
     }
 
-    public function test_post_create_channel_creator_job(){
+    public function test_post_create_channel_creator_job()
+    {
         CreateServerFactory::new()->create();
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
@@ -95,7 +96,8 @@ class ChannelTest extends TestCase
         $this->assertEquals(10, $checkDB->first()->action_min_clients);
     }
 
-    public function test_post_delete_channel_creator_job(){
+    public function test_post_delete_channel_creator_job()
+    {
         CreateServerFactory::new()->create();
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
@@ -104,7 +106,7 @@ class ChannelTest extends TestCase
         User::query()->where('id', 1)->update(['default_server_id' => 1]);
         $this->update_user();
 
-        $response = $this->actingAs($this->user)->post(route('channel.delete.channelJob',['id' => 1]));
+        $response = $this->actingAs($this->user)->post(route('channel.delete.channelJob', ['id' => 1]));
         $response->assertRedirectToRoute('channel.view.channelJobs');
         $response->assertSessionHas(['success' => 'The job was successfully deleted']);
 
@@ -117,7 +119,8 @@ class ChannelTest extends TestCase
         $response->assertSeeText('No jobs have been added yet');
     }
 
-    public function test_view_created_channel_remover_job(){
+    public function test_view_created_channel_remover_job()
+    {
         CreateServerFactory::new()->create();
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
@@ -133,7 +136,8 @@ class ChannelTest extends TestCase
         $response->assertSeeText('1 minute/s');
     }
 
-    public function test_post_update_channel_remover_job(){
+    public function test_post_update_channel_remover_job()
+    {
         CreateServerFactory::new()->create();
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
@@ -154,7 +158,8 @@ class ChannelTest extends TestCase
         $this->assertEquals(2 * 60 * 60, $checkDB->first()->channel_max_seconds_empty);
     }
 
-    public function test_post_delete_channel_remover_job(){
+    public function test_post_delete_channel_remover_job()
+    {
         CreateServerFactory::new()->create();
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
@@ -163,7 +168,7 @@ class ChannelTest extends TestCase
         User::query()->where('id', 1)->update(['default_server_id' => 1]);
         $this->update_user();
 
-        $response = $this->actingAs($this->user)->post(route('channel.delete.channelRemover',['id' => 1]));
+        $response = $this->actingAs($this->user)->post(route('channel.delete.channelRemover', ['id' => 1]));
 
         $response->assertRedirectToRoute('channel.view.listChannelRemover');
         $response->assertSessionHas(['success' => 'The job was successfully deleted']);

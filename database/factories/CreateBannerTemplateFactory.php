@@ -9,6 +9,7 @@ use Illuminate\Http\UploadedFile;
 class CreateBannerTemplateFactory extends Factory
 {
     protected $model = banner::class;
+
     /**
      * Define the model's default state.
      *

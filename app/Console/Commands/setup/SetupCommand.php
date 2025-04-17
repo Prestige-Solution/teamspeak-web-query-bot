@@ -29,7 +29,7 @@ class SetupCommand extends Command
     public function handle(): int
     {
         $choiceGenerateAppKey = $this->choice('Generate app key?', ['yes', 'no'], 1);
-        $choiceDbCon = $this->choice('Choose your database',['mysql','pgsql'], 0);
+        $choiceDbCon = $this->choice('Choose your database', ['mysql', 'pgsql'], 0);
         $appURL = $this->ask('Enter your URL address');
         $dbHost = $this->ask('Enter your database connection');
         $dbName = $this->ask('Enter your database name');
@@ -49,27 +49,27 @@ class SetupCommand extends Command
 
         if (file_exists($path)) {
             file_put_contents($path, str_replace(
-                "APP_URL=", "APP_URL=".$appURL, file_get_contents($path)
+                'APP_URL=', 'APP_URL='.$appURL, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                "DB_CONNECTION=", "DB_CONNECTION=".$dbCon, file_get_contents($path)
+                'DB_CONNECTION=', 'DB_CONNECTION='.$dbCon, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                "DB_HOST=", "DB_HOST=".$dbHost, file_get_contents($path)
+                'DB_HOST=', 'DB_HOST='.$dbHost, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                "DB_DATABASE=", "DB_DATABASE=".$dbName, file_get_contents($path)
+                'DB_DATABASE=', 'DB_DATABASE='.$dbName, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                "DB_USERNAME=", "DB_USERNAME=".$dbUsername, file_get_contents($path)
+                'DB_USERNAME=', 'DB_USERNAME='.$dbUsername, file_get_contents($path)
             ));
 
             file_put_contents($path, str_replace(
-                "DB_PASSWORD=", "DB_PASSWORD=".$dbPassword, file_get_contents($path)
+                'DB_PASSWORD=', 'DB_PASSWORD='.$dbPassword, file_get_contents($path)
             ));
         }
 

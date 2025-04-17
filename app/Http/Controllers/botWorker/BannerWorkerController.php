@@ -181,6 +181,7 @@ class BannerWorkerController extends Controller
                                 'Viewer file name could not be found.');
 
                             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+
                             return;
                         }
 
@@ -194,7 +195,6 @@ class BannerWorkerController extends Controller
 
                         //update database
                         if ($successCreated == true) {
-
                             banner::query()->where('id', '=', $banner->id)->update([
                                 'next_check_at'=>Carbon::now()->addMinutes($banner->delay),
                             ]);
@@ -215,7 +215,6 @@ class BannerWorkerController extends Controller
                             $this->ts3_VirtualServer['virtualserver_hostbanner_mode'] = 2;
                         }
                     } else {
-
                         banner::query()->where('id', '=', $banner->id)->update([
                             'next_check_at'=>Carbon::now()->addMinutes($banner->delay),
                         ]);

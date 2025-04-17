@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateBadNicknameFactory extends Factory
 {
-    protected $model = BadName::class;
+    protected $model = badName::class;
+
     /**
      * Define the model's default state.
      *

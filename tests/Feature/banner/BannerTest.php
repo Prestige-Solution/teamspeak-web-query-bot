@@ -110,18 +110,18 @@ class BannerTest extends TestCase
         Storage::disk('banner')->assertExists('/viewer/'.$banner->first()->banner_viewer_file_name);
         $this->assertCount(1, $banner);
         $this->assertCount(1, $bannerOptions);
-        $this->assertEquals('https://factory-domain.de',$banner->first()->banner_hostbanner_url);
+        $this->assertEquals('https://factory-domain.de', $banner->first()->banner_hostbanner_url);
 
         //cleanup - with storage faker imagepng cant find the directory path
         $deleteFiles = Storage::disk('banner')->allFiles('template/');
         foreach ($deleteFiles as $deleteFile) {
-            if ($deleteFile != 'template/.gitignore' ) {
+            if ($deleteFile != 'template/.gitignore') {
                 Storage::disk('banner')->delete($deleteFile);
             }
         }
         $deleteFiles = Storage::disk('banner')->allFiles('viewer/');
         foreach ($deleteFiles as $deleteFile) {
-            if ($deleteFile != 'viewer/.gitignore' ) {
+            if ($deleteFile != 'viewer/.gitignore') {
                 Storage::disk('banner')->delete($deleteFile);
             }
         }

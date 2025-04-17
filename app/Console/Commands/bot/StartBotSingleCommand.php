@@ -30,14 +30,15 @@ class StartBotSingleCommand extends Command
     public function handle(): void
     {
         $choice = ts3ServerConfig::query()
-            ->where('is_ts3_start','=',false)
+            ->where('is_ts3_start', '=', false)
             ->orderBy('server_id')
             ->get();
 
         if ($choice->isNotEmpty()) {
             $choice = $choice->pluck('server_ip')->toArray();
-        }else{
+        } else {
             $this->info('There no instances available or all marked as started');
+
             return;
         }
 
@@ -48,7 +49,7 @@ class StartBotSingleCommand extends Command
             2
         );
 
-        $server_id = ts3ServerConfig::query()->where('server_ip','=',$instanceResult)->get()->first()->id;
+        $server_id = ts3ServerConfig::query()->where('server_ip', '=', $instanceResult)->get()->first()->id;
         $this->start_single_instance($server_id);
 
         $logController = new Ts3LogController('CLI-Commands', $server_id);

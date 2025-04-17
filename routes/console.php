@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Schedule;
 | simple approach to interacting with each command's IO methods.
 |
 */
-if (config('app.env') === 'development'){
+if (config('app.env') === 'development') {
     Schedule::command('app:start-worker');
     Schedule::command('app:start-clearing');
 
@@ -31,7 +31,7 @@ if (config('app.env') === 'development'){
         $statsController = new ResetStatsController();
         $statsController->deleteBotLogs();
     })->name('delete bot logs');
-}else{
+} else {
     Schedule::command('app:start-worker')->everyMinute();
     Schedule::command('app:start-clearing')->everyFifteenMinutes();
 

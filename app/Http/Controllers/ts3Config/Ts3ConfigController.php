@@ -57,7 +57,6 @@ class Ts3ConfigController extends Controller
         //delete all configured banners
         $banners = banner::query()->where('server_id', '=', $server_id)->get();
         foreach ($banners as $banner) {
-
             if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
                 Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
             }

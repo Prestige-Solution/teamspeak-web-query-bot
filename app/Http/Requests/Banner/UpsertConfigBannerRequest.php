@@ -15,8 +15,7 @@ class UpsertConfigBannerRequest extends FormRequest
     {
         if (Auth::check()) {
             return true;
-        }else
-        {
+        } else {
             return false;
         }
     }
@@ -24,7 +23,7 @@ class UpsertConfigBannerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'delay'=>(int)$this->input('delay')
+            'delay'=>(int) $this->input('delay'),
         ]);
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CreateChannelFactory extends Factory
 {
     protected $model = ts3Channel::class;
+
     /**
      * Define the model's default state.
      *
@@ -20,8 +21,8 @@ class CreateChannelFactory extends Factory
             'cid'=>54,
             'pid'=>0,
             'channel_order'=>0,
-            'channel_name'=>"UnitTest",
-            'channel_topic'=>"",
+            'channel_name'=>'UnitTest',
+            'channel_topic'=>'',
             'channel_flag_default'=>0,
             'channel_flag_password'=>0,
             'channel_flag_permanent'=>1,
@@ -43,11 +44,11 @@ class CreateChannelFactory extends Factory
             'channel_codec_is_unencrypted'=>1,
             'channel_security_salt'=>0,
             'channel_delete_delay'=>0,
-            'channel_unique_identifier'=>"1e9ff5ad-163f-4440-b93b-44c4f85b3f2e",
+            'channel_unique_identifier'=>'1e9ff5ad-163f-4440-b93b-44c4f85b3f2e',
             'channel_flag_maxclients_unlimited'=>1,
             'channel_flag_maxfamilyclients_unlimited'=>0,
             'channel_flag_maxfamilyclients_inherited'=>1,
-            'channel_filepath'=>"files/virtualserver_1/channel_54",
+            'channel_filepath'=>'files/virtualserver_1/channel_54',
             'channel_forced_silence'=>0,
             'channel_name_phonetic'=>0,
             'seconds_empty'=>259329,

@@ -62,7 +62,6 @@ class AfkWorkerController extends Controller
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-
         } catch(TeamSpeak3Exception $e) {
             $this->logController->setLog($e, ts3BotLog::FAILED, 'AFK-Worker');
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();

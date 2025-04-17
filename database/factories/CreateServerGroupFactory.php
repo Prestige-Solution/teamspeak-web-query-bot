@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CreateServerGroupFactory extends Factory
 {
     protected $model = ts3ServerGroup::class;
+
     /**
      * Define the model's default state.
      *
@@ -18,7 +19,7 @@ class CreateServerGroupFactory extends Factory
         return [
             'server_id'=>1,
             'sgid'=>27,
-            'name'=>"Community",
+            'name'=>'Community',
             'type'=>1,
             'iconid'=>0,
             'savedb'=>1,

@@ -44,11 +44,11 @@ class BotControlTest extends TestCase
 
         //check server config
         $configDB = ts3ServerConfig::query()->get();
-        $this->assertTrue((boolean)$configDB->first()->is_ts3_start);
-        $this->assertTrue((boolean)$configDB->first()->is_active);
+        $this->assertTrue((bool) $configDB->first()->is_ts3_start);
+        $this->assertTrue((bool) $configDB->first()->is_active);
 
         //check log config
-        $logDB = ts3botLog::query()->get();
+        $logDB = ts3BotLog::query()->get();
         $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('startBot', $logDB->last()->job);
         $this->assertEquals('Bot was started via web interface', $logDB->last()->description);
@@ -74,11 +74,11 @@ class BotControlTest extends TestCase
 
         //check server config
         $configDB = ts3ServerConfig::query()->get();
-        $this->assertFalse((boolean)$configDB->first()->is_ts3_start);
-        $this->assertFalse((boolean)$configDB->first()->is_active);
+        $this->assertFalse((bool) $configDB->first()->is_ts3_start);
+        $this->assertFalse((bool) $configDB->first()->is_active);
 
         //check log config
-        $logDB = ts3botLog::query()->get();
+        $logDB = ts3BotLog::query()->get();
         $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('botStop', $logDB->last()->job);
         $this->assertEquals('Bot was stopped via web interface', $logDB->last()->description);
@@ -86,7 +86,6 @@ class BotControlTest extends TestCase
         //check queue entry
         $queueDB = DB::table('queue_bot')->get();
         $this->assertEquals(0, $queueDB->count());
-
     }
 
     private function update_user(): void

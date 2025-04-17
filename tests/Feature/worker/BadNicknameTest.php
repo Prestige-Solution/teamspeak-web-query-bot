@@ -98,22 +98,22 @@ class BadNicknameTest extends TestCase
         $this->update_user();
 
         $badNameController = new BadNameController();
-        $result = $badNameController->checkBadName('admin',$this->user->default_server_id);
+        $result = $badNameController->checkBadName('admin', $this->user->default_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('Administrator',$this->user->default_server_id);
+        $result = $badNameController->checkBadName('Administrator', $this->user->default_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('Factory',$this->user->default_server_id);
+        $result = $badNameController->checkBadName('Factory', $this->user->default_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('factory',$this->user->default_server_id);
+        $result = $badNameController->checkBadName('factory', $this->user->default_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('Hans',$this->user->default_server_id);
+        $result = $badNameController->checkBadName('Hans', $this->user->default_server_id);
         $this->assertFalse($result);
 
-        $result = $badNameController->checkBadName('Rick',$this->user->default_server_id);
+        $result = $badNameController->checkBadName('Rick', $this->user->default_server_id);
         $this->assertFalse($result);
     }
 
