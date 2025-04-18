@@ -25,7 +25,7 @@ class ChannelTest extends TestCase
         parent::setUp();
         $this->seed();
 
-        $this->user = User::query()->where('id', 1)->first();
+        $this->user = User::query()->where('id','=', 1)->first();
     }
 
     public function test_view_created_channel_creator_job()
@@ -184,6 +184,6 @@ class ChannelTest extends TestCase
 
     public function update_user(): void
     {
-        $this->user = User::query()->where('id', 1)->first();
+        $this->user = User::query()->where('id','=', 1)->first();
     }
 }

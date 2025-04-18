@@ -23,7 +23,7 @@ class AfkWorkerTest extends TestCase
         parent::setUp();
         $this->seed();
 
-        $this->user = User::query()->where('id', 1)->first();
+        $this->user = User::query()->where('id','=', 1)->first();
     }
 
     public function test_get_view_afk_worker_settings()
@@ -66,6 +66,6 @@ class AfkWorkerTest extends TestCase
 
     private function update_user(): void
     {
-        $this->user = User::query()->where('id', 1)->first();
+        $this->user = User::query()->where('id','=', 1)->first();
     }
 }
