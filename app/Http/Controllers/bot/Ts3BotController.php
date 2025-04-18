@@ -396,7 +396,7 @@ class Ts3BotController extends Controller
         }
     }
 
-    private function createChannel($jobID, $serverID, $clid): void
+    private function createChannel($jobID, $server_id, $clid): void
     {
         try {
             //getJob
@@ -405,7 +405,7 @@ class Ts3BotController extends Controller
                 'rel_action',
             ])
                 ->where('id', '=', $jobID)
-                ->where('server_id', '=', $serverID)
+                ->where('server_id', '=', $server_id)
                 ->first();
 
             //if is_active == false then leave

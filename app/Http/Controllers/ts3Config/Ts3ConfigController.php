@@ -30,7 +30,7 @@ class Ts3ConfigController extends Controller
 
     protected null|string $uri = null;
 
-    public function ts3ServerCheckConfig(int $serverID)
+    public function ts3ServerCheckConfig(int $server_id)
     {
     }
 

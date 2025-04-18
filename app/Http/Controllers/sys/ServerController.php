@@ -46,7 +46,7 @@ class ServerController extends Controller
      */
     public function createServer(CreateServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $serverID = ts3ServerConfig::query()->create(
+        $server_id = ts3ServerConfig::query()->create(
             [
                 'user_id'=>Auth::user()->id,
                 'server_ip'=>$request->validated('server_ip'),
@@ -63,20 +63,20 @@ class ServerController extends Controller
 
         //setup police worker
         ts3BotWorkerPolice::query()->create([
-            'server_id'=>$serverID,
+            'server_id'=>$server_id,
         ]);
 
-        if (! empty($serverID)) {
-            ts3ServerConfig::query()->where('id', '=', $serverID)->update([
+        if (! empty($server_id)) {
+            ts3ServerConfig::query()->where('id', '=', $server_id)->update([
                 'is_default'=>true,
             ]);
 
-            User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $serverID]);
+            User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $server_id]);
         }
 
         //initialising server only in production mode
         if (config('app.env') !== 'testing') {
-            $status = $this->initialisingTs3Server($serverID);
+            $status = $this->initialisingTs3Server($server_id);
 
             if ($status != 0) {
                 if ($status['status'] == 1) {
