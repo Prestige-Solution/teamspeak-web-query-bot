@@ -29,7 +29,7 @@ class BackendController extends Controller
             ->where('is_default', '=', true)
             ->first();
 
-        $availableServers = ts3ServerConfig::query()->orderBy('server_ip')->get(['id', 'server_name', 'default_server_id']);
+        $availableServers = ts3ServerConfig::query()->orderBy('server_ip')->get(['id', 'server_name']);
 
         return view('backend.control-center.bot-control')->with([
             'server'=>$server,
