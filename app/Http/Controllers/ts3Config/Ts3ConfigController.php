@@ -45,7 +45,6 @@ class Ts3ConfigController extends Controller
             ->where('id', '=', $server_id)
             ->first();
 
-        //clear tables
         ts3Channel::query()->where('server_id', '=', $server_id)->delete();
         ts3ServerGroup::query()->where('server_id', '=', $server_id)->delete();
         ts3ChannelGroup::query()->where('server_id', '=', $server_id)->delete();
@@ -54,7 +53,6 @@ class Ts3ConfigController extends Controller
         ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
         ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->update(['allow_sgid_vpn'=>1]);
 
-        //delete all configured banners
         $banners = banner::query()->where('server_id', '=', $server_id)->get();
         foreach ($banners as $banner) {
             if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
@@ -88,11 +86,14 @@ class Ts3ConfigController extends Controller
         try {
             TeamSpeak3::init();
             $ts3_VirtualServer = TeamSpeak3::factory($this->uri);
-        } catch (TeamSpeak3Exception $e) {
-            $this->ts3LogController->setLog(
-                $e,
+        } catch (Exception $e) {
+            $this->ts3LogController->setCustomLog(
+                $server_id,
                 ts3BotLog::FAILED,
+                'Connect to server failed',
                 'Setup - Initialising Server',
+                $e->getCode(),
+                $e->getMessage()
             );
 
             // print the error message returned by the server
@@ -120,11 +121,13 @@ class Ts3ConfigController extends Controller
                     $this->createChannels($server_id, $subChannelInfo, $subChannel->toString());
                 }
             }
-        } catch (TeamSpeak3Exception $e) {
-            $this->ts3LogController->setLog(
-                $e,
+        } catch (Exception $e) {
+            $this->ts3LogController->setCustomLog(
+                $server_id,
                 ts3BotLog::FAILED,
                 'Setup - Channels',
+                $e->getMessage(),
+                $e->getCode(),
             );
 
             // print the error message returned by the server
@@ -143,11 +146,13 @@ class Ts3ConfigController extends Controller
                 //store info
                 $this->createServerGroups($server_id, $serverGroupInfo);
             }
-        } catch (TeamSpeak3Exception $e) {
-            $this->ts3LogController->setLog(
-                $e,
+        } catch (Exception $e) {
+            $this->ts3LogController->setCustomLog(
+                $server_id,
                 ts3BotLog::FAILED,
                 'Setup - Server Groups',
+                $e->getCode(),
+                $e->getMessage(),
             );
 
             // print the error message returned by the server
@@ -166,11 +171,13 @@ class Ts3ConfigController extends Controller
                 //store info
                 $this->createChannelGroups($server_id, $channelGroupInfo);
             }
-        } catch (TeamSpeak3Exception $e) {
-            $this->ts3LogController->setLog(
-                $e,
+        } catch (Exception $e) {
+            $this->ts3LogController->setCustomLog(
+                $server_id,
                 ts3BotLog::FAILED,
                 'Setup - Channel Groups',
+                $e->getCode(),
+                $e->getMessage(),
             );
 
             // print the error message returned by the server
