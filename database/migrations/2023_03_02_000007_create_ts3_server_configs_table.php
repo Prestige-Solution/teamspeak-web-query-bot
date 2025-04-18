@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('server_name');
             $table->string('server_ip')->unique();
             $table->string('qa_name');
-            $table->string('qa_pw');
+            $table->string('qa_pw',2048);
             $table->integer('server_query_port')->nullable();
             $table->integer('server_port')->default(9987);
             $table->foreignId('bot_status_id')->default(3);
