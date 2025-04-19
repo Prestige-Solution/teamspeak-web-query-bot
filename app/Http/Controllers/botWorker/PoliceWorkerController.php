@@ -100,6 +100,8 @@ class PoliceWorkerController extends Controller
         if ($policeWorkerSetting->is_bad_name_protection_active == true) {
             $this->checkBadName();
         }
+
+        $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     private function checkVpn(array $policeWorkerSetting): void
