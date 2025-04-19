@@ -32,7 +32,6 @@ class ts3BotWorkerChannelsCreate extends Model
         'action_user_id',
         'channel_cgid',
         'channel_template_cid',
-        'channel_template_cid',
         'is_notify_message_server_group',
         'notify_message_server_group_sgid',
         'notify_message_server_group_message',
