@@ -43,8 +43,7 @@ class StartWorkerCommand extends Command
                 ts3BotAfkWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('afkWorker');
                 ts3BotChannelRemoveWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('channelRemoverWorker');
                 ts3BotPoliceWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('policeWorker');
-
-            }catch (Exception $e) {
+            } catch (Exception $e) {
                 Log::channel('queueWorker')->error($e);
             }
         }

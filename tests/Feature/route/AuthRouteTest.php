@@ -19,7 +19,7 @@ class AuthRouteTest extends TestCase
         parent::setUp();
         $this->seed();
 
-        $this->user = User::query()->where('id','=', 1)->first();
+        $this->user = User::query()->where('id', '=', 1)->first();
     }
 
     public function test_can_view_control_center(): void
@@ -134,6 +134,6 @@ class AuthRouteTest extends TestCase
 
     public function update_user(): void
     {
-        $this->user = User::query()->where('id','=', 1)->first();
+        $this->user = User::query()->where('id', '=', 1)->first();
     }
 }

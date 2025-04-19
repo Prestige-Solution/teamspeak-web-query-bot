@@ -37,7 +37,7 @@ class StartClearingCommand extends Command
         foreach ($servers as $server) {
             try {
                 ts3ClearingWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('clearing');
-            }catch (Exception $e) {
+            } catch (Exception $e) {
                 Log::channel('queueWorker')->error($e);
             }
         }

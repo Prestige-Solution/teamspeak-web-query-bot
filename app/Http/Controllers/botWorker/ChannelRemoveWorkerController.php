@@ -97,7 +97,7 @@ class ChannelRemoveWorkerController extends Controller
                     $subChannelInfo = $this->ts3_VirtualServer->channelGetById($subChannel)->getInfo();
 
                     //seconds = -1 means the channel is currently in use
-                    if ($subChannelInfo['seconds_empty'] != "-1" && $subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty) {
+                    if ($subChannelInfo['seconds_empty'] != '-1' && $subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty) {
                         $this->ts3_VirtualServer->channelDelete($subChannel);
 
                         ts3Channel::query()

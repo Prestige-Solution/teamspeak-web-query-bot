@@ -18,7 +18,7 @@ class AuthTest extends TestCase
         parent::setUp();
         $this->seed();
 
-        $this->user = User::query()->where('id','=', 1)->first();
+        $this->user = User::query()->where('id', '=', 1)->first();
     }
 
     /**

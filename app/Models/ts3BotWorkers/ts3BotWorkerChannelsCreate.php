@@ -22,6 +22,7 @@ class ts3BotWorkerChannelsCreate extends Model
     use HasFactory, Compoships;
 
     public const textMessage = 1;
+
     public const pokeMessage = 2;
 
     protected $fillable = [

@@ -587,13 +587,11 @@ class Ts3BotController extends Controller
                     foreach ($notifyClients as $notifyClient) {
                         $notifyUser = $this->ts3_VirtualServer->clientGetById($notifyClient['clid']);
 
-                        if ($job->notify_option == ts3BotWorkerChannelsCreate::textMessage)
-                        {
+                        if ($job->notify_option == ts3BotWorkerChannelsCreate::textMessage) {
                             $notifyUser->message($msg);
                         }
 
-                        if ($job->notify_option == ts3BotWorkerChannelsCreate::pokeMessage)
-                        {
+                        if ($job->notify_option == ts3BotWorkerChannelsCreate::pokeMessage) {
                             $notifyUser->poke(Str::limit($msg, 97));
                         }
                     }
@@ -729,9 +727,9 @@ class Ts3BotController extends Controller
                 break;
             case 0:
                 //connection to server lost will also be triggered if the bot is stopped.
-                if ($this->isBotStop == false){
+                if ($this->isBotStop == false) {
                     $this->reconnectCode = ts3ServerConfig::BotReconnectTrue;
-                }else{
+                } else {
                     $this->reconnectCode = ts3ServerConfig::BotReconnectFalse;
                 }
                 break;
