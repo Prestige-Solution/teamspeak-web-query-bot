@@ -70,7 +70,5 @@ class StopBotSingleCommand extends Command
             'is_ts3_start'=>false,
             'is_active'=>false,
         ]);
-
-        ts3BotStartQueue::dispatch($server_id)->onConnection('bot')->onQueue('bot');
     }
 }
