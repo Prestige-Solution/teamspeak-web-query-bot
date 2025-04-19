@@ -6,7 +6,6 @@ use App\Jobs\ts3ClearingWorkerQueue;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
 class StartClearingCommand extends Command
@@ -36,15 +35,11 @@ class StartClearingCommand extends Command
             ->get(['id']);
 
         foreach ($servers as $server) {
-            Bus::chain([
-                new ts3ClearingWorkerQueue($server->id),
-            ])
-            ->catch(function (Exception $e) {
-                Log::channel('busChain')->error($e);
-            })
-            ->onConnection('worker')
-            ->onQueue('clearing')
-            ->dispatch();
+            try {
+                ts3ClearingWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('clearing');
+            }catch (Exception $e) {
+                Log::channel('queueWorker')->error($e);
+            }
         }
     }
 }

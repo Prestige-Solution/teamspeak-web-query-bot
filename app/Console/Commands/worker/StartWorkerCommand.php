@@ -9,7 +9,6 @@ use App\Jobs\ts3BotPoliceWorkerQueue;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
 class StartWorkerCommand extends Command
@@ -39,18 +38,15 @@ class StartWorkerCommand extends Command
             ->get();
 
         foreach ($servers as $server) {
-            Bus::chain([
-                new ts3BannerWorkerQueue($server->id),
-                new ts3BotAfkWorkerQueue($server->id),
-                new ts3BotChannelRemoveWorkerQueue($server->id),
-                new ts3BotPoliceWorkerQueue($server->id),
-            ])
-            ->catch(function (Exception $e) {
-                Log::channel('busChain')->error($e);
-            })
-            ->onConnection('worker')
-            ->onQueue('worker')
-            ->dispatch();
+            try {
+                ts3BannerWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('bannerWorker');
+                ts3BotAfkWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('afkWorker');
+                ts3BotChannelRemoveWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('channelRemoverWorker');
+                ts3BotPoliceWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('policeWorker');
+
+            }catch (Exception $e) {
+                Log::channel('queueWorker')->error($e);
+            }
         }
     }
 }
