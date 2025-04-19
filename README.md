@@ -1,5 +1,5 @@
 # Teamspeak Web Query Bot
-**Your TS server, your rules - but without the admin stress.**<br>
+Your TS server, your rules - but without the admin stress.<br>
 Tired of clicking around in the server query? Our web app does all the work for you: create channels, set permissions, manage users - everything runs automatically.<br> Simply log in, set up and sit back.<br>
 Less admin, more gaming.
 
