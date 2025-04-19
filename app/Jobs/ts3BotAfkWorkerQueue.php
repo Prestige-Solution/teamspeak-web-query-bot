@@ -49,7 +49,14 @@ class ts3BotAfkWorkerQueue implements ShouldQueue, ShouldBeUnique
             $afkWorker->afkMoverWorker();
         } catch (Exception $e) {
             $ts3Logging = new Ts3LogController('Afk-Worker', $this->server_id);
-            $ts3Logging->setCustomLog($this->server_id, ts3BotLog::FAILED, 'queue_worker', $e->getMessage());
+            $ts3Logging->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'queue_worker',
+                'There was an error during create queue',
+                $e->getCode(),
+                $e->getMessage()
+            );
         }
     }
 

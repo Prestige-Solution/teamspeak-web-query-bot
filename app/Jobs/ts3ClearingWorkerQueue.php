@@ -48,7 +48,9 @@ class ts3ClearingWorkerQueue implements ShouldQueue, ShouldBeUnique
             $ts3Logging->setCustomLog(
                 $this->server_id,
                 ts3BotLog::FAILED,
-                'startQueue',
+                'queue_worker',
+                'There was an error during create queue',
+                $e->getMessage(),
                 $e->getMessage(),
             );
         }
