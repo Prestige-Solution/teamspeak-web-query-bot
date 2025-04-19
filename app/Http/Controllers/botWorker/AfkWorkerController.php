@@ -10,7 +10,6 @@ use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
@@ -62,8 +61,15 @@ class AfkWorkerController extends Controller
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-        } catch(TeamSpeak3Exception $e) {
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'AFK-Worker');
+        } catch(Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'AFK-Worker',
+                'There was an error while attempting to communicate with the server',
+                $e->getCode(),
+                $e->getMessage()
+            );
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
@@ -119,8 +125,15 @@ class AfkWorkerController extends Controller
                     }
                 }
             }
-        } catch(TeamSpeak3Exception $e) {
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Afk-Mover');
+        } catch(Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Afk-Mover',
+                'There was an error during afk mover.',
+                $e->getCode(),
+                $e->getMessage()
+            );
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
@@ -177,8 +190,15 @@ class AfkWorkerController extends Controller
                     }
                 }
             }
-        } catch(TeamSpeak3Exception $e) {
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Afk-Kicker');
+        } catch(Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Afk-Kicker',
+                'There was an error during afk kicker',
+                $e->getCode(),
+                $e->getMessage()
+            );
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }

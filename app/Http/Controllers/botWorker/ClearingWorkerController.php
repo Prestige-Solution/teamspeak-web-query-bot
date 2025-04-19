@@ -12,7 +12,6 @@ use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
@@ -62,10 +61,15 @@ class ClearingWorkerController extends Controller
 
         try {
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-        } catch(TeamSpeak3Exception $e) {
-            //set log
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Clearing-Worker');
-            //disconnect from server
+        } catch(Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Start Clearing-Worker',
+                'There was an error while attempting to communicate with the server',
+                $e->getCode(),
+                $e->getMessage()
+            );
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
@@ -109,17 +113,22 @@ class ClearingWorkerController extends Controller
             foreach ($deletingChannelList as $deleteChannelsFromDB) {
                 $this->deleteChannelFromDB($deleteChannelsFromDB->cid);
             }
-        } catch(TeamSpeak3Exception | Exception $e) {
-            //set log
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Update Channel List');
-            //disconnect from server
+        } catch(Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Update Channel List',
+                'There was an error during update channel list',
+                $e->getCode(),
+                $e->getMessage()
+            );
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
     private function updateChannelInDatabase(int $cid, array $channelInfo, string $channelName): void
     {
-        //store channel information in bot brain db
         ts3Channel::query()
             ->where('server_id', '=', $this->server_id)
             ->where('cid', '=', $cid)

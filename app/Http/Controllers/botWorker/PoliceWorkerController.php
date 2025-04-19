@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
@@ -69,15 +68,18 @@ class PoliceWorkerController extends Controller
         );
 
         try {
-            //initialising ts3 framework
             $TS3PHPFramework = new TeamSpeak3();
-
-            //connect to above specified server
             $this->ts3_VirtualServer = $TS3PHPFramework->factory($uri);
-        } catch(TeamSpeak3Exception $e) {
-            //set log
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Police-Worker');
-            //disconnect from server
+        } catch(Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Start Police-Worker',
+                'There was an error while attempting to communicate with the server',
+                $e->getCode(),
+                $e->getMessage()
+            );
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
@@ -215,10 +217,16 @@ class PoliceWorkerController extends Controller
                     'vpn_protection_query_per_day'=>$apiQueryCountPerDay + $apiQueryCountThisProcess,
                 ]);
             }
-        } catch (TeamSpeak3Exception $e) {
-            //set log
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Check VPN');
-            //disconnect from server
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Check VPN',
+                'There was an error during check vpn',
+                $e->getCode(),
+                $e->getMessage()
+            );
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
@@ -270,17 +278,22 @@ class PoliceWorkerController extends Controller
                     }
                 }
             }
-        } catch (TeamSpeak3Exception $e) {
-            //set log
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Check Bot Keep Alive');
-            //disconnect from server
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Check Bot Keep Alive',
+                'There was an error during check bot keep alive',
+                $e->getCode(),
+                $e->getMessage()
+            );
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
     private function checkBadName(): void
     {
-        //declare badNameController
         $badNameController = new BadNameController();
 
         try {
@@ -302,10 +315,16 @@ class PoliceWorkerController extends Controller
                     }
                 }
             }
-        } catch (TeamSpeak3Exception $e) {
-            //set log
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Check Bad Name');
-            //disconnect from server
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Check Bad Name',
+                'There was an error during check bad name',
+                $e->getCode(),
+                $e->getMessage()
+            );
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }

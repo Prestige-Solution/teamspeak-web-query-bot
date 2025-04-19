@@ -11,7 +11,6 @@ use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
@@ -62,8 +61,14 @@ class ChannelRemoveWorkerController extends Controller
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-        } catch(TeamSpeak3Exception $e) {
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Start Channel-Remover-Worker');
+        } catch(Exception $e) {
+            $this->logController->setCustomLog($this->server_id,
+                ts3BotLog::FAILED,
+                'Start Channel-Remover-Worker',
+                'There was an error while attempting to communicate with the server',
+                $e->getCode(),
+                $e->getMessage()
+            );
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
@@ -104,8 +109,15 @@ class ChannelRemoveWorkerController extends Controller
 
             //update column updated_at
             ts3BotWorkerChannelsRemove::query()->touch();
-        } catch (TeamSpeak3Exception $e) {
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'Channel-Remover');
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'Channel-Remover',
+                'There was an error during channel remover',
+                $e->getCode(),
+                $e->getMessage()
+            );
             //disconnect from server
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }

@@ -14,7 +14,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
@@ -228,8 +227,14 @@ class BannerWorkerController extends Controller
 
                 $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
-        } catch(TeamSpeak3Exception $e) {
-            $this->logController->setLog($e, ts3BotLog::FAILED, 'bannerWorkerCreateBanner');
+        } catch(Exception $e) {
+            $this->logController->setCustomLog($this->server_id,
+                ts3BotLog::FAILED,
+                'bannerWorkerCreateBanner',
+                'There was an error during create banner',
+                $e->getCode(),
+                $e->getMessage()
+            );
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }

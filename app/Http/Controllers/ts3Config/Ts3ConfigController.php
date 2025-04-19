@@ -21,7 +21,6 @@ use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class Ts3ConfigController extends Controller
@@ -79,7 +78,7 @@ class Ts3ConfigController extends Controller
                 $server_id,
                 $ts3ServerConfig->mode
             );
-        } catch (TeamSpeak3Exception) {
+        } catch (Exception) {
             redirect()->back()->withErrors(['ipAddress'=>'The ip address or dns name you entered is invalid.']);
         }
 
