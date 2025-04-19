@@ -31,7 +31,7 @@ class StartBotSingleCommand extends Command
     {
         $choice = ts3ServerConfig::query()
             ->where('is_ts3_start', '=', false)
-            ->orderBy('server_id')
+            ->orderBy('server_ip')
             ->get();
 
         if ($choice->isNotEmpty()) {
