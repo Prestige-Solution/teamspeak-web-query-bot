@@ -719,8 +719,11 @@ class Ts3BotController extends Controller
                 break;
             case 0:
                 //connection to server lost will also be triggered if the bot is stopped.
-                //code 0 is also already fine and we do not handle it as error.
-                //this comment is also a reminder
+                if ($this->isBotStop == false){
+                    $this->reconnectCode = ts3ServerConfig::BotReconnectTrue;
+                }else{
+                    $this->reconnectCode = ts3ServerConfig::BotReconnectFalse;
+                }
                 break;
             case 513:
                 //explanation: queryNickname already in use
