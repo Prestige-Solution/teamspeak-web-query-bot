@@ -96,7 +96,8 @@ class ChannelRemoveWorkerController extends Controller
                 foreach ($subChannels->keys()->all() as $subChannel) {
                     $subChannelInfo = $this->ts3_VirtualServer->channelGetById($subChannel)->getInfo();
 
-                    if ($subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty) {
+                    //seconds = -1 means the channel is currently in use
+                    if ($subChannelInfo['seconds_empty'] != "-1" && $subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty) {
                         $this->ts3_VirtualServer->channelDelete($subChannel);
 
                         ts3Channel::query()
