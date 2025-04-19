@@ -145,8 +145,8 @@
                                         </div>
                                         <div class="col-lg-3">
                                             <select class="form-select" name="notify_option" id="notify_option">
-                                                <option value="1">Text Message</option>
-                                                <option value="2">Poke Message</option>
+                                                <option value="1" @if($job->notify_option == 1) selected @endif>Text Message</option>
+                                                <option value="2" @if($job->notify_option == 2) selected @endif>Poke Message</option>
                                             </select>
                                         </div>
                                         <div class="col-lg-5">
