@@ -74,5 +74,5 @@ sudo supervisorctl start all
 # Setup Cronjob
 ```shell
 sudo touch /etc/cron.d/psbot
-sudo echo '* * * * * www-data php /var/www/psbot/artisan schedule:run' > /etc/cron.d/etc/cron.d/psbot
+sudo echo '* * * * * www-data php /var/www/psbot/artisan schedule:run' > /etc/cron.d/psbot
 ```
