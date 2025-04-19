@@ -26,7 +26,7 @@ class CreateJobChannelCreatorFactory extends Factory
             'create_max_channels'=>10,
             'action_user_id'=>2,
             'channel_cgid'=>9,
-            'channel_template_id'=>0,
+            'channel_template_cid'=>0,
             'is_notify_message_server_group'=>1,
             'notify_message_server_group_sgid'=>27,
             'notify_message_server_group_message'=>'UnitTest',

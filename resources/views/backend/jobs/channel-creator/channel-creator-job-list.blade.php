@@ -106,7 +106,7 @@
                                             <li class="list-group-item d-flex justify-content-between">
                                                 <span class="fw-bold">Channel Template:</span>
                                                 <span class="text-secondary">
-                                                    @if($job->channel_template_id !== 0)
+                                                    @if($job->channel_template_cid !== 0)
                                                         {{$job->rel_template_channel->channel_name}}
                                                     @else
                                                         No template

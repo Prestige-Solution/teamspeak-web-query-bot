@@ -64,7 +64,7 @@ class ClientController extends Controller
         return view('backend.jobs.worker.afk.worker-settings-afk')->with([
             'serverGroups'=>$serverGroups,
             'tsChannels'=>$tsChannels,
-            'afkChannel'=>$afkWorkerAfkChannel->afk_channel_cid ?? 0,
+            'afkChannelCid'=>$afkWorkerAfkChannel->afk_channel_cid ?? 0,
             'excludedServerGroups'=>$afkExcludedServerGroups ?? null,
             'max_client_idle_time'=>$afkWorkerOptions->max_client_idle_time ?? 0,
             'is_afk_active'=>$afkWorkerOptions->is_afk_active ?? 0,

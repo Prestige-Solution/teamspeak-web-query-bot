@@ -77,9 +77,9 @@
                                         </div>
                                     </div>
                                     <div class="row mb-3">
-                                        <label class="col-lg-2 col-form-label fw-bold" for="channel_template_id">Channel template</label>
+                                        <label class="col-lg-2 col-form-label fw-bold" for="channel_template_cid">Channel template</label>
                                         <div class="col-lg-8">
-                                            <select class="form-select" name="channel_template_id" id="channel_template_id">
+                                            <select class="form-select" name="channel_template_cid" id="channel_template_cid">
                                                 <option value="0" selected>None</option>
                                                 @foreach($tsChannelTemplates->where('pid','=',0) as $tsChannelTemplate)
                                                     <option value="{{$tsChannelTemplate->cid}}">{{$tsChannelTemplate->channel_name}}</option>

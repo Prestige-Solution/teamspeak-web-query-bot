@@ -26,7 +26,7 @@ return new class extends Migration
             $table->integer('create_max_channels')->default(10);
             $table->integer('action_user_id')->nullable();
             $table->integer('channel_cgid')->nullable();
-            $table->integer('channel_template_id')->nullable();
+            $table->integer('channel_template_cid')->nullable();
             $table->boolean('is_notify_message_server_group')->default(false);
             $table->integer('notify_message_server_group_sgid')->nullable();
             $table->string('notify_message_server_group_message')->nullable();

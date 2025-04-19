@@ -31,7 +31,7 @@ class ts3BotWorkerChannelsCreate extends Model
         'create_max_channels',
         'action_user_id',
         'channel_cgid',
-        'channel_template_id',
+        'channel_template_cid',
         'channel_template_cid',
         'is_notify_message_server_group',
         'notify_message_server_group_sgid',
@@ -81,7 +81,7 @@ class ts3BotWorkerChannelsCreate extends Model
 
     public function rel_template_channel(): HasOne
     {
-        return $this->hasOne(ts3Channel::class, ['cid', 'server_id'], ['channel_template_id', 'server_id']);
+        return $this->hasOne(ts3Channel::class, ['cid', 'server_id'], ['channel_template_cid', 'server_id']);
     }
 
     public function rel_bot_event(): HasOne

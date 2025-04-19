@@ -508,9 +508,9 @@ class Ts3BotController extends Controller
                 }
 
                 //if Channel Template is set then copy the permissions
-                if ($ifMaxChannelReached == false && ($job->channel_template_id != 0 || $job->channel_template_id != null) == true) {
+                if ($ifMaxChannelReached == false && ($job->channel_template_cid != 0 || $job->channel_template_cid != null) == true) {
                     //get channel permissions
-                    $templateChannel = ts3Channel::query()->where('id', '=', $job->channel_template_id)->first();
+                    $templateChannel = ts3Channel::query()->where('id', '=', $job->channel_template_cid)->first();
 
                     //create standard channel
                     $createdCID = $this->ts3_VirtualServer->channelCreate([

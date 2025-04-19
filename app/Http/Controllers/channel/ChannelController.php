@@ -86,7 +86,7 @@ class ChannelController extends Controller
                 'create_max_channels'=>$request->validated('create_max_channels'),
                 'action_user_id'=>$request->validated('action_user_id'),
                 'channel_cgid'=>$request->validated('channel_cgid'),
-                'channel_template_id'=>$request->validated('channel_template_id'),
+                'channel_template_cid'=>$request->validated('channel_template_cid'),
                 'is_notify_message_server_group'=>$request->validated('is_notify_message_server_group'),
                 'notify_message_server_group_sgid'=>$request->validated('notify_message_server_group_sgid'),
                 'notify_message_server_group_message'=>$request->validated('notify_message_server_group_message'),
