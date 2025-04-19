@@ -30,7 +30,7 @@ if (config('app.env') === 'development') {
     Schedule::call(function () {
         $statsController = new ResetStatsController();
         $statsController->deleteBotLogs();
-    })->name('delete bot logs');
+    })->name('run delete latest bot logs');
 } else {
     Schedule::command('app:start-worker')->everyMinute();
     Schedule::command('app:start-clearing')->everyFifteenMinutes();
@@ -48,5 +48,5 @@ if (config('app.env') === 'development') {
     Schedule::call(function () {
         $statsController = new ResetStatsController();
         $statsController->deleteBotLogs();
-    })->name('delete bot logs')->everyMinute();
+    })->name('run delete latest bot logs')->everyMinute();
 }
