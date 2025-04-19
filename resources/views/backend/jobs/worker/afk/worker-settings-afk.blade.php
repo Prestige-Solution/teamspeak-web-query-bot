@@ -50,9 +50,9 @@
                             <select class="form-select" id="afk_channel_cid" name="afk_channel_cid">
                                 <option selected disabled>Please choose</option>
                                 @foreach($tsChannels->where('pid','=',0) as $tsChannel)
-                                    <option value="{{$tsChannel->cid}}">- {{$tsChannel->channel_name}}</option>
+                                    <option value="{{$tsChannel->cid}}" @if($afkChannelCid == $tsChannel->cid) selected @endif>- {{$tsChannel->channel_name}}</option>
                                     @foreach($tsChannels->where('pid','=',$tsChannel->cid) as $tsChannelPID)
-                                        <option value="{{$tsChannelPID->cid}}">-- {{$tsChannelPID->channel_name}}</option>
+                                        <option value="{{$tsChannelPID->cid}}" @if($afkChannelCid == $tsChannelPID->cid) selected @endif>-- {{$tsChannelPID->channel_name}}</option>
                                     @endforeach
                                 @endforeach
                             </select>
