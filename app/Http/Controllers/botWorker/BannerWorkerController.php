@@ -23,7 +23,7 @@ class BannerWorkerController extends Controller
 {
     protected int $server_id;
 
-    protected string $qaName;
+    protected string $qa_name;
 
     protected Ts3LogController $logController;
 
@@ -31,7 +31,6 @@ class BannerWorkerController extends Controller
 
     public function __construct(int $server_id)
     {
-        //declare
         $this->server_id = $server_id;
         $this->logController = new Ts3LogController('Banner-Worker', $this->server_id);
     }
@@ -44,6 +43,7 @@ class BannerWorkerController extends Controller
         try {
             $bannerAvailable = banner::query()
                 ->where('server_id', '=', $this->server_id)
+                ->get()
                 ->count();
 
             if ($bannerAvailable > 0) {
@@ -52,9 +52,9 @@ class BannerWorkerController extends Controller
                     ->where('id', '=', $this->server_id)->first();
 
                 if ($ts3ServerConfig->qa_nickname != null) {
-                    $this->qaName = $ts3ServerConfig->qa_nickname;
+                    $this->qa_name = $ts3ServerConfig->qa_nickname;
                 } else {
-                    $this->qaName = $ts3ServerConfig->qa_name;
+                    $this->qa_name = $ts3ServerConfig->qa_name;
                 }
 
                 //get the latest unused banner
@@ -74,25 +74,24 @@ class BannerWorkerController extends Controller
                     return;
                 }
 
+                //get uri with StringHelper
+                $ts3StringHelper = new Ts3UriStringHelperController();
+                $uri = $ts3StringHelper->getStandardUriString(
+                    $ts3ServerConfig->qa_name,
+                    $ts3ServerConfig->qa_pw,
+                    $ts3ServerConfig->server_ip,
+                    $ts3ServerConfig->server_query_port,
+                    $ts3ServerConfig->server_port,
+                    $this->qa_name.'-Banner-Worker',
+                    $this->server_id,
+                    $ts3ServerConfig->mode
+                );
+
+                $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
+                $ts3ServerInfo = $this->ts3_VirtualServer->getInfo();
+
                 //check if delay arrived
                 if (Carbon::now() >= $banner->next_check_at) {
-                    //get uri with StringHelper
-                    $ts3StringHelper = new Ts3UriStringHelperController();
-                    $uri = $ts3StringHelper->getStandardUriString(
-                        $ts3ServerConfig->qa_name,
-                        $ts3ServerConfig->qa_pw,
-                        $ts3ServerConfig->server_ip,
-                        $ts3ServerConfig->server_query_port,
-                        $ts3ServerConfig->server_port,
-                        $this->qaName.'-Banner-Worker',
-                        $this->server_id,
-                        $ts3ServerConfig->mode
-                    );
-
-                    // connect to above specified server, authenticate and spawn an object for the virtual server on port 9987
-                    $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-                    $ts3ServerInfo = $this->ts3_VirtualServer->getInfo();
-
                     //exists banner options
                     $bannerOptions = bannerOption::query()
                         ->with([
@@ -170,7 +169,7 @@ class BannerWorkerController extends Controller
                         }
 
                         //renew banner viewer
-                        if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name) === false) {
+                        if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name) === true) {
                             $fileName = $banner->banner_viewer_file_name;
                         } else {
                             $this->logController->setCustomLog(
@@ -199,18 +198,18 @@ class BannerWorkerController extends Controller
                             ]);
                         }
 
-                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] != asset('banner/viewer/'.$banner->banner_viewer_file_name)) {
+                        if ($ts3ServerInfo['virtualserver_hostbanner_gfx_url'] != asset('banner/viewer/'.$banner->banner_viewer_file_name)) {
                             $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = asset('banner/viewer/'.$banner->banner_viewer_file_name);
                         }
-                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url) {
+                        if ($ts3ServerInfo['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url) {
                             $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
                         }
                         //update every x minutes - ts3 server side
-                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] != 180) {
+                        if ($ts3ServerInfo['virtualserver_hostbanner_gfx_interval'] != 180) {
                             $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
                         }
                         //update size
-                        if ($this->ts3_VirtualServer['virtualserver_hostbanner_mode'] != 2) {
+                        if ($ts3ServerInfo['virtualserver_hostbanner_mode'] != 2) {
                             $this->ts3_VirtualServer['virtualserver_hostbanner_mode'] = 2;
                         }
                     } else {
@@ -235,6 +234,7 @@ class BannerWorkerController extends Controller
                 $e->getCode(),
                 $e->getMessage()
             );
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
