@@ -74,11 +74,11 @@ class AfkWorkerController extends Controller
         }
 
         $functionIsActive = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id);
-        if ($functionIsActive->count() > 0 && $functionIsActive->first(['is_active'])->is_active == true) {
+        if ($functionIsActive->count() > 0 && $functionIsActive->first()->is_afk_active == true) {
             $this->afkMover();
         }
 
-        if ($functionIsActive->count() > 0 && $functionIsActive->first(['is_afk_kicker_active'])->afk_kicker_active == true) {
+        if ($functionIsActive->count() > 0 && $functionIsActive->first()->is_afk_kicker_active == true) {
             $this->afkKicker();
         }
 
