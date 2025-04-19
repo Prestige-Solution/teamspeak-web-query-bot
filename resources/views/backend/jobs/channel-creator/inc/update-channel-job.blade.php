@@ -143,7 +143,13 @@
                                                 <option value="1" @if($job->is_notify_message_server_group == true) selected @endif>Yes</option>
                                             </select>
                                         </div>
-                                        <div class="col-lg-6">
+                                        <div class="col-lg-3">
+                                            <select class="form-select" name="notify_option" id="notify_option">
+                                                <option value="1">Text Message</option>
+                                                <option value="2">Poke Message</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-5">
                                             <select class="form-select" name="notify_message_server_group_sgid" id="notify_message_server_group_sgid">
                                                 <option selected value="0">None</option>
                                                 @foreach($tsServerGroups as $tsServerGroup)
@@ -155,7 +161,7 @@
                                     </div>
                                     <div class="row mb-3">
                                         <label class="col-lg-2 col-form-label fw-bold" for="notify_message_server_group_message">Message</label>
-                                        <div class="col-lg-8">
+                                        <div class="col-lg-10">
                                             <input class="form-control" type="text" name="notify_message_server_group_message" id="notify_message_server_group_message" value="{{$job->notify_message_server_group_message}}">
                                             <div id="NotifyServerGroupMessageHelp" class="form-text">Use placeholders to make your messages even more individual.
                                                 <a class="form-text" href="#patternList" data-bs-toggle="modal">Show available placeholders</a>

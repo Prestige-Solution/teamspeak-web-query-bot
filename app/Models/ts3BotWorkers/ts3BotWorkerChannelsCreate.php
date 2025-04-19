@@ -21,6 +21,9 @@ class ts3BotWorkerChannelsCreate extends Model
 {
     use HasFactory, Compoships;
 
+    public const textMessage = 1;
+    public const pokeMessage = 2;
+
     protected $fillable = [
         'server_id',
         'type_id',
@@ -35,6 +38,7 @@ class ts3BotWorkerChannelsCreate extends Model
         'is_notify_message_server_group',
         'notify_message_server_group_sgid',
         'notify_message_server_group_message',
+        'notify_option',
         'is_active',
     ];
 

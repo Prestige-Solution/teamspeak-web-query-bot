@@ -90,6 +90,7 @@ class ChannelController extends Controller
                 'is_notify_message_server_group'=>$request->validated('is_notify_message_server_group'),
                 'notify_message_server_group_sgid'=>$request->validated('notify_message_server_group_sgid'),
                 'notify_message_server_group_message'=>$request->validated('notify_message_server_group_message'),
+                'notify_option'=>$request->validated('notify_option'),
                 'is_active'=>$request->validated('is_active'),
             ]
         );

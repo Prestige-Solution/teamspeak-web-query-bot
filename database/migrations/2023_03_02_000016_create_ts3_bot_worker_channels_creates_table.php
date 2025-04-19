@@ -30,6 +30,7 @@ return new class extends Migration
             $table->boolean('is_notify_message_server_group')->default(false);
             $table->integer('notify_message_server_group_sgid')->nullable();
             $table->string('notify_message_server_group_message')->nullable();
+            $table->integer('notify_option')->default(1);
             $table->boolean('is_active')->default(false);
             $table->timestamps();
         });

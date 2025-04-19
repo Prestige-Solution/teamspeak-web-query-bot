@@ -30,6 +30,7 @@ class CreateJobChannelCreatorFactory extends Factory
             'is_notify_message_server_group'=>1,
             'notify_message_server_group_sgid'=>27,
             'notify_message_server_group_message'=>'UnitTest',
+            'notify_option'=>1,
             'is_active'=>true,
         ];
     }

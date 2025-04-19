@@ -14,6 +14,7 @@ use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use Exception;
+use Illuminate\Support\Str;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Helper\Signal;
@@ -585,7 +586,16 @@ class Ts3BotController extends Controller
 
                     foreach ($notifyClients as $notifyClient) {
                         $notifyUser = $this->ts3_VirtualServer->clientGetById($notifyClient['clid']);
-                        $notifyUser->message($msg);
+
+                        if ($job->notify_option == ts3BotWorkerChannelsCreate::textMessage)
+                        {
+                            $notifyUser->message($msg);
+                        }
+
+                        if ($job->notify_option == ts3BotWorkerChannelsCreate::pokeMessage)
+                        {
+                            $notifyUser->poke(Str::limit($msg, 97));
+                        }
                     }
                 }
             }
