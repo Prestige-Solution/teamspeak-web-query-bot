@@ -48,7 +48,7 @@ class ChannelController extends Controller
             ->where('server_id', '=', $request->validated('server_id'))
             ->whereNot('channel_name', 'like', '%spacer%')
             ->orderBy('cid')
-            ->get(['id', 'channel_name', 'cid']);
+            ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
 
         $botEvents = ts3BotEvent::query()->where('cat_job_type', '=', 2)->get();
         $botActions = ts3BotAction::query()->where('type_id', '=', 1)->get();

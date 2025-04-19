@@ -81,8 +81,11 @@
                                         <div class="col-lg-8">
                                             <select class="form-select" name="channel_template_id" id="channel_template_id">
                                                 <option value="0" selected>None</option>
-                                                @foreach($tsChannelTemplates as $tsChannelTemplate)
+                                                @foreach($tsChannelTemplates->where('pid','=',0) as $tsChannelTemplate)
                                                     <option value="{{$tsChannelTemplate->cid}}" @if($tsChannelTemplate->cid === $job->channel_template_id) selected @endif>{{$tsChannelTemplate->channel_name}}</option>
+                                                    @foreach($tsChannelTemplates->where('pid','=',$tsChannelTemplate->cid) as $tsChannelTemplatePID)
+                                                        <option value="{{$tsChannelTemplatePID->cid}}" @if($tsChannelTemplatePID->cid === $job->channel_template_id) selected @endif>-{{$tsChannelTemplatePID->channel_name}}</option>
+                                                    @endforeach
                                                 @endforeach
                                             </select>
                                             <div class="form-text">Adopts the rights settings of the selected channel</div>
