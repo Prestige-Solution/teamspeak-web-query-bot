@@ -35,3 +35,7 @@ For more Information visit the [Installation & Setup Guide](docs/installation.md
 You can find at [TeamSpeak X PHP Framework](https://github.com/Prestige-Solution/ts-x-php-framework?tab=readme-ov-file#new-test-routines-for-future-developments-and-improvements) a permission csv file there the bot should use.<br>
 You find here a [Create Bot Identity Guide](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/testing-live-server.md#setup-your-bot-identity)
 
+# Known Issues
+## SSH Connection
+The ssh mode can cause errors. Currently, we tested it at difference systems with and without errors.<br>
+We recommend using raw mode instead of ssh until we find a solution to resolve this problem.
