@@ -68,8 +68,7 @@ class PoliceWorkerController extends Controller
         );
 
         try {
-            $TS3PHPFramework = new TeamSpeak3();
-            $this->ts3_VirtualServer = $TS3PHPFramework->factory($uri);
+            $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,

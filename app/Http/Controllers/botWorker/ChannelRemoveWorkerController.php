@@ -109,7 +109,8 @@ class ChannelRemoveWorkerController extends Controller
             }
 
             //update column updated_at
-            ts3BotWorkerChannelsRemove::query()->touch();
+            ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $this->server_id)->touch();
+
         } catch (Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
@@ -119,7 +120,7 @@ class ChannelRemoveWorkerController extends Controller
                 $e->getCode(),
                 $e->getMessage()
             );
-            //disconnect from server
+
             $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
