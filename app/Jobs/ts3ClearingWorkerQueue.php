@@ -19,6 +19,7 @@ class ts3ClearingWorkerQueue implements ShouldQueue, ShouldBeUnique
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $server_id;
+
     public int $backoff = 60;
 
     public int $tries = 1;

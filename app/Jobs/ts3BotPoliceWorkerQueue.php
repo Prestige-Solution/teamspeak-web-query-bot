@@ -19,6 +19,7 @@ class ts3BotPoliceWorkerQueue implements ShouldQueue, ShouldBeUnique
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
+
     public int $backoff = 60;
 
     public int $server_id;

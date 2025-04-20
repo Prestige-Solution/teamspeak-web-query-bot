@@ -109,7 +109,6 @@ class ChannelRemoveWorkerController extends Controller
 
             //update column updated_at
             ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $this->server_id)->touch();
-
         } catch (Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
