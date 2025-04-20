@@ -3,6 +3,7 @@
 namespace App\Console\Commands\setup;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 
 class SetupCommand extends Command
 {
@@ -28,28 +29,26 @@ class SetupCommand extends Command
     public function handle(): int
     {
         //setup
-        $outputConfigClear = shell_exec('php artisan config:clear');
-        $outputViewClear = shell_exec('php artisan view:clear');
-        $outputRouteClear = shell_exec('php artisan route:clear');
-        $outputCacheClear = shell_exec('php artisan cache:clear');
-        $this->info(trim($outputConfigClear));
-        $this->info(trim($outputViewClear));
-        $this->info(trim($outputCacheClear));
-        $this->info(trim($outputRouteClear));
+        Artisan::call('cache:clear');
+        $this->info('Application cache cleared');
+        Artisan::call('view:clear');
+        $this->info('View cache cleared');
+        Artisan::call('route:clear');
+        $this->info('Route cache cleared');
+        Artisan::call('cache:clear');
+        $this->info('Route cache cleared');
 
-        $outputStorage = shell_exec('php artisan storage:link');
-        $outputMigrate = shell_exec('php artisan migrate');
-        $outputMigrateStatus = shell_exec('php artisan migrate:status');
-        $outputSeeder = shell_exec('php artisan db:seed');
-        $this->info(trim($outputStorage));
-        $this->info(trim($outputMigrate));
-        $this->info(trim($outputMigrateStatus));
-        $this->info(trim($outputSeeder));
+        Artisan::call('storage:link');
+        $this->info('Storage linked');
+        Artisan::call('migrate', ['--force' => true]);
+        $this->info('Migrated');
+        Artisan::call('db:seed', ['--force' => true]);
+        $this->info('Seeded');
 
-        $outputOptimize = shell_exec('php artisan optimize');
-        $outputViewCache = shell_exec('php artisan view:cache');
-        $this->info(trim($outputOptimize));
-        $this->info(trim($outputViewCache));
+        Artisan::call('optimize');
+        $this->info('Optimized');
+        Artisan::call('view:cache');
+        $this->info('View cached');
 
         return self::SUCCESS;
     }

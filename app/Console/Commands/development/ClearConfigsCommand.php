@@ -3,6 +3,7 @@
 namespace App\Console\Commands\development;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 
 class ClearConfigsCommand extends Command
 {
@@ -25,13 +26,13 @@ class ClearConfigsCommand extends Command
      */
     public function handle(): void
     {
-        $outputConfigClear = shell_exec('php artisan config:clear');
-        $outputViewClear = shell_exec('php artisan view:clear');
-        $outputRouteClear = shell_exec('php artisan route:clear');
-        $outputCacheClear = shell_exec('php artisan cache:clear');
-        $this->info(trim($outputConfigClear));
-        $this->info(trim($outputViewClear));
-        $this->info(trim($outputCacheClear));
-        $this->info(trim($outputRouteClear));
+        Artisan::call('view:clear');
+        $this->info('View cleared');
+        Artisan::call('cache:clear');
+        $this->info('Cache cleared');
+        Artisan::call('route:clear');
+        $this->info('Route cleared');
+        Artisan::call('config:clear');
+        $this->info('Configs cleared');
     }
 }
