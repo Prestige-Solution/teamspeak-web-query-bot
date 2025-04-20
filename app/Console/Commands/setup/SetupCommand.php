@@ -28,13 +28,28 @@ class SetupCommand extends Command
     public function handle(): int
     {
         //setup
-        shell_exec('php artisan storage:link');
-        shell_exec('php artisan migrate');
-        shell_exec('php artisan migrate:status');
-        shell_exec('php artisan db:seed');
-        shell_exec('php artisan cache:clear');
-        shell_exec('php artisan optimize');
-        shell_exec('php artisan view:cache');
+        $outputConfigClear = shell_exec('php artisan config:clear');
+        $outputViewClear = shell_exec('php artisan view:clear');
+        $outputRouteClear = shell_exec('php artisan route:clear');
+        $outputCacheClear = shell_exec('php artisan cache:clear');
+        $this->info(trim($outputConfigClear));
+        $this->info(trim($outputViewClear));
+        $this->info(trim($outputCacheClear));
+        $this->info(trim($outputRouteClear));
+
+        $outputStorage = shell_exec('php artisan storage:link');
+        $outputMigrate = shell_exec('php artisan migrate');
+        $outputMigrateStatus = shell_exec('php artisan migrate:status');
+        $outputSeeder = shell_exec('php artisan db:seed');
+        $this->info(trim($outputStorage));
+        $this->info(trim($outputMigrate));
+        $this->info(trim($outputMigrateStatus));
+        $this->info(trim($outputSeeder));
+
+        $outputOptimize = shell_exec('php artisan optimize');
+        $outputViewCache = shell_exec('php artisan view:cache');
+        $this->info(trim($outputOptimize));
+        $this->info(trim($outputViewCache));
 
         return self::SUCCESS;
     }
