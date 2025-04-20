@@ -20,6 +20,8 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
 
     public int $tries = 1;
 
+    public int $backoff = 60;
+
     public int $server_id;
 
     /**
@@ -34,7 +36,7 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
 
     public function middleware(): array
     {
-        return [(new WithoutOverlapping($this->server_id))->dontRelease()];
+        return [(new WithoutOverlapping($this->server_id))->expireAfter(180)];
     }
 
     /**
@@ -62,5 +64,10 @@ class ts3BannerWorkerQueue implements ShouldQueue, ShouldBeUnique
     public function uniqueId(): int
     {
         return $this->server_id;
+    }
+
+    public function backoff(): int
+    {
+        return $this->backoff;
     }
 }
