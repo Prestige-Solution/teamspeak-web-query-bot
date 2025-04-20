@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - dev
+      - development
   
 concurrency:
   group: ci-${{ github.ref }}
@@ -19,12 +19,15 @@ jobs:
         
     name: PHPUnit (PHP ${{ matrix.php_versions }})
     runs-on: ubuntu-latest
-    steps:      
+    steps:
+      - name: add safe directory
+        run: git config --global --add safe.directory /app
+
       - name: install php ${{ matrix.php_versions }} with extensions
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php_versions }}
-          extensions: json ctype openssl ssh2
+          extensions: json ctype openssl ssh2 gd
           coverage: none
           tools: none
     
@@ -36,7 +39,7 @@ jobs:
         with:
           dev: yes
           php_version: ${{ matrix.php_versions }}
-          php_extensions: json ctype openssl ssh2
+          php_extensions: json ctype openssl ssh2 gd
 
       - name: run unit test
         run: ./vendor/bin/phpunit --no-coverage
