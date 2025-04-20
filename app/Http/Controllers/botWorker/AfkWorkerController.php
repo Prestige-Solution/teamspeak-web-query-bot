@@ -70,7 +70,6 @@ class AfkWorkerController extends Controller
                 $e->getCode(),
                 $e->getMessage()
             );
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
         $functionIsActive = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id);

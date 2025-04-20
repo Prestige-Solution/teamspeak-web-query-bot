@@ -69,7 +69,6 @@ class ChannelRemoveWorkerController extends Controller
                 $e->getCode(),
                 $e->getMessage()
             );
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
 
         $this->channelRemover();
