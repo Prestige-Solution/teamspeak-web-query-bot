@@ -3,7 +3,6 @@
 namespace App\Console\Commands\setup;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 
 class SetupCommand extends Command
 {
@@ -28,13 +27,14 @@ class SetupCommand extends Command
      */
     public function handle(): int
     {
-        Artisan::call('storage:link');
-        Artisan::call('migrate');
-        Artisan::call('migrate:status');
-        Artisan::call('db:seed');
-        Artisan::call('cache:clear');
-        Artisan::call('optimize');
-        Artisan::call('view:cache');
+        //setup
+        shell_exec('php artisan storage:link');
+        shell_exec('php artisan migrate');
+        shell_exec('php artisan migrate:status');
+        shell_exec('php artisan db:seed');
+        shell_exec('php artisan cache:clear');
+        shell_exec('php artisan optimize');
+        shell_exec('php artisan view:cache');
 
         return self::SUCCESS;
     }
