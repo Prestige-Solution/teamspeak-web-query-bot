@@ -46,6 +46,8 @@ application test:
         - eval $(ssh-agent -s)
         - chmod 400 "$SSH_PRIVATE_KEY_GIT_DEPLOY"
         - ssh-add "$SSH_PRIVATE_KEY_GIT_DEPLOY"
+        - chmod 400 "$SSH_PRIVATE_KEY_GIT_DEPLOY_BASTION"
+        - ssh-add "$SSH_PRIVATE_KEY_GIT_DEPLOY_BASTION"
         - mkdir -p ~/.ssh && chmod 700 ~/.ssh
         - touch ~/.ssh/known_hosts
         - chmod 644 ~/.ssh/known_hosts
