@@ -32,12 +32,12 @@ class AuthenticateRequest extends FormRequest
             'nickname.required'=>'Incorrect nickname or password',
             'nickname.not_regex'=>'Incorrect nickname or password',
             'password.required'=>'Incorrect nickname or password',
-            'password.exists'=>'Incorrect nickname or password',
+            'nickname.exists'=>'Incorrect nickname or password',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        return redirect()->back()->withErrors(['error'=>'Incorrect name or password'])->withInput();
+        return redirect()->back()->withErrors($validator)->withInput();
     }
 }

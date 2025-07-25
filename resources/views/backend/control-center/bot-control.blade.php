@@ -87,9 +87,10 @@
                                         <button type="submit" class="btn btn-success"><i class="fa-solid fa-circle-play"></i> Start</button>
                                     </form>
                                 @elseif($server->is_ts3_start == 0 && $server->bot_status_id != 3)
-                                    <div class="alert alert-warning mb-2 ms-2" role="alert">
-                                        The bot is stopped. Please wait.
-                                    </div>
+                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts3.start.ts3Bot')}}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-warning"><i class="fa-solid fa-circle-play"></i> Restart</button>
+                                    </form>
                                 @else
                                     <form class="mb-2 ms-2" method="post" action="{{Route('ts3.stop.ts3Bot')}}">
                                         @csrf
