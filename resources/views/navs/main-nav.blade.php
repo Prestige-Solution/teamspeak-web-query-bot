@@ -35,6 +35,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{Route('banner.view.listBanner')}}">Banner Creator</a>
                     </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Utils
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{Route('migration.view.migrationSettings')}}">Migration</a></li>
+                            </ul>
+                        </li>
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{{Route('serverConfig.view.serverList')}}">Server</a>
                     </li>
