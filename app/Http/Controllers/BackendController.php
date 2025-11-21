@@ -29,10 +29,18 @@ class BackendController extends Controller
             ->orderBy('server_ip')
             ->get(['id', 'server_name']);
 
+        $botLogs = ts3BotLog::query()->with('rel_bot_status')
+            ->where('server_id', '=', Auth::user()->default_server_id)
+            ->where('job', '!=', 'queuingWorkers')
+            ->orderByDesc('created_at')
+            ->limit(8)
+            ->get();
+
         return view('backend.dashboard.dashboard')->with([
             'stats'=> $stats,
             'server'=> $server,
             'availableServers'=>$availableServers,
+            'botLogs' => $botLogs,
         ]);
     }
 
