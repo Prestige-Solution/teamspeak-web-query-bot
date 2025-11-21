@@ -5,7 +5,6 @@ namespace App\Http\Controllers\ts3Config;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3Bot\ts3ServerConfig;
 use Exception;
 use Illuminate\Support\Facades\Crypt;
 
@@ -17,7 +16,7 @@ class Ts3UriStringHelperController extends Controller
      * mode = 2 is ssh = 1
      * @throws Exception
      */
-    public function getStandardUriString(string $queryName, string $queryPassword, string $host, int|null $queryPort, int $serverPort, string $botName, int $server_id, int $mode = 1): string
+    public function getStandardUriString(string $queryName, string $queryPassword, string $host, int|null $queryPort, int $serverPort, string $botName, int $server_id): string
     {
         //proof ipv4 or ipv6
         if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
@@ -38,29 +37,12 @@ class Ts3UriStringHelperController extends Controller
 
         //proof serverPort - if is null then set the standard ports else set the specific given port
         if ($queryPort === null) {
-            if ($mode == ts3ServerConfig::TS3ConnectModeRAW) {
-                $queryPort = 10011;
-            } else {
-                $queryPort = 10022;
-            }
+            $queryPort = 10022;
         }
 
-        if ($mode == ts3ServerConfig::TS3ConnectModeRAW) {
-            return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
-                '/?server_port='.$serverPort.
-                '&ssh=0'.
-                '&no_query_clients=1'.
-                '&blocking=0'.
-                '&timeout=30'.
-                '&nickname='.$botName;
-        } else {
-            return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
-                '/?server_port='.$serverPort.
-                '&ssh=1'.
-                '&no_query_clients=1'.
-                '&blocking=0'.
-                '&timeout=30'.
-                '&nickname='.$botName;
-        }
+        return 'serverquery://'.$queryName.':'.Crypt::decryptString($queryPassword).'@'.$validatedHost.':'.$queryPort.
+            '/?server_port='.$serverPort.
+            '&no_query_clients=0'.
+            '&nickname='.$botName;
     }
 }

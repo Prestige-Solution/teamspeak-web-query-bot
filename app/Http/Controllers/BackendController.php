@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Contracts\Foundation\Application;
@@ -14,12 +15,25 @@ class BackendController extends Controller
 {
     public function viewBackendDashboard(): View|Factory|RedirectResponse|Application
     {
-        //check if user has a default_server_id
-        if (Auth::user()->default_server_id === 0) {
-            return view('backend.start');
-        } else {
-            return redirect()->route('backend.view.botControlCenter', ['server_id'=>Auth::user()->default_server_id]);
-        }
+        $stats = statistic::query()
+            ->where('server_id', '=', Auth::user()->default_server_id)
+            ->get()
+            ->first();
+
+        $server = ts3ServerConfig::query()
+            ->with('rel_bot_status')
+            ->where('is_default', '=', true)
+            ->first();
+
+        $availableServers = ts3ServerConfig::query()
+            ->orderBy('server_ip')
+            ->get(['id', 'server_name']);
+
+        return view('backend.dashboard.dashboard')->with([
+            'stats'=> $stats,
+            'server'=> $server,
+            'availableServers'=>$availableServers,
+        ]);
     }
 
     public function viewBotControlCenter(): Factory|View|RedirectResponse|Application

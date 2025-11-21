@@ -29,7 +29,7 @@
                     <div class="row mb-2">
                         <label class="col-lg-3 col-form-label fw-bold" for="qa_name">Query admin</label>
                         <div class="col-lg-9">
-                            <input class="form-control" type="text" name="qa_name" id="qa_name" value="{{ $server->qa_name }}" placeholder="Query admin name" pattern="^((?!serveradmin).)*$" maxlength="30" required>
+                            <input class="form-control" type="text" name="qa_name" id="qa_name" value="{{ $server->qa_name }}" placeholder="Query admin name" maxlength="30" required>
                             <div class="invalid-feedback">
                                 The name must not be longer than 30 characters. The use of the “serveradmin” account is not supported.
                             </div>
@@ -66,7 +66,6 @@
                         <label class="col-lg-3 col-form-label fw-bold" for="mode">Connection mode</label>
                         <div class="col-lg-9">
                             <select class="form-select" name="mode" id="mode">
-                                <option value="{{\App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeRAW}}" @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeRAW) selected @endif>RAW</option>
                                 <option value="{{\App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH}}" @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH) selected @endif>SSH</option>
                             </select>
                         </div>

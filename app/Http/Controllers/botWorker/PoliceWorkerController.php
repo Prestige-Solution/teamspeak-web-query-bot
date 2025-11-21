@@ -64,7 +64,6 @@ class PoliceWorkerController extends Controller
             $ts3ServerConfig->server_port,
             $this->qa_name.'-Police-Worker',
             $this->server_id,
-            $ts3ServerConfig->mode
         );
 
         try {
@@ -81,7 +80,7 @@ class PoliceWorkerController extends Controller
         }
 
         //policeWorker Settings
-        $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first();
+        $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->get();
 
         //check VPN
         if ($policeWorkerSetting->is_vpn_protection_active == true && ! empty($policeWorkerSetting->vpn_protection_api_register_mail)) {

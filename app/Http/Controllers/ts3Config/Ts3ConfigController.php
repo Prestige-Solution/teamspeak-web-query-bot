@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\ts3Config;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\sys\StatisticController;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Requests\Ts3Config\CreateStartBotRequest;
 use App\Http\Requests\Ts3Config\CreateStopBotRequest;
 use App\Jobs\ts3BotStartQueue;
 use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
+use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
@@ -26,6 +28,7 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 class Ts3ConfigController extends Controller
 {
     protected Ts3LogController $ts3LogController;
+    protected StatisticController $statisticController;
 
     protected null|string $uri = null;
 
@@ -76,7 +79,6 @@ class Ts3ConfigController extends Controller
                 $ts3ServerConfig->server_port,
                 $ts3ServerConfig->qa_name,
                 $server_id,
-                $ts3ServerConfig->mode
             );
         } catch (Exception) {
             redirect()->back()->withErrors(['ipAddress'=>'The ip address or dns name you entered is invalid.']);
@@ -85,6 +87,7 @@ class Ts3ConfigController extends Controller
         try {
             TeamSpeak3::init();
             $ts3_VirtualServer = TeamSpeak3::factory($this->uri);
+            $this->statisticController = new StatisticController($ts3_VirtualServer);
         } catch (Exception $e) {
             $this->ts3LogController->setCustomLog(
                 $server_id,
@@ -101,7 +104,7 @@ class Ts3ConfigController extends Controller
 
         try {
             //CHANNELS
-            //get all channels as collection without SubChannels
+            //get all channels as a collection without SubChannels
             $ts3Channels = collect($ts3_VirtualServer->channelList(['pid'=>0]));
             //get for each key - channelID connection the channel info and store in db
             foreach ($ts3Channels->keys()->all() as $cid) {
@@ -135,7 +138,7 @@ class Ts3ConfigController extends Controller
 
         try {
             //SERVER-GROUPS
-            //get server groups as collection
+            //get server groups as a collection
             $ts3ServerGroups = collect($ts3_VirtualServer->serverGroupList());
             //insert server groups in db
             foreach ($ts3ServerGroups->keys()->all() as $sgid) {
@@ -189,6 +192,9 @@ class Ts3ConfigController extends Controller
             'Config Initialisation',
             'Der Server wurde erfolgreich initialisiert',
         );
+
+        //update virtual server statistic
+        $this->statisticController->gatherVirtualServerStatistic($server_id);
 
         return ['status'=>1, 'msg'=>'success'];
     }

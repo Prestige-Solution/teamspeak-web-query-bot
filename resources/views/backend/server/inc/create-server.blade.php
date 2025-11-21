@@ -66,7 +66,6 @@
                         <label class="col-lg-3 col-form-label fw-bold" for="mode">Connection Mode</label>
                         <div class="col-lg-9">
                             <select class="form-select" name="mode" id="mode">
-                                <option value="{{\App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeRAW}}" selected>RAW</option>
                                 <option value="{{\App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH}}">SSH</option>
                             </select>
                         </div>

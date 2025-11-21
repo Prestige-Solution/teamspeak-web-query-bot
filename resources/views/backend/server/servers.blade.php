@@ -76,20 +76,12 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-bold">Connection mode:</span>
-                                @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeRAW)
-                                    <span class="badge text-bg-warning">RAW</span>
-                                @elseif($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH)
-                                    <span class="badge text-bg-success">SSH</span>
-                                @endif
+                                <span class="badge text-bg-success">SSH</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-bold">Query port:</span>
                                 @if($server->server_query_port === null)
-                                    @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH)
-                                        <span class="text-secondary">10022</span>
-                                    @else
-                                        <span class="text-secondary">10011</span>
-                                    @endif
+                                    <span class="text-secondary">10022</span>
                                 @else
                                     <span class="text-secondary">{{ $server->server_query_port }}</span>
                                 @endif

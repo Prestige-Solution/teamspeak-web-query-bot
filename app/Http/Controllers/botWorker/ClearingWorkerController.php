@@ -56,7 +56,6 @@ class ClearingWorkerController extends Controller
             $ts3ServerConfig->server_port,
             $this->qaName.'-Clearing-Worker',
             $this->server_id,
-            $ts3ServerConfig->mode
         );
 
         try {
