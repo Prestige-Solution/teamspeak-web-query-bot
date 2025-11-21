@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Backend\UpdateChangePasswordRequest;
 use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class BackendController extends Controller
 {
@@ -76,5 +79,16 @@ class BackendController extends Controller
     public function viewChangePassword(): \Illuminate\Foundation\Application|View|Factory|Application
     {
         return view('auth.changePassword');
+    }
+
+    public function updateChangePassword(UpdateChangePasswordRequest $request): RedirectResponse
+    {
+        User::query()
+            ->where('id','=', Auth::user()->id)
+            ->update([
+            'password' => Hash::make($request->validated('NewPassword')),
+        ]);
+
+        return redirect()->route('backend.view.dashboard')->with(['success'=>'Password changed successfully.']);
     }
 }

@@ -45,6 +45,7 @@ class NewAccountCommand extends Command
                 'password'=>$password,
             ]);
 
+        $this->info('Your account has been created / updated.');
         return CommandAlias::SUCCESS;
     }
 }
