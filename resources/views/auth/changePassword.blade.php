@@ -11,7 +11,7 @@
                 <div class="card border-0">
                     <div class="card-body">
                         @include('form-components.alertHandlingLogin')
-                        <form method="post" action="{{Route('backend.update.changePassword')}}">
+                        <form method="post" action="#">
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label fw-bold" for="CurrentPassword">Current Password:</label>
