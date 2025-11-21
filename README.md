@@ -12,6 +12,7 @@ Less admin, more gaming.
 - Custom banners, dynamic impact: craft your message and display it in TeamSpeak with style.
 - Define what’s allowed—and what’s not. Block bad names for channels and users effortlessly.
 - Scale made simple: handle multiple TeamSpeak servers from one place.
+- Full SSH query support
 
 ---
 
@@ -32,10 +33,7 @@ For more Information visit the [Installation & Setup Guide](docs/installation.md
 ---
 
 # Teamspeak Permission
-You can find at [TeamSpeak X PHP Framework](https://github.com/Prestige-Solution/ts-x-php-framework?tab=readme-ov-file#new-test-routines-for-future-developments-and-improvements) a permission csv file there the bot should use.<br>
-You find here a [Create Bot Identity Guide](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/testing-live-server.md#setup-your-bot-identity)
+- Use you serveradmin query account to has the max power and control to your server
+- Or you can define a specific Bot identity [Create Bot Identity Guide](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/testing-live-server.md#setup-your-bot-identity)
 
 # Known Issues
-## SSH Connection
-The ssh mode can cause errors. Currently, we tested it at difference systems with and without errors.<br>
-We recommend using raw mode instead of ssh until we find a solution to resolve this problem.
