@@ -24,7 +24,7 @@ class LoginController extends Controller
         if (Auth::attempt(['nickname'=>$request->validated('nickname'), 'password'=>$request->validated('password')])) {
             $request->session()->regenerate();
 
-            return redirect()->route('backend.view.botControlCenter');
+            return redirect()->route('backend.view.dashboard');
         }
 
         return redirect()->back()->withErrors([

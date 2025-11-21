@@ -33,6 +33,7 @@ Route::middleware(['throttle:login'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('/dashboard')->name('backend.')->group(function () {
+        Route::get('/', [BackendController::class, 'viewBackendDashboard'])->name('view.dashboard');
         Route::get('/control-center', [BackendController::class, 'viewBotControlCenter'])->name('view.botControlCenter');
         Route::get('/password-reset', [BackendController::class, 'viewChangePassword'])->name('view.changePassword');
 //        Route::post('/change-password', [BackendController::class, 'updateChangePassword'])->name('update.changePassword');

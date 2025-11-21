@@ -13,6 +13,9 @@
                     </li>
                 @else
                     <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{Route('backend.view.dashboard')}}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{{Route('backend.view.botControlCenter')}}">Bot Control Center</a>
                     </li>
                     <li class="nav-item dropdown">

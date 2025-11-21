@@ -54,8 +54,8 @@
         </div>
         <div class="row mt-3">
             <div class="col-lg-12">
-                @if(session('logs'))
-                    <pre style="background:#111;color:#0f0;padding:1rem;border-radius:8px;overflow:auto;max-height:600px;">{{ trim(session('logs')) }}</pre>
+                @if(isset($logs))
+                    <pre style="background:#111;color:#0f0;padding:1rem;border-radius:8px;overflow:auto;max-height:600px;">{{ trim($logs) }}</pre>
                 @endif
             </div>
         </div>

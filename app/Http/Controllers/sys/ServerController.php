@@ -11,6 +11,7 @@ use App\Http\Requests\Config\UpdateServerInitRequest;
 use App\Http\Requests\Config\UpdateServerRequest;
 use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
+use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
@@ -74,7 +75,7 @@ class ServerController extends Controller
             User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $server_id]);
         }
 
-        //initialising server only in production mode
+        //initializing server only in production mode
         if (config('app.env') !== 'testing') {
             $status = $this->initialisingTs3Server($server_id);
 
@@ -86,6 +87,11 @@ class ServerController extends Controller
                 }
             }
         }
+
+        //create entry in statistics
+        statistic::query()->firstOrCreate([
+            'server_id'=>$server_id,
+        ]);
 
         return redirect()->route('serverConfig.view.serverList');
     }
@@ -180,6 +186,9 @@ class ServerController extends Controller
         } else {
             User::query()->update(['default_server_id' => 0]);
         }
+
+        //delete statistics
+        statistic::query()->where('server_id', '=', $request->validated('server_id'))->delete();
 
         return redirect()->route('serverConfig.view.serverList');
     }

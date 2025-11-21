@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\bot;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\sys\StatisticController;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Controllers\ts3Config\BadNameController;
 use App\Http\Controllers\ts3Config\Ts3ConfigController;
 use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
+use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ServerConfig;
@@ -16,18 +18,24 @@ use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use Exception;
 use Illuminate\Support\Str;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
+use PlanetTeamSpeak\TeamSpeak3Framework\Exception\AdapterException;
+use PlanetTeamSpeak\TeamSpeak3Framework\Exception\NodeException;
+use PlanetTeamSpeak\TeamSpeak3Framework\Exception\ServerQueryException;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TeamSpeak3Exception;
+use PlanetTeamSpeak\TeamSpeak3Framework\Exception\TransportException;
 use PlanetTeamSpeak\TeamSpeak3Framework\Helper\Signal;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
+use function Symfony\Component\Translation\t;
 
 class Ts3BotController extends Controller
 {
     protected Server|Adapter|Node|Host $ts3_VirtualServer;
 
     protected Ts3LogController $logController;
+    protected StatisticController $StatisticController;
 
     protected int $server_id;
 
@@ -91,10 +99,10 @@ class Ts3BotController extends Controller
                 $ts3ServerConfig->server_port,
                 $qaName,
                 $this->server_id,
-                $ts3ServerConfig->mode
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
+            $this->StatisticController = new StatisticController($this->ts3_VirtualServer);
 
             $whoami = $this->ts3_VirtualServer->whoami();
             $this->self_clid = $whoami['client_id'];
@@ -119,8 +127,8 @@ class Ts3BotController extends Controller
 
             $this->waitIncrease = 1;
 
-            while (1) {
-                $this->ts3_VirtualServer->getAdapter()->wait();
+            while ($this->isBotStop === false) {
+                $this->ts3_VirtualServer->getParent()->getAdapter()->wait();
             }
         } catch(TeamSpeak3Exception $e) {
             $this->errorHandlingTeamSpeak3Exception($e);
@@ -138,7 +146,7 @@ class Ts3BotController extends Controller
                 $this->startBot();
             }
 
-            //is bot has max re-connect times
+            //is bot having max re-connect times
             if ($this->reconnectCode == ts3ServerConfig::BotReconnectFalse && $this->isBotStop === false) {
                 $this->logController->setCustomLog(
                     $this->server_id,
@@ -170,15 +178,17 @@ class Ts3BotController extends Controller
             echo "Check bot is alive \n";
         }
 
+        //set stats
+        $this->gather_virtualServer_stats();
+
         //check bot stop
         $this->botStopSignal();
 
         if ($this->isBotStop === false) {
             try {
                 $keepAliveStatus = $this->ts3_VirtualServer->getAdapter()->request('clientupdate');
-                $keepAliveStatus->toArray();
 
-                if ($keepAliveStatus->getErrorProperty('msg') != 'ok') {
+                if ($keepAliveStatus->getErrorProperty('msg')->toString() != 'ok') {
                     $this->logController->setCustomLog(
                         $this->server_id,
                         ts3BotLog::FAILED,
@@ -452,7 +462,7 @@ class Ts3BotController extends Controller
             $chGetByID = $this->ts3_VirtualServer->channelGetById($job->on_cid);
             $clientsOnChannel = collect($this->ts3_VirtualServer->clientList(['cid'=>$job->on_cid]));
             $chInfo = $chGetByID->getInfo();
-            $chName = $chInfo['channel_name']->toString();
+            $chName = $chInfo['channel_name'];
 
             //proof ist set user a channel with server admin?
             $isOwnChannelExist = false;
@@ -464,22 +474,21 @@ class Ts3BotController extends Controller
                 $ownChannelGroupLists = $this->ts3_VirtualServer->channelGroupClientList($job->channel_cgid, $channelListCID, $clDbID);
                 //proof own channel is existing
                 foreach ($ownChannelGroupLists as $ownChannelGrouplist) {
-                    if ($ownChannelGrouplist['cid'] == $channelListCID) {
+                    if ($ownChannelGrouplist['cid'] == $channelListCID && $isOwnChannelExist === false) {
                         //channel is exist
                         $isOwnChannelExist = true;
                         //move user to channel
                         $this->ts3_VirtualServer->clientMove($clid, $channelListCID);
 
-                        if ($isGoBackFlag == true) {
+                        if ($isGoBackFlag === true) {
                             //bot go back in standard channel
                             $this->ts3_VirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
                         }
                     }
                 }
             }
-
             //if client min count configured
-            if ($job->action_min_clients <= $clientsOnChannel->count() && $isOwnChannelExist == false) {
+            if ($isOwnChannelExist == false && $job->action_min_clients <= $clientsOnChannel->count() ) {
                 //proof if channel name available
                 $ifAvailable = false;
                 $ifMaxChannelReached = false;
@@ -706,6 +715,17 @@ class Ts3BotController extends Controller
     }
 
     /**
+     * @throws AdapterException
+     * @throws TransportException
+     * @throws NodeException
+     * @throws ServerQueryException
+     */
+    private function gather_virtualServer_stats()
+    {
+        $this->StatisticController->gatherVirtualServerStatistic($this->server_id);
+    }
+
+    /**
      * Handle Errors by TeamSpeak3Exception
      * @throws Exception
      */
@@ -742,7 +762,8 @@ class Ts3BotController extends Controller
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::TRY_RECONNECT, 'startBot');
-                $this->reconnectCode = $this->reconnectBot();
+                $this->reconnectCode = false;
+                $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
                 break;
             case 111:
                 //explanation: connection refused
