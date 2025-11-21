@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('virtualserver_connection_bytes_received_keepalive')->nullable();
             $table->string('virtualserver_connection_bytes_sent_keepalive')->nullable();
             $table->string('virtualserver_total_packetloss_speech')->nullable();
+            $table->integer('virtualserver_reserved_slots')->default(0);
             $table->timestamps();
         });
 

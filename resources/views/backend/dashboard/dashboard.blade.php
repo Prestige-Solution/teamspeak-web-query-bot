@@ -80,6 +80,10 @@
                             </h5>
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between">
+                                    <span class="fw-bold">Reserved Slots:</span>
+                                    <span class="text-secondary">{{ $stats->virtualserver_reserved_slots }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
                                     <span class="fw-bold">Query Users online (total):</span>
                                     <span class="text-secondary">{{ $stats->virtualserver_queryclientsonline }}</span>
                                 </li>

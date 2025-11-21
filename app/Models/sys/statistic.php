@@ -23,5 +23,6 @@ class statistic extends Model
         'virtualserver_connection_bytes_received_keepalive',
         'virtualserver_connection_bytes_sent_keepalive',
         'virtualserver_total_packetloss_speech',
+        'virtualserver_reserved_slots'
     ];
 }

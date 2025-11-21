@@ -53,6 +53,7 @@ class StatisticController extends Controller
                 'virtualserver_connection_bytes_received_keepalive' => $stats['connection_bytes_received_keepalive'],
                 'virtualserver_connection_bytes_sent_keepalive' => $stats['connection_bytes_sent_keepalive'],
                 'virtualserver_total_packetloss_speech' => $stats['virtualserver_total_packetloss_speech'],
+                'virtualserver_reserved_slots'=>$stats['virtualserver_reserved_slots'],
             ]);
     }
 }
