@@ -80,7 +80,7 @@ class PoliceWorkerController extends Controller
         }
 
         //policeWorker Settings
-        $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->get();
+        $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first();
 
         //check VPN
         if ($policeWorkerSetting->is_vpn_protection_active == true && ! empty($policeWorkerSetting->vpn_protection_api_register_mail)) {
@@ -100,7 +100,7 @@ class PoliceWorkerController extends Controller
         $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
-    private function checkVpn(array $policeWorkerSetting): void
+    private function checkVpn($policeWorkerSetting): void
     {
         try {
             //api police / max 15 per Minute and 500 per day
@@ -304,7 +304,7 @@ class PoliceWorkerController extends Controller
                 $clidInfo = $this->ts3_VirtualServer->clientGetById($clid);
 
                 if ($clidInfo['client_type'] == 0) {
-                    $badNameProofResult = $badNameController->checkBadName($clidInfo['client_nickname']->toString(), $this->server_id);
+                    $badNameProofResult = $badNameController->checkBadName($clidInfo['client_nickname'], $this->server_id);
 
                     if ($badNameProofResult == true) {
                         //kick client
