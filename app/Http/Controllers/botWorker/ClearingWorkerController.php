@@ -83,7 +83,7 @@ class ClearingWorkerController extends Controller
     private function updateChannelList(): void
     {
         try {
-            //get all channels as collection without SubChannels
+            //get all channels as a collection without SubChannels
             $updateTsChannels = collect($this->ts3_VirtualServer->channelList());
 
             $channelList = [];
@@ -101,7 +101,7 @@ class ClearingWorkerController extends Controller
                 $this->updateChannelInDatabase($cid, $channelInfo, $channel->toString());
             }
 
-            //get channels where not found at server side and delete in database
+            //get channels where not found at server side and delete in a database
             $deletingChannelList = ts3Channel::query()
                 ->where('server_id', '=', $this->server_id)
                 ->whereNotIn('cid', $channelList)
