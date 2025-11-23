@@ -41,7 +41,7 @@ class Ts3ConfigController extends Controller
      */
     public function ts3ServerInitializing(int $server_id): array
     {
-        $this->ts3LogController = new Ts3LogController('Server Initialising', Auth::user()->default_server_id);
+        $this->ts3LogController = new Ts3LogController('Server initializing', Auth::user()->default_server_id);
 
         $ts3ServerConfig = ts3ServerConfig::query()
             ->where('id', '=', $server_id)
@@ -93,7 +93,7 @@ class Ts3ConfigController extends Controller
                 $server_id,
                 ts3BotLog::FAILED,
                 'Connect to server failed',
-                'Setup - Initialising Server',
+                'Setup - Initializing Server',
                 $e->getCode(),
                 $e->getMessage()
             );
@@ -190,7 +190,7 @@ class Ts3ConfigController extends Controller
             $server_id,
             ts3BotLog::SUCCESS,
             'Config Initialisation',
-            'Der Server wurde erfolgreich initialisiert',
+            'The server has been successfully initialized.',
         );
 
         //update virtual server statistic

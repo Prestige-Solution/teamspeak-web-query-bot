@@ -8,7 +8,6 @@ use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Controllers\ts3Config\BadNameController;
 use App\Http\Controllers\ts3Config\Ts3ConfigController;
 use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
-use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ServerConfig;
@@ -28,7 +27,6 @@ use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
-use function Symfony\Component\Translation\t;
 
 class Ts3BotController extends Controller
 {
@@ -146,7 +144,7 @@ class Ts3BotController extends Controller
                 $this->startBot();
             }
 
-            //is bot having max re-connect times
+            //is bot having max re-connect times?
             if ($this->reconnectCode == ts3ServerConfig::BotReconnectFalse && $this->isBotStop === false) {
                 $this->logController->setCustomLog(
                     $this->server_id,
@@ -217,7 +215,6 @@ class Ts3BotController extends Controller
         $getEvent = $event->getType()->toString();
 
         if (config('app.bot_debug') == true) {
-            // print message
             echo 'type: '.$getEvent."\n";
         }
 
@@ -341,7 +338,7 @@ class Ts3BotController extends Controller
 
                 if ($jobIsCreateChannel->count() != 0) {
                     foreach ($jobIsCreateChannel as $jobCreateChannel) {
-                        //start channel create worker
+                        //start channels create worker
                         $this->createChannel($jobCreateChannel->id, $this->server_id, $getCLID);
                     }
                 }
@@ -419,7 +416,7 @@ class Ts3BotController extends Controller
                 ->where('server_id', '=', $server_id)
                 ->first();
 
-            //if is_active == false then leave
+            //if is_active == false, then leave
             if ($job->is_active == false) {
                 return;
             }
@@ -464,7 +461,7 @@ class Ts3BotController extends Controller
             $chInfo = $chGetByID->getInfo();
             $chName = $chInfo['channel_name'];
 
-            //proof ist set user a channel with server admin?
+            //proof is set user a channel with server admin?
             $isOwnChannelExist = false;
             $channelList = collect($this->ts3_VirtualServer->channelList(['pid'=>$job->on_cid]));
 
@@ -475,13 +472,13 @@ class Ts3BotController extends Controller
                 //proof own channel is existing
                 foreach ($ownChannelGroupLists as $ownChannelGrouplist) {
                     if ($ownChannelGrouplist['cid'] == $channelListCID && $isOwnChannelExist === false) {
-                        //channel is exist
+                        //channel exists
                         $isOwnChannelExist = true;
                         //move user to channel
                         $this->ts3_VirtualServer->clientMove($clid, $channelListCID);
 
                         if ($isGoBackFlag === true) {
-                            //bot go back in standard channel
+                            //bot goes back in the standard channel
                             $this->ts3_VirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
                         }
                     }
@@ -507,7 +504,7 @@ class Ts3BotController extends Controller
                     if ($channelAvailableCount == 0) {
                         $ifAvailable = true;
 
-                        //if create_max_channels == 0 then unlimited channels can be created
+                        //if create_max_channels == 0, then unlimited channels can be created
                         if ($channelCount >= $job->create_max_channels && $job->create_max_channels != 0) {
                             $ifMaxChannelReached = true;
                         }
@@ -517,7 +514,7 @@ class Ts3BotController extends Controller
                     }
                 }
 
-                //if Channel Template is set then copy the permissions
+                //if Channel Template is set, then copy the permissions
                 if ($ifMaxChannelReached == false && ($job->channel_template_cid != 0 || $job->channel_template_cid != null) == true) {
                     //get channel permissions
                     $templateChannel = ts3Channel::query()->where('cid', '=', $job->channel_template_cid)->first();
@@ -561,25 +558,25 @@ class Ts3BotController extends Controller
 
                 //move User in Created Channel
                 if ($job->rel_action_user->action_bot == 'client_move_to_created_channel' && $ifMaxChannelReached == false) {
-                    //if client min count configured move all clients in created channel
+                    //if client min count configured move all clients in the created channel
                     if ($job->action_min_clients <= $clientsOnChannel->count() && $job->action_min_clients > 1) {
                         foreach ($clientsOnChannel->keys()->all() as $clientID) {
                             $this->ts3_VirtualServer->clientMove($clientID, $createdCID);
                         }
                     } else {
-                        //move client in created channel
+                        //move the client in the created channel
                         $this->ts3_VirtualServer->clientMove($clid, $createdCID);
                     }
 
-                    //if channel group id not 0 then set the Channel Group cgid
+                    //if channel group id not 0, then set the Channel Group cgid
                     if ($job->channel_cgid != 0) {
                         $this->ts3_VirtualServer->clientSetChannelGroup($clDbID, $createdCID, $job->channel_cgid);
                     }
                 }
 
-                //if channel temp then bot go back in standard channel
+                //if channel temp, then bot go back in the standard channel
                 if ($isGoBackFlag == true) {
-                    //bot go back in standard channel
+                    //bot goes back in the standard channel
                     $this->ts3_VirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
                 }
 

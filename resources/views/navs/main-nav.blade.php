@@ -43,7 +43,7 @@
                                 Utils
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{Route('migration.view.migrationSettings')}}">Migration</a></li>
+                                <li><a class="dropdown-item" href="{{Route('migration.view.migrationSettings')}}">Migration Tool</a></li>
                             </ul>
                         </li>
                     <li class="nav-item">

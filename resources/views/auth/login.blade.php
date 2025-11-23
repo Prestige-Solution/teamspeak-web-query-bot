@@ -15,7 +15,7 @@
             <div class="col-lg-6">
                 <div class="card border-0">
                     <div class="card-body">
-                        <h1 class="fw-bold fs-5 mb-3">Web Query Bot | Login</h1>
+                        <h1 class="fw-bold fs-5 mb-3">Teamspeak Web Query Bot | Login</h1>
                         @include('form-components.alertHandlingLogin')
                         <form method="post" action="{{Route('logging-in')}}">
                             @csrf

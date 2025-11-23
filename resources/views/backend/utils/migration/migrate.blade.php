@@ -8,7 +8,7 @@
 <div class="container mt-3">
     <div class="row mb-2">
         <div class="col-lg-8">
-            <h2 class="fs-3 fw-bold">Migration Tool</h2>
+            <h2 class="fs-3 fw-bold">Teamspeak Server Migration Tool</h2>
         </div>
     </div>
     <hr>
@@ -17,6 +17,11 @@
             <p>
                 This tool will help you to migrate data from one server to another.
             </p>
+            <ol>
+                <li>Setup your servers with query <span class="fw-bold">admin user</span> account</li>
+                <li>Select source server</li>
+                <li>Select target server</li>
+            </ol>
         </div>
     </div>
     <hr>
@@ -47,6 +52,7 @@
                 <button class="btn btn-primary mt-auto" id="migrate-button" type="submit">Start Migration</button>
             </div>
         </div>
+        <hr>
         <div class="row mb-2">
             <div class="col-lg-12">
                 <h2 class="fs-3 fw-bold">Logs</h2>

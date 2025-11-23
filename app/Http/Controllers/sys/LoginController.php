@@ -28,7 +28,7 @@ class LoginController extends Controller
         }
 
         return redirect()->back()->withErrors([
-            'error'=>'Name oder Passwort falsch',
+            'error'=>'Incorrect Login',
         ]);
     }
 

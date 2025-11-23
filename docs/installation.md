@@ -17,12 +17,12 @@ sudo apt install php8.2-{cli,common,curl,intl,mbstring,xml,bz2,gd,zip,ssh2,pgsql
 ```
 # Git & Composer
 ## Install composer
-To install composer follow the [Documentation](https://getcomposer.org/download/)
+To install composer, follow the [Documentation](https://getcomposer.org/download/)
 
 ## Install application
 ```
 git clone https://github.com/Prestige-Solution/teamspeak-web-query-bot.git /var/www/psbot/
-sudo chown -R user:www-data /var/www/psbot
+sudo chown -R www-data:www-data /var/www/psbot
 cd /var/www/psbot/
 composer install
 ```
@@ -47,7 +47,7 @@ This application is developed and tested with [supervisor process control system
 sudo apt install supervisor
 ```
 ## Default config
-If you use our default directory at ``/var/www/psbot`` you can use directly our supervisor configs
+If you use our default directory at ``/var/www/psbot`` you can directly use our supervisor configs
 ```shell
 sudo cp /var/www/psbot/docs/supervisor/example-psbot.conf /etc/supervisor/conf.d/psbot.conf
 sudo cp /var/www/psbot/docs/supervisor/example-psbot-clearing.conf /etc/supervisor/conf.d/psbot-clearing.conf
@@ -56,7 +56,7 @@ sudo cp /var/www/psbot/docs/supervisor/example-psbot-worker.conf /etc/supervisor
 
 ## Custom config
 Change the config files at ``/etc/supervisor/conf.d/`` the command to ``command=php <YOUR PATH>/artisan ...``<br>
-If you will handle more than 1 teamspeak server then increase at ``/etc/supervisor/conf.d/psbot.conf`` the value ``numprocs=1`` to your manged server count
+If you will handle more than one teamspeak server then increase at ``/etc/supervisor/conf.d/psbot.conf`` the value ``numprocs=1`` to your manged server count
 
 ## Start processes
 ```shell
