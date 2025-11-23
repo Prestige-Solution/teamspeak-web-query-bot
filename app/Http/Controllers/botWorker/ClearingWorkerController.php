@@ -127,10 +127,7 @@ class ClearingWorkerController extends Controller
 
     private function updateChannelInDatabase(int $cid, array $channelInfo, string $channelName): void
     {
-        ts3Channel::query()
-            ->where('server_id', '=', $this->server_id)
-            ->where('cid', '=', $cid)
-            ->updateOrCreate(
+        ts3Channel::query()->updateOrCreate(
                 [
                     'cid'=>$cid,
                     'server_id'=>$this->server_id,
