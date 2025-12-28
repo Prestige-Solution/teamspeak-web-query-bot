@@ -46,6 +46,6 @@ class AuthTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertRedirectToRoute('public.view.login');
-        $response->assertSessionHasErrors(['error'=>'Name oder Passwort falsch']);
+        $response->assertSessionHasErrors(['error'=>'Incorrect Login']);
     }
 }
