@@ -21,5 +21,3 @@ identifier.sqlite
 storage/logs/chaining/*
 storage/logs/*
 .php-cs-fixer.cache
-deploy.php
-.gitlab
