@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('virtualserver_queryclientsonline')->default(0);
             $table->integer('virtualserver_maxclients')->default(0);
             $table->integer('virtualserver_channelsonline')->default(0);
-            $table->integer('virtualserver_platform')->nullable();
+            $table->string('virtualserver_platform')->nullable();
             $table->string('virtualserver_version')->nullable();
             $table->string('virtualserver_uptime')->nullable();
             $table->string('virtualserver_total_packetloss_keepalive')->nullable();
