@@ -31,7 +31,7 @@
                         <div class="col-lg-9">
                             <input class="form-control" type="text" name="qa_name" id="qa_name" value="{{ $server->qa_name }}" placeholder="Query admin name" maxlength="30" required>
                             <div class="invalid-feedback">
-                                The name must not be longer than 30 characters. The use of the “serveradmin” account is not supported.
+                                The name must not be longer than 30 characters.
                             </div>
                         </div>
                     </div>
