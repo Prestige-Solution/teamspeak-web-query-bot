@@ -42,6 +42,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ts3_bot_police_workers');
+        Schema::dropIfExists('ts3_bot_worker_police');
     }
 };

@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ts3_bot_worker_channel_removers');
+        Schema::dropIfExists('ts3_bot_worker_channels_removes');
     }
 };
