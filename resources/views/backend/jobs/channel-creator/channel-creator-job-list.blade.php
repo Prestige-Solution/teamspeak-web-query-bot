@@ -82,7 +82,7 @@
                                                 <span class="text-secondary">{{$job->create_max_channels}}</span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between">
-                                                <span class="fw-bold">Current count cub-channels</span>
+                                                <span class="fw-bold">Current count sub-channels</span>
                                                 <span class="text-secondary">{{$job->rel_pid->count()}}</span>
                                             </li>
                                         </ul>
