@@ -7,5 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ts3BotActionUser extends Model
 {
-    use HasFactory;
+    protected $fillable = [
+        'type_id',
+        'action_bot',
+        'action_name',
+    ];
 }

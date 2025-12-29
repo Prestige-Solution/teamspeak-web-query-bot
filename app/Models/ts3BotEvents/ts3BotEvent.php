@@ -7,5 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ts3BotEvent extends Model
 {
-    use HasFactory;
+    protected $fillable = [
+        'event_ts',
+        'event_name',
+        'event_description',
+        'cat_job_type',
+    ];
 }
