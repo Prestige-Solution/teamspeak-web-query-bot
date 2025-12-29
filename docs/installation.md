@@ -9,15 +9,18 @@ sudo apt update
 ```
 ## Use with MySQL database
 ```shell
-sudo apt install php8.2-{cli,common,curl,intl,mbstring,xml,bz2,zip,gd,ssh2,mysql}
+sudo apt install php8.3-{cli,common,curl,intl,mbstring,xml,bz2,zip,gd,ssh2,mysql}
 ```
 ## Use with postgres
 ```shell
-sudo apt install php8.2-{cli,common,curl,intl,mbstring,xml,bz2,gd,zip,ssh2,pgsql}
+sudo apt install php8.3-{cli,common,curl,intl,mbstring,xml,bz2,gd,zip,ssh2,pgsql}
 ```
 # Git & Composer
 ## Install composer
 To install composer, follow the [Documentation](https://getcomposer.org/download/)
+```shell
+sudo apt install git
+```
 
 ## Install application
 ```
@@ -34,7 +37,7 @@ Copy the .env.example to .env
 cd /var/www/psbot/
 cp .env.example .env 
 ```
-Change the ``DB_*`` and ``APP_URL`` configs and create a new APP_Key with
+Change the ``DB_*`` and ``APP_URL`` configs and create a new ``APP_KEY`` with
 ```shell
 php artisan key:generate
 php artisan app:setup
@@ -52,21 +55,23 @@ If you use our default directory at ``/var/www/psbot`` you can directly use our 
 sudo cp /var/www/psbot/docs/supervisor/example-psbot.conf /etc/supervisor/conf.d/psbot.conf
 sudo cp /var/www/psbot/docs/supervisor/example-psbot-clearing.conf /etc/supervisor/conf.d/psbot-clearing.conf
 sudo cp /var/www/psbot/docs/supervisor/example-psbot-worker.conf /etc/supervisor/conf.d/psbot-worker.conf
+sudo cp /var/www/psbot/docs/supervisor/example-psbot-migration.conf /etc/supervisor/conf.d/psbot-migration.conf
 ```
 
 ## Custom config
 Change the config files at ``/etc/supervisor/conf.d/`` the command to ``command=php <YOUR PATH>/artisan ...``<br>
-If you will handle more than one teamspeak server then increase at ``/etc/supervisor/conf.d/psbot.conf`` the value ``numprocs=1`` to your manged server count
+If you handle more than one teamspeak servers then increase at ``/etc/supervisor/conf.d/psbot.conf`` the value ``numprocs=1`` to your manged server count
 
-## Start processes
+## Show config and start processes
 ```shell
 #reload configs
 sudo supervisorctl reload
 #check processes are running
 sudo supervisorctl status
-psbot-bot:psbot-bot_00             RUNNING
-psbot-clearing:psbot-clearing_00   RUNNING
-psbot-worker:psbot-worker_00       RUNNING
+psbot-bot:psbot-bot_00                RUNNING
+psbot-clearing:psbot-clearing_00      RUNNING
+psbot-worker:psbot-worker_00          RUNNING
+psbot-worker:psbot-migration_00       RUNNING
 #if the processes marked as stopped
 sudo supervisorctl start all
 ```

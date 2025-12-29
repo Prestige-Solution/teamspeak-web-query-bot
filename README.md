@@ -1,6 +1,6 @@
 # Teamspeak Web Query Bot
-Your TS server, your rules - but without the admin stress.<br>
-Tired of clicking around in the server query? Our web app does all the work for you: create channels, set permissions, manage users - everything runs automatically.<br> Simply log in, set up and sit back.<br>
+Your TS server, your rules – but without the admin stress.<br>
+Tired of clicking around in the server query? Our web app does all the work for you: create channels, set permissions, manage users – everything runs automatically.<br> Log in, set up and sit back.<br>
 Less admin, more gaming.
 
 ---
@@ -34,7 +34,5 @@ For more Information visit the [Installation & Setup Guide](docs/installation.md
 
 # Teamspeak Permission
 - Use your serveradmin query account to have the max power and control to your server
-- Or you can define a specific Bot identity [Create Bot Identity Guide](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/testing-live-server.md#setup-your-bot-identity) but remember, there has in some situations not enough power.
+- Or you can define a specific Bot identity, but remember there has in some situations not enough power.
 With our Logging implementation you can see what the Bot does.
-
-# Known Issues
