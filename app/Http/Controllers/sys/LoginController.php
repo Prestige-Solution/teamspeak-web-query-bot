@@ -28,7 +28,7 @@ class LoginController extends Controller
         }
 
         return redirect()->back()->withErrors([
-            'error'=>'Incorrect Login',
+            'error'=>'Incorrect nickname or password',
         ]);
     }
 
