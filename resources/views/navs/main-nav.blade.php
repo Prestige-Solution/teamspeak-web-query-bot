@@ -23,8 +23,8 @@
                             Channel Management
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{Route('channel.view.channelJobs')}}">Channel Creator</a></li>
-                            <li><a class="dropdown-item" href="{{Route('channel.view.listChannelRemover')}}">Channel Remover</a></li>
+                            <li><a class="dropdown-item" href="{{Route('channel.view.channelJobs')}}"><i class="fa-solid fa-bars-staggered"></i> Channel Creator</a></li>
+                            <li><a class="dropdown-item" href="{{Route('channel.view.listChannelRemover')}}"><i class="fa-solid fa-list-check"></i> Channel Remover</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -32,7 +32,7 @@
                             Client Management
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{Route('worker.view.createOrUpdateAfkWorker')}}">AFK Settings</a></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.createOrUpdateAfkWorker')}}"><i class="fa-solid fa-user-minus"></i> AFK Settings</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -43,7 +43,7 @@
                                 Utils
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{Route('migration.view.migrationSettings')}}">Migration Tool</a></li>
+                                <li><a class="dropdown-item" href="{{Route('migration.view.migrationSettings')}}"><i class="fa-solid fa-arrows-spin"></i> Migration Tool</a></li>
                             </ul>
                         </li>
                     <li class="nav-item">
@@ -54,22 +54,17 @@
                             Settings
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{Route('worker.view.badNames')}}">Bad Nicknames</a></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.badNames')}}"><i class="fa-solid fa-users-slash"></i> Bad Nicknames</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{Route('worker.view.upsertPoliceWorker')}}">Bot Settings</a></li>
-                            <li><a class="dropdown-item" href="{{Route('backend.view.botLogs')}}">Bot Logs</a></li>
+                            <li><a class="dropdown-item" href="{{Route('worker.view.upsertPoliceWorker')}}"><i class="fa-solid fa-gear"></i> Bot Settings</a></li>
+                            <li><a class="dropdown-item" href="{{Route('backend.view.botLogs')}}"><i class="fa-solid fa-clock-rotate-left"></i> Bot Logs</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{Route('backend.view.changePassword')}}"><i class="fa-solid fa-key"></i> Change Password</a></li>
                         </ul>
                     </li>
                 @endif
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Profile
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{Route('backend.view.changePassword')}}">Change Password</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{Route('logout')}}">Logout</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" aria-current="page" href="{{Route('logout')}}">Logout</a>
                     </li>
             @endauth
             </ul>
