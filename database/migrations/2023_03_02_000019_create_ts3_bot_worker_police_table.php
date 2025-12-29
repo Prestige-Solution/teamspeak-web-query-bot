@@ -16,8 +16,7 @@ return new class extends Migration
     {
         Schema::create('ts3_bot_worker_police', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('server_id');
-            $table->foreign('server_id')->references('id')->on('ts3_server_configs');
+            $table->bigInteger('server_id');
             $table->boolean('is_discord_webhook_active')->default(false);
             $table->boolean('is_check_bot_alive_active')->default(false);
             $table->string('discord_webhook_url', 2048)->nullable();

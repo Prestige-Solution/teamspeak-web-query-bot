@@ -15,16 +15,14 @@ return new class extends Migration
     {
         Schema::create('ts3_server_configs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->bigInteger('user_id');
             $table->string('server_name');
             $table->string('server_ip')->unique();
             $table->string('qa_name');
             $table->string('qa_pw', 2048);
             $table->integer('server_query_port')->nullable();
             $table->integer('server_port')->default(9987);
-            $table->foreignId('bot_status_id')->default(3);
-            $table->foreign('bot_status_id')->references('id')->on('cat_bot_statuses');
+            $table->integer('bot_status_id')->default(3);
             $table->string('description')->nullable();
             $table->string('qa_nickname')->nullable();
             $table->boolean('is_ts3_start')->default(false);

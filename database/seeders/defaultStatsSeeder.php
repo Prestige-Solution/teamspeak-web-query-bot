@@ -16,9 +16,13 @@ class defaultStatsSeeder extends Seeder
         //get all configured servers
         $servers = ts3ServerConfig::query()->get();
 
+        //set default stats for each server
         foreach($servers as $server){
-            statistic::query()->create([
-                'server_id' => $server->id,
+            statistic::query()->updateOrCreate(
+                [
+                    'server_id' => $server->id,
+                ],
+                [
                 'virtualserver_clientsonline' => 0,
                 'virtualserver_queryclientsonline'=> 0,
                 'virtualserver_maxclients'=> 0,

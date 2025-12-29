@@ -15,10 +15,8 @@ return new class extends Migration
     {
         Schema::create('ts3_bot_worker_channels_creates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('server_id');
-            $table->foreign('server_id')->references('id')->on('ts3_server_configs');
-            $table->foreignId('type_id');
-            $table->foreign('type_id')->references('id')->on('cat_bot_job_types');
+            $table->bigInteger('server_id');
+            $table->bigInteger('type_id');
             $table->integer('on_cid')->nullable();
             $table->string('on_event')->nullable();
             $table->integer('action_id')->nullable();

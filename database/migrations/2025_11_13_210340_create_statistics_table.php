@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\defaultStatsSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -33,7 +34,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        $seeder = new \Database\Seeders\defaultStatsSeeder();
+        $seeder = new defaultStatsSeeder();
         $seeder->run();
     }
 
