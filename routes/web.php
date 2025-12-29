@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/list', [ServerController::class, 'viewServerList'])->name('view.serverList');
         Route::post('/create-new-server', [ServerController::class, 'createServer'])->name('create.server');
         Route::post('/update-server', [ServerController::class, 'updateServer'])->name('update.server');
-        Route::post('/initialisieren', [ServerController::class, 'updateServerInit'])->name('update.serverInit');
+        Route::post('/initialising', [ServerController::class, 'updateServerInit'])->name('update.serverInit');
         Route::post('/update-default-server', [ServerController::class, 'updateSwitchDefaultServer'])->name('update.switchDefaultServer');
         Route::post('/delete-server', [ServerController::class, 'deleteServer'])->name('delete.server');
     });
