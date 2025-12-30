@@ -19,8 +19,11 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 class MigrationController extends Controller
 {
     protected Server|Adapter|Node|Host $sourceConnection;
+
     protected Server|Adapter|Node|Host $targetConnection;
+
     protected int $source_server_id = 0;
+
     protected int $target_server_id = 0;
 
     /**
@@ -38,7 +41,7 @@ class MigrationController extends Controller
     public function setup_connections()
     {
         $source_server_config = ts3ServerConfig::query()
-            ->where('id','=',$this->source_server_id)
+            ->where('id', '=', $this->source_server_id)
             ->first();
 
         //setup source server
@@ -54,7 +57,7 @@ class MigrationController extends Controller
         );
 
         $target_server_config = ts3ServerConfig::query()
-            ->where('id','=',$this->target_server_id)
+            ->where('id', '=', $this->target_server_id)
             ->first();
         //setup source server
         $uriTargetHelperClass = new Ts3UriStringHelperController();
@@ -70,13 +73,13 @@ class MigrationController extends Controller
 
         try {
             $this->sourceConnection = TeamSpeak3::factory($uriSource);
-        }catch(\Exception $e) {
+        } catch(\Exception $e) {
             Log::channel('migration')->error('Connect to Source Server failed: '.$e->getMessage());
         }
 
         try {
             $this->targetConnection = TeamSpeak3::factory($uriTarget);
-        }catch(\Exception $e) {
+        } catch(\Exception $e) {
             Log::channel('migration')->error('Connect to Target Server failed: '.$e->getMessage());
         }
 
@@ -94,7 +97,6 @@ class MigrationController extends Controller
         Log::channel('migration')->info('Create Channel Groups Completed');
 
         Log::channel('migration')->info('## Migration Completed ##');
-
     }
 
     /**
@@ -178,7 +180,7 @@ class MigrationController extends Controller
                     $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']],
                         $sourceChannelPermission['permvalue']);
                 }
-            }catch (\Exception $e) {
+            } catch (\Exception $e) {
                 Log::channel('migration')->error('Create Servergroup failed: '.$e->getMessage());
             }
         }
@@ -198,19 +200,19 @@ class MigrationController extends Controller
             //create servergroup
             $sourceServerGroupInfo = $sourceServerGroup->getInfo();
             try {
-                $sid = $this->targetConnection->serverGroupCreate($sourceServerGroupInfo['name'],1);
+                $sid = $this->targetConnection->serverGroupCreate($sourceServerGroupInfo['name'], 1);
 
                 //add permissions
                 $sourceServerGroupPermissions = $this->sourceConnection->serverGroupPermList($sourceServerGroupInfo['sgid'], true);
 
                 foreach ($sourceServerGroupPermissions as $sourceServerGroupPermission) {
                     try {
-                        $this->targetConnection->serverGroupPermAssign($sid, [$sourceServerGroupPermission['permsid']],[$sourceServerGroupPermission['permvalue']],[$sourceServerGroupPermission['permnegated']],[$sourceServerGroupPermission['permskip']]);
-                    }catch (\Exception $e) {
+                        $this->targetConnection->serverGroupPermAssign($sid, [$sourceServerGroupPermission['permsid']], [$sourceServerGroupPermission['permvalue']], [$sourceServerGroupPermission['permnegated']], [$sourceServerGroupPermission['permskip']]);
+                    } catch (\Exception $e) {
                         Log::channel('migration')->error('Create permsid: '.$sourceServerGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
-            }catch (\Exception $e) {
+            } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceServerGroupInfo['name'].' failed: '.$e->getMessage());
             }
         }
@@ -229,19 +231,19 @@ class MigrationController extends Controller
             //create servergroup
             $sourceChannelGroupInfo = $sourceChannelGroup->getInfo();
             try {
-                $cgid = $this->targetConnection->channelGroupCreate($sourceChannelGroupInfo['name'],1);
+                $cgid = $this->targetConnection->channelGroupCreate($sourceChannelGroupInfo['name'], 1);
 
                 //add permissions
                 $sourceChannelGroupPermissions = $this->sourceConnection->channelGroupPermList($sourceChannelGroupInfo['cgid'], true);
 
                 foreach ($sourceChannelGroupPermissions as $sourceChannelGroupPermission) {
                     try {
-                        $this->targetConnection->channelGroupPermAssign($cgid, [$sourceChannelGroupPermission['permsid']],[$sourceChannelGroupPermission['permvalue']]);
-                    }catch (\Exception $e) {
+                        $this->targetConnection->channelGroupPermAssign($cgid, [$sourceChannelGroupPermission['permsid']], [$sourceChannelGroupPermission['permvalue']]);
+                    } catch (\Exception $e) {
                         Log::channel('migration')->error('Create permsid: '.$sourceChannelGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
-            }catch (\Exception $e) {
+            } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceChannelGroupInfo['name'].' failed: '.$e->getMessage());
             }
         }

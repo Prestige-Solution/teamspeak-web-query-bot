@@ -46,6 +46,7 @@ class NewAccountCommand extends Command
             ]);
 
         $this->info('Your account has been created / updated.');
+
         return CommandAlias::SUCCESS;
     }
 }

@@ -23,6 +23,7 @@ class ts3MigrationQueue implements ShouldQueue
     public int $backoff = 60;
 
     public int $source_server_id;
+
     public int $target_server_id;
 
     /**

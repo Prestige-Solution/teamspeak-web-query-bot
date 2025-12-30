@@ -28,6 +28,7 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 class Ts3ConfigController extends Controller
 {
     protected Ts3LogController $ts3LogController;
+
     protected StatisticController $statisticController;
 
     protected null|string $uri = null;

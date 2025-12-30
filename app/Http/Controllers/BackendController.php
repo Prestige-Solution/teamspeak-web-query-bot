@@ -84,10 +84,10 @@ class BackendController extends Controller
     public function updateChangePassword(UpdateChangePasswordRequest $request): RedirectResponse
     {
         User::query()
-            ->where('id','=', Auth::user()->id)
+            ->where('id', '=', Auth::user()->id)
             ->update([
-            'password' => Hash::make($request->validated('NewPassword')),
-        ]);
+                'password' => Hash::make($request->validated('NewPassword')),
+            ]);
 
         return redirect()->route('backend.view.dashboard')->with(['success'=>'Password changed successfully.']);
     }

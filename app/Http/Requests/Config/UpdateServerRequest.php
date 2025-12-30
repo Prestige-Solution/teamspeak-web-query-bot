@@ -65,7 +65,7 @@ class UpdateServerRequest extends FormRequest
             'qa_name.required' => 'Enter a query admin name',
             'qa_name.min'=>'The query admin name must contain at least 3 characters',
             'qa_name.not_regex' => 'The server query admin name contains non-permitted characters',
-//            'qa_name.not_in'=>'The serveradmin account is not allowed',
+            //            'qa_name.not_in'=>'The serveradmin account is not allowed',
             'qa_pw.required' => 'Enter the server query user password for "'.$this->input('server_name').'"',
             'server_query_port.integer' => 'The server query port may only consist of numbers',
             'server_port.integer' => 'The server port may only consist of numbers',

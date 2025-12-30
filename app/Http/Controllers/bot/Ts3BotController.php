@@ -33,6 +33,7 @@ class Ts3BotController extends Controller
     protected Server|Adapter|Node|Host $ts3_VirtualServer;
 
     protected Ts3LogController $logController;
+
     protected StatisticController $StatisticController;
 
     protected int $server_id;
@@ -485,7 +486,7 @@ class Ts3BotController extends Controller
                 }
             }
             //if client min count configured
-            if ($isOwnChannelExist == false && $job->action_min_clients <= $clientsOnChannel->count() ) {
+            if ($isOwnChannelExist == false && $job->action_min_clients <= $clientsOnChannel->count()) {
                 //proof if channel name available
                 $ifAvailable = false;
                 $ifMaxChannelReached = false;
