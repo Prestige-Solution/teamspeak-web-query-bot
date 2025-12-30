@@ -23,7 +23,8 @@
         <div class="container mt-3">
             <div class="row mb-2">
                 <div class="col-lg-8">
-                    <h2 class="fs-3 fw-bold">Dashboard | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }} | Last Scan: {{ \Illuminate\Support\Carbon::parse($stats->updated_at)->format('d.m.y - H:i:s') }}</h2>
+                    <h2 class="fs-3 fw-bold">Dashboard | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }}</h2>
+                    <h5 class="text-muted">Last Scan: {{ \Illuminate\Support\Carbon::parse($stats->updated_at)->format('d.m.y - H:i:s') }}</h5>
                 </div>
                 <div class="col-lg-4">
                     <form method="post" action="{{route('serverConfig.update.switchDefaultServer')}}">
