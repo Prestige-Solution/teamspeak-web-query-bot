@@ -9,7 +9,7 @@
     <div class="container mt-2">
         <div class="row">
             <div class="col-lg-12">
-                <h2 class="fw-bold">Control Center</h2>
+                <h2 class="fw-bold">Bot Control Center</h2>
             </div>
         </div>
         <hr>
@@ -23,7 +23,7 @@
     <div class="container mt-2">
             <div class="row mb-2">
                 <div class="col-lg-8">
-                    <h2 class="fs-3 fw-bold">Control Center | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }}</h2>
+                    <h2 class="fs-3 fw-bold">Bot Control Center | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }}</h2>
                     <h5>
                         @if($server->bot_status_id == 1)
                             <span class="badge bg-success">{{$server->rel_bot_status->status_name}}</span>

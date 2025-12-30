@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\ts3eventSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,6 +22,9 @@ return new class extends Migration
             $table->integer('cat_job_type');
             $table->timestamps();
         });
+
+        $seeder = new ts3eventSeeder();
+        $seeder->run();
     }
 
     /**

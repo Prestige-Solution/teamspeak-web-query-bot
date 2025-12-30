@@ -4,7 +4,6 @@ namespace Tests\Feature\auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -33,7 +32,7 @@ class AuthTest extends TestCase
         ]));
 
         $response->assertStatus(302);
-        $response->assertRedirectToRoute('backend.view.botControlCenter');
+        $response->assertRedirectToRoute('backend.view.dashboard');
     }
 
     public function test_can_login_failed(): void
@@ -46,6 +45,6 @@ class AuthTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertRedirectToRoute('public.view.login');
-        $response->assertSessionHasErrors(['error'=>'Name oder Passwort falsch']);
+        $response->assertSessionHasErrors(['error'=>'Incorrect nickname or password']);
     }
 }

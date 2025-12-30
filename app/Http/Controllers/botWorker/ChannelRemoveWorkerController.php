@@ -57,7 +57,6 @@ class ChannelRemoveWorkerController extends Controller
                 $ts3ServerConfig->server_port,
                 $this->qa_name.'-Remover-Worker',
                 $this->server_id,
-                $ts3ServerConfig->mode
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);

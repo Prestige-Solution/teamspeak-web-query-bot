@@ -145,7 +145,7 @@
                                 <option value="0" @if($policeWorker->is_channel_auto_update_active == false) selected @endif>Inactive</option>
                             </select>
                             <div class="col-lg-12">
-                                <p class="form-text col-form-label">Each channel action is updated in the backend</p>
+                                <p class="form-text col-form-label">Each channel action is updated in the backend. Otherwise a clearing process will handle it.</p>
                             </div>
                         </div>
                     </div>

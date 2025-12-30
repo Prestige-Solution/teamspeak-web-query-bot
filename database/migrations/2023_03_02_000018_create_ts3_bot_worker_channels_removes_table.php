@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('ts3_bot_worker_channels_removes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('server_id');
-            $table->foreign('server_id')->references('id')->on('ts3_server_configs');
+            $table->bigInteger('server_id');
             $table->integer('channel_max_seconds_empty')->default(0);
             $table->string('channel_max_time_format', 1)->default('d');
             $table->integer('channel_cid');
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ts3_bot_worker_channel_removers');
+        Schema::dropIfExists('ts3_bot_worker_channels_removes');
     }
 };

@@ -92,6 +92,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <p class="fs-4 fw-bold m-0"><i class="fa-solid fa-user-group"></i> Exclude server groups</p>
+                            <p class="text-muted">Hold <span class="fw-bold">STRG</span> to select or deselect multiple server groups</p>
                         </div>
                         <div class="mb-3">
                             <select class="form-select" size="10" multiple name="excluded_servergroup[]" id="excluded_servergroup" aria-label="excluded_servergroup">

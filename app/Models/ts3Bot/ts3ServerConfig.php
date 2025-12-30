@@ -17,8 +17,6 @@ class ts3ServerConfig extends Model
 
     public const BotReconnectFalse = 0;
 
-    public const TS3ConnectModeRAW = 1;
-
     public const TS3ConnectModeSSH = 2;
 
     protected $fillable = [

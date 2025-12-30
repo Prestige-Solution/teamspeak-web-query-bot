@@ -51,7 +51,7 @@ class ts3BotPoliceWorkerQueue implements ShouldQueue, ShouldBeUnique
             $ts3Logging = new Ts3LogController('Police-Worker', $this->server_id);
             $ts3Logging->setCustomLog(
                 $this->server_id,
-                ts3BotLog::SUCCESS,
+                ts3BotLog::FAILED,
                 'queue_worker',
                 'There was an error during create queue',
                 $e->getCode(),

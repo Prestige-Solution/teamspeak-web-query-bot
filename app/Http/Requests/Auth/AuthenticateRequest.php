@@ -21,7 +21,7 @@ class AuthenticateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nickname'=>'required|not_regex:/[#&$=\'\"]+/i|exists:users,nickname',
+            'nickname'=>'required|exists:users,nickname|not_regex:/[#&$=\'\"]+/i|exists:users,nickname',
             'password'=>'required',
         ];
     }

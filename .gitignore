@@ -19,7 +19,5 @@ yarn-error.log
 .identifier.sqlite
 identifier.sqlite
 storage/logs/chaining/*
-storage/logs/laravel.log
+storage/logs/*
 .php-cs-fixer.cache
-deploy.php
-.gitlab

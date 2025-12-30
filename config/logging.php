@@ -123,5 +123,11 @@ return [
             'driver' => 'daily',
             'days' => 1,
         ],
+
+        'migration' => [
+            'path' => storage_path('logs/migration.log'),
+            'driver' => 'daily',
+            'days' => 1,
+        ],
     ],
 ];

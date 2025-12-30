@@ -124,7 +124,7 @@ class Ts3LogController extends Controller
 
         if (config('app.bot_debug') == true) {
             // print the error message returned by the server
-            $errorMsg = 'Server: '.$server_id.' | Status: '.$status_id.' | Job: '.$job.' | Desc: '.$description.' | Bot: '.$this->botFunctionName."\n";
+            $errorMsg = 'Server: '.$server_id.' | Status: '.$status_id.' | Job: '.$job.' | Desc: '.$description.' | Bot: '.$this->botFunctionName.' | MSG: '.$errMsg.' | ErrCode: '.$errCode."\n";
             echo $errorMsg;
         }
     }

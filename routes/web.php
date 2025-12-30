@@ -6,6 +6,7 @@ use App\Http\Controllers\channel\ChannelController;
 use App\Http\Controllers\channel\ChannelRemoverController;
 use App\Http\Controllers\client\ClientController;
 use App\Http\Controllers\sys\LoginController;
+use App\Http\Controllers\sys\MigrationController;
 use App\Http\Controllers\sys\ServerController;
 use App\Http\Controllers\ts3Config\BadNameController;
 use App\Http\Controllers\ts3Config\Ts3ConfigController;
@@ -32,6 +33,7 @@ Route::middleware(['throttle:login'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('/dashboard')->name('backend.')->group(function () {
+        Route::get('/', [BackendController::class, 'viewBackendDashboard'])->name('view.dashboard');
         Route::get('/control-center', [BackendController::class, 'viewBotControlCenter'])->name('view.botControlCenter');
         Route::get('/password-reset', [BackendController::class, 'viewChangePassword'])->name('view.changePassword');
         Route::post('/change-password', [BackendController::class, 'updateChangePassword'])->name('update.changePassword');
@@ -45,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/list', [ServerController::class, 'viewServerList'])->name('view.serverList');
         Route::post('/create-new-server', [ServerController::class, 'createServer'])->name('create.server');
         Route::post('/update-server', [ServerController::class, 'updateServer'])->name('update.server');
-        Route::post('/initialisieren', [ServerController::class, 'updateServerInit'])->name('update.serverInit');
+        Route::post('/initialising', [ServerController::class, 'updateServerInit'])->name('update.serverInit');
         Route::post('/update-default-server', [ServerController::class, 'updateSwitchDefaultServer'])->name('update.switchDefaultServer');
         Route::post('/delete-server', [ServerController::class, 'deleteServer'])->name('delete.server');
     });
@@ -93,6 +95,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/upload', [BannerController::class, 'createUploadedTemplate'])->name('create.uploadedTemplate');
         Route::post('/upsert', [BannerController::class, 'upsertConfigBanner'])->name('upsert.configBanner');
         Route::post('/delete', [BannerController::class, 'deleteBanner'])->name('delete.banner');
+    });
+
+    Route::prefix('/migration')->name('migration.')->group(function () {
+        Route::get('/settings', [MigrationController::class, 'viewMigration'])->name('view.migrationSettings');
+        Route::post('/start', [MigrationController::class, 'startMigration'])->name('start.migration');
     });
 });
 

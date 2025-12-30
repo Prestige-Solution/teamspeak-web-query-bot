@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Crypt;
 
@@ -18,7 +19,7 @@ class CreateServerFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'=>1,
+            'user_id'=>User::first(),
             'server_ip'=>'127.0.0.1',
             'server_name'=>'Factory-Server',
             'qa_name'=>'bot-query-name',

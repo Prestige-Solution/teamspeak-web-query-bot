@@ -2,7 +2,7 @@
     "name": "prestige-solution/teamspeak-web-query-bot",
     "type": "project",
     "description": "Teamspeak Web Query Bot",
-    "keywords": ["teamspeak3","query","teamspeak3 bot","ts", "teamspeak","server","query","management","interface","api"],
+    "keywords": ["teamspeak3","query","teamspeak3 bot","ts", "teamspeak","server","management","interface","api"],
     "license": "MIT",
     "support": {
         "issues": "https://github.com/Prestige-Solution/teamspeak-web-query-bot/issues"
@@ -12,12 +12,11 @@
         "ext-curl": "*",
         "ext-gd": "*",
         "awobaz/compoships": "^2.2",
-        "deployer/deployer": "^7.3",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.7",
-        "prestige-solution/ts-x-php-framework": "^2.0"
+        "prestige-solution/ts-x-php-framework": "3.*"
     },
     "require-dev": {
         "laravel/sail": "^1.0.1",
@@ -76,6 +75,6 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "beta",
     "prefer-stable": true
 }

@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('banners', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('server_id');
-            $table->foreign('server_id')->references('id')->on('ts3_server_configs');
+            $table->bigInteger('server_id');
             $table->string('banner_name');
             $table->string('banner_original_file_name', 2042);
             $table->string('banner_viewer_file_name', 2042)->nullable();

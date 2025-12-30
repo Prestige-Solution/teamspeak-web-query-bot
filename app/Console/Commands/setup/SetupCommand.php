@@ -28,7 +28,13 @@ class SetupCommand extends Command
      */
     public function handle(): int
     {
-        //setup
+        Artisan::call('storage:link');
+        $this->info('Storage linked');
+        Artisan::call('migrate', ['--force' => true]);
+        $this->info('Migrated');
+        Artisan::call('db:seed', ['--force' => true]);
+        $this->info('Seeded');
+
         Artisan::call('cache:clear');
         $this->info('Application cache cleared');
         Artisan::call('view:clear');
@@ -37,13 +43,6 @@ class SetupCommand extends Command
         $this->info('Route cache cleared');
         Artisan::call('cache:clear');
         $this->info('Route cache cleared');
-
-        Artisan::call('storage:link');
-        $this->info('Storage linked');
-        Artisan::call('migrate', ['--force' => true]);
-        $this->info('Migrated');
-        Artisan::call('db:seed', ['--force' => true]);
-        $this->info('Seeded');
 
         Artisan::call('optimize');
         $this->info('Optimized');
