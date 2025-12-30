@@ -23,11 +23,11 @@ sudo apt install git
 ```
 
 ## Install application
-```
+```shell
 git clone https://github.com/Prestige-Solution/teamspeak-web-query-bot.git /var/www/psbot/
 sudo chown -R www-data:www-data /var/www/psbot
 cd /var/www/psbot/
-composer install
+sudo -u www-data composer install
 ```
 
 # Initial setup
@@ -35,13 +35,13 @@ composer install
 Copy the .env.example to .env
 ```shell
 cd /var/www/psbot/
-cp .env.example .env 
+sudo -u www-data cp .env.example .env 
 ```
 Change the ``DB_*`` and ``APP_URL`` configs and create a new ``APP_KEY`` with
 ```shell
-php artisan key:generate
-php artisan app:setup
-php artisan app:setup-account
+sudo -u www-data php artisan key:generate
+sudo -u www-data php artisan app:setup
+sudo -u www-data php artisan app:setup-account
 ```
 
 # Supervisor
@@ -81,3 +81,8 @@ sudo supervisorctl start all
 sudo touch /etc/cron.d/psbot
 sudo echo '* * * * * www-data php /var/www/psbot/artisan schedule:run' > /etc/cron.d/psbot
 ```
+
+# Setup Teamspeak SSH access
+If you are using a Teamspeak 3 Server, you musst create a new ``ssh_rsa_host_key`` [You find Instructions here](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/docker/make-ts3-ssh-compatible.md#setup-a-ssh_rsa_host_key)
+
+Add at your Teamspeak server ``query_ip_allowlist.txt`` the IP from your Webserver where running this application 

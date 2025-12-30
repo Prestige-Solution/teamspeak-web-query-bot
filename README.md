@@ -28,7 +28,9 @@ Less admin, more gaming.
 * Composer
 * npm
 
-For more Information visit the [Installation & Setup Guide](docs/installation.md)
+## Setup & Installation Guide
+There are a few Important Steps and Configurations.<br>
+Read the [Installation & Setup Guide](docs/installation.md)
 
 ---
 
