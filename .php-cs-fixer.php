@@ -148,6 +148,11 @@ $rules = [
 
 $finder = Finder::create()
     ->in(__DIR__)
+    ->exclude([
+        'bootstrap/cache',
+        'storage',
+        'vendor',
+    ])
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 
