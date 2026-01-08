@@ -760,7 +760,7 @@ class Ts3BotController extends Controller
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::TRY_RECONNECT, 'startBot');
-                $this->reconnectCode = false;
+                $this->reconnectCode = ts3ServerConfig::BotReconnectFalse;
                 $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
                 break;
             case 111:
