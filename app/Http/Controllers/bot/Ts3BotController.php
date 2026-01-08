@@ -774,7 +774,7 @@ class Ts3BotController extends Controller
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');
-                $this->botStopSignal(true);
+                $this->reconnectCode = $this->reconnectBot();
                 break;
             case 113:
                 //explanation: no route to host
