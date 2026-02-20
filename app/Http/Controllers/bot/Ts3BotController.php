@@ -774,6 +774,7 @@ class Ts3BotController extends Controller
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');
+                $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
                 $this->reconnectCode = $this->reconnectBot();
                 break;
             case 113:
@@ -798,6 +799,7 @@ class Ts3BotController extends Controller
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');
+                $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
                 $this->reconnectCode = $this->reconnectBot();
         }
     }
