@@ -169,13 +169,6 @@ class Ts3BotController extends Controller
                         'is_active'=>false,
                     ]);
 
-                $this->logController->setCustomLog(
-                    $this->server_id,
-                    ts3BotLog::TRY_RECONNECT,
-                    'startBot',
-                    'No Bot Restart signal received.',
-                );
-
                 $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
         }
