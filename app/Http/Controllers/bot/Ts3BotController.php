@@ -130,7 +130,6 @@ class Ts3BotController extends Controller
         } catch (Exception $e) {
             $this->errorHandlingException($e->getCode(), $e->getMessage());
         } finally {
-
             if ($this->isBotStop == false) {
                 //get bot active status
                 $this->botStopSignal();
@@ -160,7 +159,7 @@ class Ts3BotController extends Controller
                 );
 
                 $this->startBot();
-            }else{
+            } else {
                 ts3ServerConfig::query()
                     ->where('id', '=', $this->server_id)
                     ->update([
@@ -213,7 +212,7 @@ class Ts3BotController extends Controller
         }
 
         //reset wait increase to default = 1 if reconnect okay
-        if($this->waitIncrease > 1){
+        if ($this->waitIncrease > 1) {
             $this->waitIncrease = 1;
         }
     }
@@ -695,7 +694,6 @@ class Ts3BotController extends Controller
             );
 
             return ts3ServerConfig::BotReconnectFalse;
-
         } else {
             $this->logController->setCustomLog(
                 $this->server_id,
@@ -707,6 +705,7 @@ class Ts3BotController extends Controller
             sleep($waitTimeSeconds);
 
             $this->waitIncrease = $this->waitIncrease + 1;
+
             return ts3ServerConfig::BotReconnectTrue;
         }
     }
