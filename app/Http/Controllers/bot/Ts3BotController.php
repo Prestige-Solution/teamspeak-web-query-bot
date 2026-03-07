@@ -38,7 +38,8 @@ class Ts3BotController extends Controller
 
     protected int $server_id;
 
-    protected int $waitIncrease;
+    protected int $waitIncrease = 1;
+    protected int $waitTimeSeconds = 10;
 
     protected int $self_clid;
 
@@ -54,7 +55,6 @@ class Ts3BotController extends Controller
     public function __construct($server_id)
     {
         $this->server_id = $server_id;
-        $this->waitIncrease = 1;
         $this->reconnectCode = ts3ServerConfig::BotReconnectFalse; //Default is dont try to reconnect
         $this->logController = new Ts3LogController('Bot', $this->server_id);
 
@@ -119,7 +119,7 @@ class Ts3BotController extends Controller
                 $this->server_id,
                 ts3BotLog::RUNNING,
                 'startBot',
-                'Bot has been started. Wait for events',
+                'Bot started. Wait for events',
             );
 
             while ($this->isBotStop == false) {
@@ -155,7 +155,7 @@ class Ts3BotController extends Controller
                     $this->server_id,
                     ts3BotLog::TRY_RECONNECT,
                     'startBot',
-                    'Bot try to reconnect or restart',
+                    'Bot attempting to restart',
                 );
 
                 $this->startBot();
@@ -272,7 +272,7 @@ class Ts3BotController extends Controller
                 $this->server_id,
                 ts3BotLog::STOPPED,
                 'botStopSignal',
-                'Bot stop signal arrived',
+                'Bot stop signal received',
             );
 
             $this->isBotStop = true;
@@ -683,14 +683,12 @@ class Ts3BotController extends Controller
 
     private function reconnectBot(): int
     {
-        $waitTimeSeconds = 10 * $this->waitIncrease;
-
         if ($this->waitIncrease > 5) {
             $this->logController->setCustomLog(
                 $this->server_id,
                 ts3BotLog::FAILED,
                 'reconnectBot',
-                'Maximum attempts and waiting time ('.$waitTimeSeconds.' seconds) reached',
+                'Maximum attempts and waiting time ('.$this->waitTimeSeconds.' seconds) reached',
             );
 
             return ts3ServerConfig::BotReconnectFalse;
@@ -699,12 +697,13 @@ class Ts3BotController extends Controller
                 $this->server_id,
                 ts3BotLog::TRY_RECONNECT,
                 'reconnectBot',
-                'New connection attempt in '.$waitTimeSeconds.' seconds',
+                'New connection attempt in '.$this->waitTimeSeconds.' seconds',
             );
 
-            sleep($waitTimeSeconds);
-
+            sleep($this->waitTimeSeconds);
             $this->waitIncrease = $this->waitIncrease + 1;
+            //set the default reconnect wait time
+            $this->waitTimeSeconds = $this->waitIncrease * 10;
 
             return ts3ServerConfig::BotReconnectTrue;
         }
@@ -755,6 +754,8 @@ class Ts3BotController extends Controller
                     ]);
 
                 $this->logController->setLog($e, ts3BotLog::TRY_RECONNECT, 'startBot');
+                //set higher wait time to pretend hanging connections
+                $this->waitTimeSeconds = $this->waitIncrease * 60;
                 break;
             case 111:
                 //explanation: connection refused
