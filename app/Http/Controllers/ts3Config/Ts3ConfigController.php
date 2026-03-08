@@ -207,7 +207,7 @@ class Ts3ConfigController extends Controller
             $request->validated('server_id'),
             ts3BotLog::SUCCESS,
             'startBot',
-            'Bot was started via web interface',
+            'Bot started via web interface',
         );
 
         ts3ServerConfig::query()
@@ -229,7 +229,7 @@ class Ts3ConfigController extends Controller
             $request->validated('server_id'),
             ts3BotLog::SUCCESS,
             'botStop',
-            'Bot was stopped via web interface',
+            'Bot stopped via web interface',
         );
 
         ts3ServerConfig::query()

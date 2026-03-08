@@ -58,7 +58,7 @@ class StartBotSingleCommand extends Command
             $server_id,
             ts3BotLog::SUCCESS,
             'startBot',
-            'Bot was started via cli'
+            'Bot started via cli'
         );
 
         $this->info('Bot is starting');
