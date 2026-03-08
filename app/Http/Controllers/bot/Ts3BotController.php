@@ -39,6 +39,7 @@ class Ts3BotController extends Controller
     protected int $server_id;
 
     protected int $waitIncrease = 1;
+
     protected int $waitTimeSeconds = 10;
 
     protected int $self_clid;
