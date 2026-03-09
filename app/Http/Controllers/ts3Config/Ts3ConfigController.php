@@ -217,8 +217,6 @@ class Ts3ConfigController extends Controller
                 'is_active'=>true,
             ]);
 
-        ts3BotStartQueue::dispatch($request->validated('server_id'))->onConnection('bot')->onQueue('bot');
-
         return redirect()->back()->with('success', 'The bot is started and immediately logs onto the server.');
     }
 
