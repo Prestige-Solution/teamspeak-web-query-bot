@@ -35,7 +35,7 @@ class BackendController extends Controller
         $botLogs = ts3BotLog::query()->with('rel_bot_status')
             ->where('server_id', '=', Auth::user()->default_server_id)
             ->where('job', '!=', 'queuingWorkers')
-            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit(8)
             ->get();
 
@@ -76,7 +76,7 @@ class BackendController extends Controller
         $botLogs = ts3BotLog::query()->with('rel_bot_status')
             ->where('server_id', '=', Auth::user()->default_server_id)
             ->where('job', '!=', 'queuingWorkers')
-            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit(50)
             ->get();
 
