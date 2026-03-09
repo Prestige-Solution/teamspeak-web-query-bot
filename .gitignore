@@ -21,3 +21,4 @@ identifier.sqlite
 storage/logs/chaining/*
 storage/logs/*
 .php-cs-fixer.cache
+storage/bot-locks/*
