@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class StartBotInstanceCommand extends Command
 {
     protected $signature = 'app:start-bot-instance-command';
+
     protected $description = 'start a single bot instance';
 
     public function handle(): int
@@ -20,8 +21,7 @@ class StartBotInstanceCommand extends Command
             mkdir($lockDirectory, 0777, true);
         }
 
-        foreach ($serverIds as $serverId)
-        {
+        foreach ($serverIds as $serverId) {
             $lockFilePath = $lockDirectory.'/ts3-bot-'.$serverId.'.lock';
             $lockHandle = fopen($lockFilePath, 'c+');
 

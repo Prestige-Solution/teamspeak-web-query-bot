@@ -52,7 +52,6 @@ class BotControlTest extends TestCase
         $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('startBot', $logDB->last()->job);
         $this->assertEquals('Bot started via web interface', $logDB->last()->description);
-
     }
 
     public function test_post_stop_bot()
