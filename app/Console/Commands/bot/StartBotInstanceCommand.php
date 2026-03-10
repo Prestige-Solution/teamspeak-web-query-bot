@@ -5,6 +5,7 @@ namespace App\Console\Commands\bot;
 use App\Http\Controllers\bot\Ts3BotController;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 class StartBotInstanceCommand extends Command
 {
