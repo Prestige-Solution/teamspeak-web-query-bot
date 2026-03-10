@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\sysBadNameSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,9 +18,12 @@ return new class extends Migration
             $table->string('description');
             $table->integer('value_option')->default(1); // 1 contains / 2 regex
             $table->string('value');
-            $table->boolean('failed')->default(false);
+            $table->boolean('is_failed')->default(false);
             $table->timestamps();
         });
+
+        $seeder = new sysBadNameSeeder();
+        $seeder->run();
     }
 
     /**

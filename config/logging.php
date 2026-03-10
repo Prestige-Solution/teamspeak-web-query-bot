@@ -118,8 +118,14 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        'busChain' => [
-            'path' => storage_path('logs/chaining/busChain.log'),
+        'queueWorker' => [
+            'path' => storage_path('logs/queue-worker.log'),
+            'driver' => 'daily',
+            'days' => 1,
+        ],
+
+        'migration' => [
+            'path' => storage_path('logs/migration.log'),
             'driver' => 'daily',
             'days' => 1,
         ],

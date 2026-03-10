@@ -4,26 +4,37 @@ namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\ClearingWorkerController;
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Models\ts3Bot\ts3BotLog;
+use Exception;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 
-class ts3ClearingWorkerQueue implements ShouldQueue
+class ts3ClearingWorkerQueue implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $serverID;
+    public int $server_id;
+
+    public int $backoff = 60;
 
     public int $tries = 1;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($serverID)
+    public function __construct($server_id)
     {
-        $this->serverID = $serverID;
+        $this->server_id = $server_id;
+    }
+
+    public function middleware(): array
+    {
+        return [(new WithoutOverlapping($this->server_id))->expireAfter(180)];
     }
 
     /**
@@ -32,18 +43,28 @@ class ts3ClearingWorkerQueue implements ShouldQueue
     public function handle(): void
     {
         try {
-            //start clearing
-            $clearingController = new ClearingWorkerController();
-            $clearingController->startClearing($this->serverID);
-        }catch (\Exception $exception)
-        {
-            $ts3Logging = new Ts3LogController('Clearing-Worker',$this->serverID);
-            $ts3Logging->setLog($exception->getMessage(),5,'Start Queue Clearing-Worker failed');
+            $clearingController = new ClearingWorkerController($this->server_id);
+            $clearingController->startClearing();
+        } catch (Exception $e) {
+            $ts3Logging = new Ts3LogController('Clearing-Worker', $this->server_id);
+            $ts3Logging->setCustomLog(
+                $this->server_id,
+                ts3BotLog::FAILED,
+                'queue_worker',
+                'There was an error during create queue',
+                $e->getMessage(),
+                $e->getMessage(),
+            );
         }
     }
 
-    public function uniqueId(): string
+    public function uniqueId(): int
     {
-        return $this->serverID;
+        return $this->server_id;
+    }
+
+    public function backoff(): int
+    {
+        return $this->backoff;
     }
 }

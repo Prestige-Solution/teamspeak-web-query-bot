@@ -11,12 +11,11 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('ts3_bot_worker_police_vpn_protections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('server_id');
-            $table->foreign('server_id')->references('id')->on('ts3_server_configs');
+            $table->bigInteger('server_id');
             $table->ipAddress();
             $table->string('check_result');
             $table->timestamps();
@@ -28,7 +27,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ts3_bot_worker_police_vpn_protections');
     }

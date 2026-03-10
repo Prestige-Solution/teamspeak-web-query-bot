@@ -14,7 +14,18 @@ class CreateNewBadNameRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id' => Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -25,12 +36,13 @@ class CreateNewBadNameRequest extends FormRequest
         $value = $this->input('Value');
 
         return [
-            'NameDescription'=>'required',
-            'ProofOption'=>'required|numeric',
-            'Value'=>['required'],[
-                Rule::unique('bad_names')->where(function ($query) use($value){
-                    return $query->where('value','=',$value)
-                        ->where('server_id','=',Auth::user()->server_id);
+            'server_id' => 'required|integer|exists:ts3_server_configs,id',
+            'description'=>'required',
+            'value_option'=>'required|integer',
+            'value'=>['required'], [
+                Rule::unique('bad_names')->where(function ($query) use ($value) {
+                    return $query->where('value', '=', $value)
+                        ->where('server_id', '=', Auth::user()->default_server_id);
                 }),
             ],
         ];
@@ -38,9 +50,15 @@ class CreateNewBadNameRequest extends FormRequest
 
     public function messages(): array
     {
-        //TODO create messages
         return [
-            'Value.unique'=>'Der Eingegebene Wert existiert bereits',
+            'server_id.required' => 'Oops, something went wrong!',
+            'server_id.integer' => 'Oops, something went wrong!',
+            'server_id.exists' => 'The server could not be found!',
+            'description.required' => 'Enter a bad name description',
+            'value_option.required' => 'Select a option',
+            'value_option.integer' => 'Oops, something went wrong!',
+            'value.required' => 'Enter a bad name value',
+            'value.unique'=>'The entered value already exists',
         ];
     }
 

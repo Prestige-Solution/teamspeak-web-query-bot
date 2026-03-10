@@ -11,12 +11,11 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('ts3_channels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('server_id');
-            $table->foreign('server_id')->references('id')->on('ts3_server_configs');
+            $table->bigInteger('server_id');
             $table->integer('cid');
             $table->integer('pid');
             $table->integer('channel_order');
@@ -35,7 +34,7 @@ return new class extends Migration
             $table->integer('channel_maxfamilyclients');
             $table->integer('total_clients');
             $table->integer('channel_needed_subscribe_power');
-            $table->string('channel_banner_gfx_url',2048)->nullable();
+            $table->string('channel_banner_gfx_url', 2048)->nullable();
             $table->integer('channel_banner_mode');
             $table->text('channel_description')->nullable();
             $table->string('channel_password')->nullable();
@@ -47,7 +46,7 @@ return new class extends Migration
             $table->integer('channel_flag_maxclients_unlimited');
             $table->integer('channel_flag_maxfamilyclients_unlimited');
             $table->integer('channel_flag_maxfamilyclients_inherited');
-            $table->string('channel_filepath',2048);
+            $table->string('channel_filepath', 2048);
             $table->integer('channel_forced_silence');
             $table->string('channel_name_phonetic')->nullable();
             $table->integer('seconds_empty');
@@ -60,7 +59,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ts3_channels');
     }

@@ -3,6 +3,8 @@
 namespace App\Console\Commands\bot;
 
 use App\Http\Controllers\sys\Ts3LogController;
+use App\Jobs\ts3BotStartQueue;
+use App\Models\ts3Bot\ts3BotLog;
 use App\Models\ts3Bot\ts3ServerConfig;
 use Illuminate\Console\Command;
 
@@ -13,41 +15,60 @@ class StopBotSingleCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:stop_bot {serverID}';
+    protected $signature = 'app:stop-bot';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Stop bot instance';
 
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
-        //get bot config
-        $runningBot = ts3ServerConfig::query()
-            ->where('id','=',$this->argument('serverID'))
-            ->first();
+        $choice = ts3ServerConfig::query()
+            ->where('is_ts3_start', '=', true)
+            ->orderBy('server_ip')
+            ->get();
 
-        //set stop
-        $logController = new Ts3LogController('ServerCLI',$runningBot->id);
-        $logController->setCustomLog(
-            $runningBot->id,
-            5,
-            'BotUpdateProcess',
-            'Bot wird via CLI gestoppt',
+        if ($choice->isNotEmpty()) {
+            $choice = $choice->pluck('server_ip')->toArray();
+        } else {
+            $this->info('There are no running instances');
+
+            return;
+        }
+
+        $instanceResult = $this->choice(
+            'Which instance should be stopped?',
+            $choice,
             null,
-            null,
+            2
         );
 
-        ts3ServerConfig::query()
-            ->where('id','=',$runningBot->id)
-            ->update([
-                'ts3_start_stop'=>false,
-                'active'=>false,
-            ]);
+        $server_id = ts3ServerConfig::query()->where('server_ip', '=', $instanceResult)->get()->first()->id;
+        $this->stop_single_instance($server_id);
+
+        $logController = new Ts3LogController('CLI-Commands', $server_id);
+
+        $logController->setCustomLog(
+            $server_id,
+            ts3BotLog::SUCCESS,
+            'startBot',
+            'Bot stopped via cli'
+        );
+
+        $this->info('Bot is stopping');
+    }
+
+    private function stop_single_instance(int $server_id): void
+    {
+        ts3ServerConfig::query()->where('id', '=', $server_id)->update([
+            'is_ts3_start'=>false,
+            'is_active'=>false,
+        ]);
     }
 }

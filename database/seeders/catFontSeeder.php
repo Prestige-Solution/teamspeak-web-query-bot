@@ -13,21 +13,51 @@ class catFontSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         catFont::query()->create([
             'name'=>'Arial',
-            'storage_path'=>'app/fonts/Arial.ttf',
+            'font_name'=>'Arial.ttf',
         ]);
 
         catFont::query()->create([
-            'name'=>'Univers',
-            'storage_path'=>'app/fonts/Univers_CE_45_Light.ttf',
+            'name'=>'Univers Light',
+            'font_name'=>'Univers_CE_45_Light.ttf',
         ]);
 
         catFont::query()->create([
             'name'=>'Univers Bold Italic',
-            'storage_path'=>'app/fonts/Univers_LT_66_Bold_Italic.ttf',
+            'font_name'=>'Univers_LT_66_Bold_Italic.ttf',
+        ]);
+
+        catFont::query()->create([
+            'name'=>'Baroque Script',
+            'font_name'=>'BaroqueScript.ttf',
+        ]);
+
+        catFont::query()->create([
+            'name'=>'Broadcast Titling',
+            'font_name'=>'BroadcastTitling.ttf',
+        ]);
+
+        catFont::query()->create([
+            'name'=>'Canterbury',
+            'font_name'=>'Canterbury.ttf',
+        ]);
+
+        catFont::query()->create([
+            'name'=>'OldEnglish Regular',
+            'font_name'=>'OldEnglishRegular.ttf',
+        ]);
+
+        catFont::query()->create([
+            'name'=>'Rothenburg Decorative',
+            'font_name'=>'RothenburgDecorative.ttf',
+        ]);
+
+        catFont::query()->create([
+            'name'=>'Transformers Movie',
+            'font_name'=>'TransformersMovie.ttf',
         ]);
     }
 }

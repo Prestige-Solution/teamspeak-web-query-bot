@@ -47,7 +47,7 @@ return [
             'table' => 'queue_worker',
             'queue' => 'worker',
             'retry_after' => 180,
-            'after_commit' => false,
+            'after_commit' => true,
         ],
 
     ],

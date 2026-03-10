@@ -15,7 +15,8 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Web-Query-Bot'),
+    'project' => 'Web-Query-Bot',
 
     /*
     |--------------------------------------------------------------------------
@@ -69,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'EUROPE/BERLIN',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
 
     /*
     |--------------------------------------------------------------------------
@@ -82,7 +83,7 @@ return [
     |
     */
 
-    'locale' => 'de',
+    'locale' => env('APP_LOCALE', 'en-US'),
 
     /*
     |--------------------------------------------------------------------------
@@ -95,7 +96,7 @@ return [
     |
     */
 
-    'fallback_locale' => 'en',
+    'fallback_locale' => 'en-US',
 
     /*
     |--------------------------------------------------------------------------
@@ -108,7 +109,7 @@ return [
     |
     */
 
-    'faker_locale' => 'de_DE',
+    'faker_locale' => 'en-US',
 
     /*
     |--------------------------------------------------------------------------
@@ -214,18 +215,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Force HTTPS Signature
+    | Force HTTPS Signature to use behind proxys
     |--------------------------------------------------------------------------
     */
-
     'app_force_https'=>env('APP_FORCE_HTTPS', false),
-
     /*
     |--------------------------------------------------------------------------
-    | DerraBot
+    | Debug output to cli during tests or debug bot exceptions
     |--------------------------------------------------------------------------
     */
     'bot_debug'=>env('BOT_DEBUG', false),
-    'vpn_protection_mail'=>env('VPN_PROTECTION_MAIL', false),
-    'vpn_protection_max_query_per_day'=>env('VPN_PROTECTION_MAX_QUERY_PER_DAY',0),
 ];

@@ -11,17 +11,15 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('banner_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('banner_id');
-            $table->foreign('banner_id')->references('id')->on('banners');
+            $table->bigInteger('banner_id');
             $table->integer('font_id');
             $table->integer('font_size');
             $table->string('color_hex');
-            $table->foreignId('option_id');
-            $table->foreign('option_id')->references('id')->on('cat_banner_options');
+            $table->bigInteger('option_id');
             $table->integer('extra_option')->nullable();
             $table->string('text')->nullable();
             $table->integer('coord_x')->nullable();
@@ -35,7 +33,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('banner_options');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Channel;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class CreateChannelRemoverRequest extends FormRequest
@@ -13,7 +14,18 @@ class CreateChannelRemoverRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id'=>Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -22,26 +34,27 @@ class CreateChannelRemoverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ServerID'=>'required|numeric',
-            'ChannelCid'=>'required|numeric',
-            'MaxIdleTime'=>'required|numeric|min:1',
-            'MaxIdleTimeFormat'=>['required',Rule::in(['m','h','d'])],
-            'ChannelRemoverActive'=>'required|numeric',
+            'server_id'=>'required|integer',
+            'channel_cid'=>'required|integer',
+            'channel_max_seconds_empty'=>'required|integer|min:1',
+            'channel_max_time_format'=>['required', Rule::in(['m', 'h', 'd'])],
+            'is_active'=>'required|boolean',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'ServerID.required'=>'Hoppla, da lief etwas schief',
-            'ServerID.numeric'=>'Hoppla, da lief etwas schief',
-            'ChannelCid.required'=>'Bitte wähle einen Channel aus',
-            'ChannelCid.numeric'=>'Hoppla, da lief etwas schief',
-            'MaxIdleTime.required'=>'Hoppla, da lief etwas schief',
-            'MaxIdleTime.numeric'=>'Hoppla, da lief etwas schief',
-            'MaxIdleTime.min'=>'Hoppla, da lief etwas schief',
-            'ChannelRemoverActive.required'=>'Hoppla, da lief etwas schief',
-            'ChannelRemoverActive.numeric'=>'Hoppla, da lief etwas schief',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'channel_cid.required'=>'Choose a channel',
+            'channel_cid.integer'=>'Oops, something went wrong',
+            'channel_max_seconds_empty.required'=>'Oops, something went wrong',
+            'channel_max_seconds_empty.integer'=>'Oops, something went wrong',
+            'channel_max_seconds_empty.min'=>'Oops, something went wrong',
+            'channel_max_time_format.required'=>'Select a time format (minute, hour, day)',
+            'is_active.required'=>'Oops, something went wrong',
+            'is_active.boolean'=>'Oops, something went wrong',
         ];
     }
 

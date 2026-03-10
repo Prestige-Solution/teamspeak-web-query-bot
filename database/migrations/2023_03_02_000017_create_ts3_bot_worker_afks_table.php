@@ -11,18 +11,18 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('ts3_bot_worker_afks', function (Blueprint $table) {
             $table->id();
             $table->integer('server_id');
-            $table->integer('max_client_idle_time');
+            $table->integer('max_client_idle_time')->default(0);
             $table->integer('afk_channel_cid');
             $table->integer('excluded_servergroup')->nullable();
-            $table->boolean('active')->default(0);
-            $table->integer('afk_kicker_max_idle_time');
+            $table->boolean('is_afk_active')->default(0);
+            $table->integer('afk_kicker_max_idle_time')->default(0);
             $table->integer('afk_kicker_slots_online')->default(0);
-            $table->boolean('afk_kicker_active')->default(0);
+            $table->boolean('is_afk_kicker_active')->default(0);
             $table->timestamps();
         });
     }
@@ -32,7 +32,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ts3_bot_worker_afks');
     }

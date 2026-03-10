@@ -4,6 +4,7 @@ namespace App\Http\Requests\Channel;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class DeleteChannelRemoverRequest extends FormRequest
 {
@@ -12,7 +13,18 @@ class DeleteChannelRemoverRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'server_id'=>Auth::user()->default_server_id,
+        ]);
     }
 
     /**
@@ -21,15 +33,20 @@ class DeleteChannelRemoverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'DeleteID'=>'required|numeric',
+            'server_id' => 'required|integer|exists:ts3_server_configs,id',
+            'id'=>'required|integer|exists:ts3_bot_worker_channels_removes,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'DeleteID.required'=>'Hoppla, da lief etwas schief',
-            'DeleteID.numeric'=>'Hoppla, da lief etwas schief',
+            'server_id.required'=>'Oops, something went wrong',
+            'server_id.integer'=>'Oops, something went wrong',
+            'server_id.exists'=>'The server could not be found',
+            'id.required'=>'Oops, something went wrong',
+            'id.integer'=>'Oops, something went wrong',
+            'id.exists'=>'The remover channel config could not be found',
         ];
     }
 

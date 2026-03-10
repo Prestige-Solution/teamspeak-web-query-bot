@@ -4,10 +4,9 @@ namespace App\Console\Commands\worker;
 
 use App\Jobs\ts3ClearingWorkerQueue;
 use App\Models\ts3Bot\ts3ServerConfig;
+use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class StartClearingCommand extends Command
 {
@@ -23,32 +22,24 @@ class StartClearingCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Start clearing jobs';
 
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
-        //get all active servers
-        $activeServerIds = ts3ServerConfig::query()
-            ->where('bot_confirmed','=',true)
-            ->where('ts3_start_stop','=',true)
-            ->where('active','=',true)
+        $servers = ts3ServerConfig::query()
+            ->where('is_ts3_start', '=', true)
+            ->where('is_active', '=', true)
             ->get(['id']);
 
-        foreach ($activeServerIds as $activeServerId)
-        {
-            Bus::chain([
-                new ts3ClearingWorkerQueue($activeServerId->id)
-            ])
-                ->catch(function (Throwable $e)
-                {
-                    Log::channel('busChain')->error($e);
-                })
-                ->onConnection('worker')
-                ->onQueue('clearing')
-                ->dispatch();
+        foreach ($servers as $server) {
+            try {
+                ts3ClearingWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('clearing');
+            } catch (Exception $e) {
+                Log::channel('queueWorker')->error($e);
+            }
         }
     }
 }

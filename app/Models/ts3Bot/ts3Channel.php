@@ -3,6 +3,7 @@
 namespace App\Models\ts3Bot;
 
 use Awobaz\Compoships\Compoships;
+use Database\Factories\CreateChannelFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -47,4 +48,9 @@ class ts3Channel extends Model
         'channel_name_phonetic',
         'seconds_empty',
     ];
+
+    protected static function newFactory(): CreateChannelFactory
+    {
+        return CreateChannelFactory::new();
+    }
 }

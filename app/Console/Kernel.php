@@ -15,18 +15,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //define afk worker schedule
-        if (config('app.env') === 'development')
-        {
-            $schedule->command('app:start-worker');
-            $schedule->command('app:start-clearing');
-        }else
-        {
-            $schedule->command('app:start-worker')->everyMinute();
-            $schedule->command('app:start-clearing')->everyFifteenMinutes();
-            $schedule->call('App\Http\Controllers\admin\ResetStatsController@resetVPNQueryCountPerMinute')->everyMinute();
-            $schedule->call('App\Http\Controllers\admin\ResetStatsController@resetVPNQueryPerDay')->daily();
-        }
+        //config via route/console
     }
 
     /**

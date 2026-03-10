@@ -21,87 +21,70 @@ class BadNameController extends Controller
     public function viewListBadNames(): View|Factory|Application
     {
         $badNames = badName::query()
-            ->where('server_id','=',Auth::user()->server_id)
+            ->where('server_id', '=', Auth::user()->default_server_id)
             ->get();
 
-        return view('backend.settings.bad-names')->with([
-            'badNames'=>$badNames,
-        ]);
-    }
-
-    public function viewGlobalListBadNames(): View|Factory|Application
-    {
-        $badNames = badName::query()
-            ->where('server_id','=',0)
+        $globalBadNames = badName::query()
+            ->where('server_id', '=', 0)
             ->get();
 
-        return view('backend.settings.global-bad-names')->with([
+        return view('backend.jobs.worker.bad-names.worker-bad-names')->with([
             'badNames'=>$badNames,
+            'globalBadNames'=>$globalBadNames,
         ]);
     }
 
     public function createNewBadName(CreateNewBadNameRequest $request): RedirectResponse
     {
         badName::query()->create([
-            'server_id'=>Auth::user()->server_id,
-            'description'=>$request->validated('NameDescription'),
-            'value_option'=>$request->validated('ProofOption'),
-            'value'=>strtolower($request->validated('Value')),
+            'server_id'=>$request->validated('server_id'),
+            'description'=>$request->validated('description'),
+            'value_option'=>$request->validated('value_option'),
+            'value'=>strtolower($request->validated('value')),
         ]);
 
-        return redirect()->route('backend.view.badNames',['server_id'=>Auth::user()->server_id]);
-
+        return redirect()->route('worker.view.badNames');
     }
 
     public function deleteBadName(DeleteBadNameRequest $request): RedirectResponse
     {
         badName::query()
-            ->where('server_id','=',Auth::user()->server_id)
-            ->where('id','=',$request->input('DeleteBadNameID'))
+            ->where('server_id', '=', $request->validated('server_id'))
+            ->where('id', '=', $request->input('id'))
             ->delete();
 
-        return redirect()->route('backend.view.badNames',['server_id'=>Auth::user()->server_id]);
-
+        return redirect()->route('worker.view.badNames');
     }
 
-    public function checkBadName($proofName, $serverID): bool
+    public function checkBadName(string $proofName, int $server_id): bool
     {
-        //declare variables
-        $badNameResult = false;
+        $is_globalListActive = ts3BotWorkerPolice::query()
+            ->where('server_id', '=', $server_id)
+            ->first('is_bad_name_protection_global_list_active')->is_bad_name_protection_global_list_active;
 
-        //proof if global list active
-        $globalListActive = ts3BotWorkerPolice::query()
-            ->where('server_id','=',$serverID)
-            ->first('bad_name_protection_global_list_active')->bad_name_protection_global_list_active;
-
-        if ($globalListActive == true)
-        {
+        if ($is_globalListActive == true) {
             $checkNames = badName::query()
-                ->where(function ($query) use ($serverID){
-                    $query->where('server_id','=',$serverID)
-                        ->orWhere('server_id','=',0);
+                ->where(function ($query) use ($server_id) {
+                    $query->where('server_id', '=', $server_id)
+                        ->orWhere('server_id', '=', 0);
                 })
-                ->where('value_option','=',badName::stringRegex)
-                ->where('failed','=',false)
+                ->where('value_option', '=', badName::stringRegex)
+                ->where('is_failed', '=', false)
                 ->get(['value', 'id']);
-        }else
-        {
+        } else {
             $checkNames = badName::query()
-                ->where('server_id','=',$serverID)
-                ->where('value_option','=',badName::stringRegex)
-                ->where('failed','=',false)
-                ->get(['value','id']);
+                ->where('server_id', '=', $server_id)
+                ->where('value_option', '=', badName::stringRegex)
+                ->where('is_failed', '=', false)
+                ->get(['value', 'id']);
         }
 
-        foreach ($checkNames as $checkName)
-        {
+        foreach ($checkNames as $checkName) {
             try {
-                $badNameResultRegex = preg_match($checkName->value,$proofName);
-            }catch (Exception)
-            {
-                //write log
+                $badNameResultRegex = preg_match($checkName->value, $proofName);
+            } catch (Exception) {
                 ts3BotLog::query()->create([
-                    'server_id'=>$serverID,
+                    'server_id'=>$server_id,
                     'status_id'=>4,
                     'job'=>'checkBadName',
                     'description'=>'Bad Name Protection (Regex)',
@@ -109,40 +92,31 @@ class BadNameController extends Controller
                     'worker'=>'PoliceWorker',
                 ]);
 
-                //set entry to failed
-                badName::query()->where('id','=',$checkName->id)
+                badName::query()->where('id', '=', $checkName->id)
                     ->update([
-                        'failed'=>true,
+                        'is_failed'=>true,
                     ]);
             }
 
-            if ($badNameResultRegex == 1)
-            {
-                $badNameResult = true;
-                break;
+            if ($badNameResultRegex == 1) {
+                return true;
             }
         }
 
-        //proof option 1 with contains
-        if ($badNameResult == false)
-        {
-            $checkNames = badName::query()
-                ->where('server_id','=',$serverID)
-                ->orWhere('value_option','=',badName::stringContains)
-                ->get('value');
+        //check contains
+        $checkNames = badName::query()
+            ->where('server_id', '=', $server_id)
+            ->where('value_option', '=', badName::stringContains)
+            ->get('value');
 
-            foreach ($checkNames as $checkName)
-            {
-                $badNameResultContains = Str::contains($proofName,$checkName->value,true);
+        foreach ($checkNames as $checkName) {
+            $badNameResultContains = Str::contains($proofName, $checkName->value, true);
 
-                if ($badNameResultContains == true)
-                {
-                    $badNameResult = true;
-                    break;
-                }
+            if ($badNameResultContains == true) {
+                return true;
             }
         }
 
-        return $badNameResult;
+        return false;
     }
 }

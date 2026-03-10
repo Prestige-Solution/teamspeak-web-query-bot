@@ -11,17 +11,16 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('ts3_bot_logs', function (Blueprint $table) {
             $table->id();
             $table->integer('server_id');
-            $table->foreignId('status_id');
-            $table->foreign('status_id')->references('id')->on('cat_bot_statuses');
+            $table->bigInteger('status_id');
             $table->string('job');
             $table->string('description')->nullable();
             $table->string('error_code')->nullable();
-            $table->string('error_message')->nullable();
+            $table->text('error_message')->nullable();
             $table->string('worker');
             $table->timestamps();
         });
@@ -32,7 +31,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ts3_bot_logs');
     }

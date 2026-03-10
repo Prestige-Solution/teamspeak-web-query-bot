@@ -10,6 +10,16 @@ class ts3BotLog extends Model
 {
     use HasFactory;
 
+    public const RUNNING = 1;
+
+    public const TRY_RECONNECT = 2;
+
+    public const STOPPED = 3;
+
+    public const FAILED = 4;
+
+    public const SUCCESS = 5;
+
     protected $fillable = [
         'server_id',
         'status_id',
@@ -20,8 +30,8 @@ class ts3BotLog extends Model
         'worker',
     ];
 
-    public function rel_bot_status()
+    public function rel_bot_status(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(catBotStatus::class,'id','status_id');
+        return $this->hasMany(catBotStatus::class, 'id', 'status_id');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Backend;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UpdateChangePasswordRequest extends FormRequest
 {
@@ -12,7 +13,11 @@ class UpdateChangePasswordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Auth::check()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -29,10 +34,10 @@ class UpdateChangePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'CurrentPassword.required'=>'Bitte gib das aktuelle Passwort ein',
-            'CurrentPassword.current_password'=>'Das aktuelle Passwort ist nicht korrekt',
-            'NewPassword.required'=>'Bitte gib das neue Passwort ein',
-            'NewPassword.confirmed'=>'Das neue Passwort stimmt nicht überein',
+            'CurrentPassword.required'=>'Please enter the current password',
+            'CurrentPassword.current_password'=>'The current password is incorrect',
+            'NewPassword.required'=>'Please enter a new password',
+            'NewPassword.confirmed'=>'The new password does not match',
         ];
     }
 

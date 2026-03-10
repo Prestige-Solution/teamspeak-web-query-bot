@@ -21,17 +21,18 @@ class AuthenticateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'NickName'=>'required|not_regex:/[#&$=\'\"]+/i',
-            'Password'=>'required',
+            'nickname'=>'required|exists:users,nickname|not_regex:/[#&$=\'\"]+/i|exists:users,nickname',
+            'password'=>'required',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'NickName.required'=>'Name oder Passwort falsch',
-            'NickName.not_regex'=>'Name oder Passwort falsch',
-            'Password.required'=>'Name oder Passwort falsch',
+            'nickname.required'=>'Incorrect nickname or password',
+            'nickname.not_regex'=>'Incorrect nickname or password',
+            'password.required'=>'Incorrect nickname or password',
+            'nickname.exists'=>'Incorrect nickname or password',
         ];
     }
 
