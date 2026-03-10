@@ -28,14 +28,14 @@ class StartBotInstanceCommand extends Command
             if ($lockHandle === false) {
                 $this->error('lock file could not be opened for server_id='.$serverId);
 
-                return self::FAILURE;
+                continue;
             }
 
             if (! flock($lockHandle, LOCK_EX | LOCK_NB)) {
                 $this->warn('bot is already running for server_id='.$serverId);
                 fclose($lockHandle);
 
-                return self::SUCCESS;
+                continue;
             }
 
             fwrite($lockHandle, (string) getmypid());
@@ -56,11 +56,9 @@ class StartBotInstanceCommand extends Command
 
     private function getServerIds(): array
     {
-        $serverIds = ts3ServerConfig::query()
+        return ts3ServerConfig::query()
             ->where('is_active', '=', true)
             ->where('is_ts3_start', '=', true)
-            ->get('id');
-
-        return $serverIds->pluck('id')->toArray();
+            ->pluck('id')->toArray();
     }
 }
