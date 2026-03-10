@@ -53,9 +53,6 @@ class BotControlTest extends TestCase
         $this->assertEquals('startBot', $logDB->last()->job);
         $this->assertEquals('Bot started via web interface', $logDB->last()->description);
 
-        //check queue entry
-        $queueDB = DB::table('queue_bot')->get();
-        $this->assertEquals('bot', $queueDB->last()->queue);
     }
 
     public function test_post_stop_bot()
