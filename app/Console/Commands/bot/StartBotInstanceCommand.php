@@ -16,9 +16,9 @@ class StartBotInstanceCommand extends Command
     {
         $serverIds = $this->getServerIds();
 
-        $lockDirectory = storage_path('bot-locks');
-        if (! is_dir($lockDirectory)) {
-            mkdir($lockDirectory, 0777, true);
+        $lockDirectory = storage_path('app/bot-locks');
+        if (! File::isDirectory($lockDirectory)) {
+            File::makeDirectory($lockDirectory, 0777, true);
         }
 
         foreach ($serverIds as $serverId) {
