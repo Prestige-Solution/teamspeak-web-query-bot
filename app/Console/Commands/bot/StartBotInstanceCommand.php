@@ -50,7 +50,8 @@ class StartBotInstanceCommand extends Command
                 fclose($lockHandle);
             }
         }
-
+        
+        sleep(30);
         return self::SUCCESS;
     }
 
