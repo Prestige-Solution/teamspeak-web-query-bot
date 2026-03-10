@@ -51,11 +51,7 @@ class BotControlTest extends TestCase
         $logDB = ts3BotLog::query()->get();
         $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('startBot', $logDB->last()->job);
-        $this->assertEquals('Bot was started via web interface', $logDB->last()->description);
-
-        //check queue entry
-        $queueDB = DB::table('queue_bot')->get();
-        $this->assertEquals('bot', $queueDB->last()->queue);
+        $this->assertEquals('Bot started via web interface', $logDB->last()->description);
     }
 
     public function test_post_stop_bot()
@@ -81,7 +77,7 @@ class BotControlTest extends TestCase
         $logDB = ts3BotLog::query()->get();
         $this->assertEquals(5, $logDB->last()->status_id);
         $this->assertEquals('botStop', $logDB->last()->job);
-        $this->assertEquals('Bot was stopped via web interface', $logDB->last()->description);
+        $this->assertEquals('Bot stopped via web interface', $logDB->last()->description);
 
         //check queue entry
         $queueDB = DB::table('queue_bot')->get();

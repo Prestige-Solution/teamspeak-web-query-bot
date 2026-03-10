@@ -247,7 +247,7 @@ class PoliceWorkerController extends Controller
                     $this->server_id,
                     ts3BotLog::STOPPED,
                     'checkBotWork',
-                    'Bot is missing on the server. He need a break?',
+                    'No active bot found on the server',
                 );
 
                 ts3ServerConfig::query()

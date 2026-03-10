@@ -7,8 +7,21 @@
 @section('content')
     <div class="container mt-3">
         <div class="row mb-2">
-            <div class="col-lg-12">
+            <div class="col-lg-8">
                 <h1 class="fs-3 fw-bold">Bot Logs | {{ \Illuminate\Support\Facades\Auth::user()->rel_server->server_name }}</h1>
+            </div>
+            <div class="col-lg-4">
+                <form method="post" action="{{route('serverConfig.update.switchDefaultServer')}}">
+                    @csrf
+                    <div class="d-flex justify-content-end">
+                        <select class="form-select" name="server_id" id="server_id">
+                            @foreach($availableServers as $availableServer)
+                                <option value="{{$availableServer->id}}" @if($server->id == $availableServer->id) selected @endif>{{$availableServer->server_name}}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn btn-primary ms-2"><i class="fa-solid fa-repeat"></i></button>
+                    </div>
+                </form>
             </div>
         </div>
         <hr>

@@ -58,7 +58,7 @@ class StopBotSingleCommand extends Command
             $server_id,
             ts3BotLog::SUCCESS,
             'startBot',
-            'Bot was stopped via cli'
+            'Bot stopped via cli'
         );
 
         $this->info('Bot is stopping');
