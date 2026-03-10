@@ -51,6 +51,7 @@ class StartBotInstanceCommand extends Command
             }
         }
 
+        sleep(10);
         return self::SUCCESS;
     }
 
