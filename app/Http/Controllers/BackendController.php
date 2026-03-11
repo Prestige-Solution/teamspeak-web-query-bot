@@ -35,7 +35,7 @@ class BackendController extends Controller
         $botLogs = ts3BotLog::query()->with('rel_bot_status')
             ->where('server_id', '=', Auth::user()->default_server_id)
             ->where('job', '!=', 'queuingWorkers')
-            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit(8)
             ->get();
 
@@ -64,15 +64,26 @@ class BackendController extends Controller
 
     public function viewBotLogs(): View|\Illuminate\Foundation\Application|Factory|Application
     {
+        $server = ts3ServerConfig::query()
+            ->with('rel_bot_status')
+            ->where('is_default', '=', true)
+            ->first();
+
+        $availableServers = ts3ServerConfig::query()
+            ->orderBy('server_ip')
+            ->get(['id', 'server_name']);
+
         $botLogs = ts3BotLog::query()->with('rel_bot_status')
             ->where('server_id', '=', Auth::user()->default_server_id)
             ->where('job', '!=', 'queuingWorkers')
-            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit(50)
             ->get();
 
         return view('backend.control-center.bot-logs')->with([
             'botLogs'=>$botLogs,
+            'server'=> $server,
+            'availableServers'=>$availableServers,
         ]);
     }
 

@@ -28,13 +28,20 @@ class ResetStatsController extends Controller
         $servers = ts3ServerConfig::query()->get(['id']);
 
         foreach ($servers as $server) {
-            $count = ts3BotLog::query()->where('server_id', '=', $server->id)->get()->count();
+            $count = ts3BotLog::query()
+                ->where('server_id', '=', $server->id)
+                ->count();
+
             if ($count > 100) {
-                ts3BotLog::query()
+                $latestLogIds = ts3BotLog::query()
                     ->where('server_id', '=', $server->id)
                     ->orderByDesc('id')
-                    ->limit($count)
-                    ->offset(100)
+                    ->limit(100)
+                    ->pluck('id');
+
+                ts3BotLog::query()
+                    ->where('server_id', '=', $server->id)
+                    ->whereNotIn('id', $latestLogIds)
                     ->delete();
             }
         }

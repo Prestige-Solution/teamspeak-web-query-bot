@@ -96,6 +96,9 @@ class MigrationController extends Controller
         $this->migrate_channelgroups();
         Log::channel('migration')->info('Create Channel Groups Completed');
 
+        //disconnect
+        $this->sourceConnection->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->targetConnection->getParent()->getAdapter()->getTransport()->disconnect();
         Log::channel('migration')->info('## Migration Completed ##');
     }
 
