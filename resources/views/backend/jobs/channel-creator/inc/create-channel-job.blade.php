@@ -31,11 +31,8 @@
                                         <div class="col-lg-8">
                                             <select class="form-select" name="on_cid" id="on_cid" required>
                                                 <option selected disabled value="">Please choose</option>
-                                                @foreach($tsChannels->where('pid','=',0) as $tsChannel)
-                                                    <option value="{{$tsChannel->cid}}">{{$tsChannel->channel_name}}</option>
-                                                    @foreach($tsChannels->where('pid','=',$tsChannel->cid) as $tsChannelPID)
-                                                        <option value="{{$tsChannelPID->cid}}">-{{$tsChannelPID->channel_name}}</option>
-                                                    @endforeach
+                                                @foreach($tsChannels as $tsChannel)
+                                                    <option value="{{ $tsChannel->cid }}">{{ $tsChannel->tree_channel_name }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -81,11 +78,8 @@
                                         <div class="col-lg-8">
                                             <select class="form-select" name="channel_template_cid" id="channel_template_cid">
                                                 <option value="0" selected>None</option>
-                                                @foreach($tsChannelTemplates->where('pid','=',0) as $tsChannelTemplate)
-                                                    <option value="{{$tsChannelTemplate->cid}}">{{$tsChannelTemplate->channel_name}}</option>
-                                                    @foreach($tsChannelTemplates->where('pid','=',$tsChannelTemplate->cid) as $tsChannelTemplatePID)
-                                                        <option value="{{$tsChannelTemplatePID->cid}}">-{{$tsChannelTemplatePID->channel_name}}</option>
-                                                    @endforeach
+                                                @foreach($tsChannelTemplates as $tsChannelTemplate)
+                                                    <option value="{{ $tsChannelTemplate->cid }}">{{ $tsChannelTemplate->tree_channel_name }}</option>
                                                 @endforeach
                                             </select>
                                             <div class="form-text">Adopts the rights settings of the selected channel</div>

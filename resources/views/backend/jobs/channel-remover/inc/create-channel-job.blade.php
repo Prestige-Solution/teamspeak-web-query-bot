@@ -22,11 +22,8 @@
                         <div class="col-lg-8">
                             <select class="form-select" id="channel_cid" name="channel_cid" required>
                                 <option selected disabled>Please choose</option>
-                                @foreach($tsChannels->where('pid','=',0) as $tsChannel)
-                                    <option value="{{$tsChannel->cid}}" >{{$tsChannel->channel_name}}</option>
-                                    @foreach($tsChannels->where('pid','=',$tsChannel->cid) as $tsChannelPID)
-                                        <option value="{{$tsChannelPID->cid}}">-{{$tsChannelPID->channel_name}}</option>
-                                    @endforeach
+                                @foreach($tsChannels as $tsChannel)
+                                    <option value="{{$tsChannel->cid}}" >{{$tsChannel->tree_channel_name}}</option>
                                 @endforeach
                             </select>
                             <div class="form-text">

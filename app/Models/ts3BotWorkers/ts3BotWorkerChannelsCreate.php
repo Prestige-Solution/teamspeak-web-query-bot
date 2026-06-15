@@ -21,9 +21,9 @@ class ts3BotWorkerChannelsCreate extends Model
 {
     use HasFactory, Compoships;
 
-    public const textMessage = 1;
+    public const int textMessage = 1;
 
-    public const pokeMessage = 2;
+    public const int pokeMessage = 2;
 
     protected $fillable = [
         'server_id',
@@ -105,6 +105,6 @@ class ts3BotWorkerChannelsCreate extends Model
 
     public function rel_pid(): HasMany
     {
-        return $this->hasMany(ts3Channel::class, 'pid', 'on_cid');
+        return $this->hasMany(ts3Channel::class, ['pid','server_id'], ['on_cid', 'server_id']);
     }
 }

@@ -12,6 +12,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 
 class ChannelRemoverController extends Controller
 {
@@ -23,10 +24,11 @@ class ChannelRemoverController extends Controller
             ->orderBy('channel_cid')
             ->get();
 
-        $tsChannels = ts3Channel::query()
+        $channels = ts3Channel::query()
             ->where('server_id', '=', $request->validated('server_id'))
-            ->orderBy('channel_order')
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
+
+        $tsChannels = $this->buildChannelOptions($channels->toBase());
 
         return view('backend.jobs.channel-remover.channel-remover-job-list')->with([
             'jobs'=>$jobs,
@@ -68,5 +70,20 @@ class ChannelRemoverController extends Controller
             ->delete();
 
         return redirect()->route('channel.view.listChannelRemover')->with(['success'=>'The job was successfully deleted']);
+    }
+
+    private function buildChannelOptions(Collection $channels, int $pid = 0, int $level = 0): Collection
+    {
+        return $channels
+            ->where('pid', $pid)
+            ->sortBy('channel_order')
+            ->flatMap(function (ts3Channel $channel) use ($channels, $level): Collection {
+                $channel->tree_channel_name = str_repeat('-', $level).$channel->channel_name;
+
+                return collect([$channel])->merge(
+                    $this->buildChannelOptions($channels, $channel->cid, $level + 1)
+                );
+            })
+            ->values();
     }
 }

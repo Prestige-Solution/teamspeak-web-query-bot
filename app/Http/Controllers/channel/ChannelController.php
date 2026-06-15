@@ -16,6 +16,7 @@ use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 
 class ChannelController extends Controller
@@ -39,16 +40,18 @@ class ChannelController extends Controller
             ->orderBy('on_cid')
             ->get();
 
-        $tsChannels = ts3Channel::query()
+        $channels = ts3Channel::query()
             ->where('server_id', '=', $request->validated('server_id'))
-            ->orderBy('channel_order')
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
 
-        $tsChannelTemplates = ts3Channel::query()
+        $tsChannels = $this->buildChannelOptions($channels->toBase());
+
+        $templateChannels = ts3Channel::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->whereNot('channel_name', 'like', '%spacer%')
-            ->orderBy('cid')
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
+
+        $tsChannelTemplates = $this->buildChannelOptions($templateChannels->toBase());
 
         $botEvents = ts3BotEvent::query()->where('cat_job_type', '=', 2)->get();
         $botActions = ts3BotAction::query()->where('type_id', '=', 1)->get();
@@ -107,5 +110,20 @@ class ChannelController extends Controller
             ->delete();
 
         return redirect()->route('channel.view.channelJobs')->with(['success'=>'The job was successfully deleted']);
+    }
+
+    private function buildChannelOptions(Collection $channels, int $pid = 0, int $level = 0): Collection
+    {
+        return $channels
+            ->where('pid', $pid)
+            ->sortBy('channel_order')
+            ->flatMap(function (ts3Channel $channel) use ($channels, $level): Collection {
+                $channel->tree_channel_name = str_repeat('-', $level).$channel->channel_name;
+
+                return collect([$channel])->merge(
+                    $this->buildChannelOptions($channels, $channel->cid, $level + 1)
+                );
+            })
+            ->values();
     }
 }
