@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 const USE_MAINTENANCE_MODE = true;
 const INSTALL_DEV_DEPENDENCIES = false;
-const RUN_NPM_INSTALL = true;
-const RUN_NPM_BUILD = true;
+const RUN_NPM_INSTALL = false;
+const RUN_NPM_BUILD = false;
 const RUN_MIGRATIONS = true;
-const RUN_SEEDER = false;
+const RUN_SEEDER = true;
 const RUN_STORAGE_LINK = true;
 
 function printInfo(string $message): void
@@ -17,12 +17,12 @@ function printInfo(string $message): void
 
 function printWarning(string $message): void
 {
-    echo PHP_EOL . '[WARNUNG] ' . $message . PHP_EOL;
+    echo PHP_EOL . '[WARNING] ' . $message . PHP_EOL;
 }
 
 function printError(string $message): void
 {
-    echo PHP_EOL . '[FEHLER] ' . $message . PHP_EOL;
+    echo PHP_EOL . '[ERROR] ' . $message . PHP_EOL;
 }
 
 function runCommand(string $command, bool $allowFailure = false): void
@@ -33,12 +33,12 @@ function runCommand(string $command, bool $allowFailure = false): void
 
     if ($exitCode !== 0) {
         if ($allowFailure) {
-            printWarning('Befehl fehlgeschlagen, wird aber ignoriert. Exit Code: ' . $exitCode);
+            printWarning('Command failed, but will be ignored. Exit Code: ' . $exitCode);
 
             return;
         }
 
-        throw new RuntimeException('Befehl fehlgeschlagen: ' . $command . ' | Exit Code: ' . $exitCode);
+        throw new RuntimeException('Command failed: ' . $command . ' | Exit Code: ' . $exitCode);
     }
 }
 
@@ -52,7 +52,7 @@ function disableMaintenanceMode(): void
     try {
         runArtisan('up', true);
     } catch (Throwable $exception) {
-        printWarning('Wartungsmodus konnte nicht automatisch deaktiviert werden.');
+        printWarning('Maintenance mode could not be automatically disabled.');
         printWarning($exception->getMessage());
     }
 }
@@ -64,19 +64,19 @@ chdir($projectRoot);
 
 try {
     if (! file_exists($projectRoot . '/artisan')) {
-        throw new RuntimeException('Keine artisan-Datei gefunden. Die upgrade.php muss im Laravel-Projekt-Root liegen.');
+        throw new RuntimeException('No artisan file found. The upgrade.php file must be located in the Laravel project root directory..');
     }
 
     if (! file_exists($projectRoot . '/composer.json')) {
-        throw new RuntimeException('Keine composer.json gefunden.');
+        throw new RuntimeException('No composer.json file found.');
     }
 
     if (! file_exists($projectRoot . '/package.json')) {
-        throw new RuntimeException('Keine package.json gefunden.');
+        throw new RuntimeException('No package.json found.');
     }
 
-    printInfo('Upgrade gestartet');
-    printInfo('Projektpfad: ' . $projectRoot);
+    printInfo('Upgrade started');
+    printInfo('Project Path: ' . $projectRoot);
 
     if (USE_MAINTENANCE_MODE) {
         runArtisan('down');
@@ -127,11 +127,11 @@ try {
 
     $duration = round(microtime(true) - $startedAt, 2);
 
-    printInfo('Upgrade erfolgreich abgeschlossen in ' . $duration . ' Sekunden.');
+    printInfo('Upgrade successfully completed in ' . $duration . ' seconds.');
 
     exit(0);
 } catch (Throwable $exception) {
-    printError('Upgrade fehlgeschlagen!');
+    printError('Upgrade Failed!');
     printError($exception->getMessage());
 
     if (USE_MAINTENANCE_MODE) {
