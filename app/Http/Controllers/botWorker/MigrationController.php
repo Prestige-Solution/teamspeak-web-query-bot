@@ -44,7 +44,7 @@ class MigrationController extends Controller
             ->where('id', '=', $this->source_server_id)
             ->first();
 
-        //setup source server
+        //set up source server
         $uriSourceHelperClass = new Ts3UriStringHelperController();
         $uriSource = $uriSourceHelperClass->getStandardUriString(
             $source_server_config->qa_name,
@@ -59,7 +59,7 @@ class MigrationController extends Controller
         $target_server_config = ts3ServerConfig::query()
             ->where('id', '=', $this->target_server_id)
             ->first();
-        //setup source server
+        //set up source server
         $uriTargetHelperClass = new Ts3UriStringHelperController();
         $uriTarget = $uriTargetHelperClass->getStandardUriString(
             $target_server_config->qa_name,
