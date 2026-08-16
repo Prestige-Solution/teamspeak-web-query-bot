@@ -180,9 +180,27 @@ class MigrationController extends Controller
                 $sourceChannelPermissions = $this->sourceConnection->channelPermList($sourceChannelInfo['cid'], true);
 
                 foreach ($sourceChannelPermissions as $sourceChannelPermission) {
-                    $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']],
-                        $sourceChannelPermission['permvalue']);
+                    if ($sourceChannelPermission['permsid'] === 'i_icon_id') {
+                        continue;
+                    }
+
+                    $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']], $sourceChannelPermission['permvalue']);
                 }
+
+                //migrate channel icon // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->channelGetById($sourceChannel['cid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
+                {
+                    $iconContent = $this->sourceConnection->channelGetById($sourceChannel['cid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->channelPermAssign($pid, ['i_icon_id'], $signedIconId);
+                }
+
+                //TODO add migrate channel files
+
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create Servergroup failed: '.$e->getMessage());
             }
