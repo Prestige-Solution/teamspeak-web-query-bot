@@ -44,7 +44,7 @@ class MigrationController extends Controller
             ->where('id', '=', $this->source_server_id)
             ->first();
 
-        //setup source server
+        //set up source server
         $uriSourceHelperClass = new Ts3UriStringHelperController();
         $uriSource = $uriSourceHelperClass->getStandardUriString(
             $source_server_config->qa_name,
@@ -59,7 +59,7 @@ class MigrationController extends Controller
         $target_server_config = ts3ServerConfig::query()
             ->where('id', '=', $this->target_server_id)
             ->first();
-        //setup source server
+        //set up source server
         $uriTargetHelperClass = new Ts3UriStringHelperController();
         $uriTarget = $uriTargetHelperClass->getStandardUriString(
             $target_server_config->qa_name,
@@ -180,9 +180,27 @@ class MigrationController extends Controller
                 $sourceChannelPermissions = $this->sourceConnection->channelPermList($sourceChannelInfo['cid'], true);
 
                 foreach ($sourceChannelPermissions as $sourceChannelPermission) {
-                    $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']],
-                        $sourceChannelPermission['permvalue']);
+                    if ($sourceChannelPermission['permsid'] === 'i_icon_id') {
+                        continue;
+                    }
+
+                    $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']], $sourceChannelPermission['permvalue']);
                 }
+
+                //migrate channel icon // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->channelGetById($sourceChannel['cid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
+                {
+                    $iconContent = $this->sourceConnection->channelGetById($sourceChannel['cid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->channelPermAssign($pid, ['i_icon_id'], $signedIconId);
+                }
+
+                //TODO add migrate channel files
+
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create Servergroup failed: '.$e->getMessage());
             }
@@ -215,6 +233,19 @@ class MigrationController extends Controller
                         Log::channel('migration')->error('Create permsid: '.$sourceServerGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
+
+                //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->serverGroupGetById($sourceServerGroup['sgid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
+                {
+                    $iconContent = $this->sourceConnection->serverGroupGetById($sourceServerGroup['sgid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->servergroupPermAssign($sid, ['i_icon_id'], $signedIconId);
+                }
+
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceServerGroupInfo['name'].' failed: '.$e->getMessage());
             }
@@ -246,6 +277,19 @@ class MigrationController extends Controller
                         Log::channel('migration')->error('Create permsid: '.$sourceChannelGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
+
+                //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->channelgroupGetById($sourceChannelGroup['cgid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
+                {
+                    $iconContent = $this->sourceConnection->channelgroupGetById($sourceChannelGroup['cgid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->channelgroupPermAssign($cgid, ['i_icon_id'], $signedIconId);
+                }
+
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceChannelGroupInfo['name'].' failed: '.$e->getMessage());
             }

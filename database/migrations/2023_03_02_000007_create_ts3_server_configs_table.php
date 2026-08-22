@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('user_id');
             $table->string('server_name');
-            $table->string('server_ip')->unique();
+            $table->string('server_ip');
             $table->string('qa_name');
             $table->string('qa_pw', 2048);
             $table->integer('server_query_port')->nullable();
