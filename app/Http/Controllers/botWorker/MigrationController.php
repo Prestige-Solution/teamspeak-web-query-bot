@@ -277,6 +277,19 @@ class MigrationController extends Controller
                         Log::channel('migration')->error('Create permsid: '.$sourceChannelGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
+
+                //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->channelgroupGetById($sourceChannelGroup['cgid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
+                {
+                    $iconContent = $this->sourceConnection->channelgroupGetById($sourceChannelGroup['cgid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->channelgroupPermAssign($cgid, ['i_icon_id'], $signedIconId);
+                }
+
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceChannelGroupInfo['name'].' failed: '.$e->getMessage());
             }
