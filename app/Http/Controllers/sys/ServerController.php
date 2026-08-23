@@ -71,7 +71,7 @@ class ServerController extends Controller
 
         //initializing server only in production mode
         if (config('app.env') !== 'testing') {
-            $status = $this->initialisingtsServer($server_id);
+            $status = $this->initialisingTsServer($server_id);
 
             if ($status != 0) {
                 if ($status['status'] == 1) {
@@ -109,7 +109,7 @@ class ServerController extends Controller
      */
     public function updateServerInit(UpdateServerInitRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $status = $this->initialisingtsServer($request->validated('server_id'), true);
+        $status = $this->initialisingTsServer($request->validated('server_id'), true);
 
         if ($status != 0) {
             if ($status['status'] == 1) {
@@ -164,7 +164,7 @@ class ServerController extends Controller
      * @param  int|null  $server_id
      * @throws \Exception
      */
-    private function initialisingtsServer(int $server_id = null, bool $update = false): array|int
+    private function initialisingTsServer(int $server_id = null, bool $update = false): array|int
     {
         //if create new server
         if ($update === false)
