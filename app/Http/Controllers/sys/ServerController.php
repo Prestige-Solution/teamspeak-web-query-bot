@@ -169,10 +169,10 @@ class ServerController extends Controller
         //if create new server
         if ($update === false)
         {
-            //setup police worker
+            //create default entry in police worker
             tsBotWorkerPolice::query()->create(['server_id'=>$server_id]);
 
-            //create entry in statistics
+            //create default entry in statistics
             statistic::query()->firstOrCreate(['server_id'=>$server_id]);
 
             $reInit = new tsConfigController();
@@ -193,6 +193,12 @@ class ServerController extends Controller
 
             //delete server banner
             $this->deleteBanners($server_id);
+
+            //create default entry in police worker
+            tsBotWorkerPolice::query()->firstOrCreate(['server_id'=>$server_id]);
+
+            //create default entry in statistics
+            statistic::query()->firstOrCreate(['server_id'=>$server_id]);
 
             $reInit = new tsConfigController();
             $returnCode = $reInit->tsServerInitializing($server_id);
