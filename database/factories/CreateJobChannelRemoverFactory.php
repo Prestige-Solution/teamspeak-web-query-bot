@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
+use App\Models\tsBotWorkers\tsBotWorkerChannelsRemove;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateJobChannelRemoverFactory extends Factory
 {
-    protected $model = ts3BotWorkerChannelsRemove::class;
+    protected $model = tsBotWorkerChannelsRemove::class;
 
     /**
      * Define the model's default state.

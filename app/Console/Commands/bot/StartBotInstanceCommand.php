@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands\bot;
 
-use App\Http\Controllers\bot\Ts3BotController;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Http\Controllers\bot\tsBotController;
+use App\Models\tsBot\tsServerConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -23,7 +23,7 @@ class StartBotInstanceCommand extends Command
         }
 
         foreach ($serverIds as $serverId) {
-            $lockFilePath = $lockDirectory.'/ts3-bot-'.$serverId.'.lock';
+            $lockFilePath = $lockDirectory.'/ts-bot-'.$serverId.'.lock';
             $lockHandle = fopen($lockFilePath, 'c+');
 
             if ($lockHandle === false) {
@@ -43,7 +43,7 @@ class StartBotInstanceCommand extends Command
             fflush($lockHandle);
 
             try {
-                new Ts3BotController($serverId);
+                new tsBotController($serverId);
 
                 return self::SUCCESS;
             } finally {
@@ -59,9 +59,9 @@ class StartBotInstanceCommand extends Command
 
     private function getServerIds(): array
     {
-        return ts3ServerConfig::query()
+        return tsServerConfig::query()
             ->where('is_active', '=', true)
-            ->where('is_ts3_start', '=', true)
+            ->where('is_tsstart', '=', true)
             ->pluck('id')->toArray();
     }
 }

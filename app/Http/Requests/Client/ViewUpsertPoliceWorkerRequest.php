@@ -33,7 +33,7 @@ class ViewUpsertPoliceWorkerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts_server_configs,id',
         ];
     }
 

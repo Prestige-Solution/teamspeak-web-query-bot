@@ -3,9 +3,9 @@
 namespace Tests\Feature\server;
 
 use App\Http\Controllers\admin\ResetStatsController;
-use App\Http\Controllers\sys\Ts3LogController;
-use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
+use App\Http\Controllers\sys\tsLogController;
+use App\Models\tsBot\tsBotLog;
+use App\Models\tsBotWorkers\tsBotWorkerPolice;
 use Database\Factories\CreateChannelFactory;
 use Database\Factories\CreateChannelGroupFactory;
 use Database\Factories\CreateServerFactory;
@@ -34,13 +34,13 @@ class ResetStatsTest extends TestCase
             'vpn_protection_query_count' => 10,
         ]);
 
-        $checkDB = ts3BotWorkerPolice::query()->get()->first();
+        $checkDB = tsBotWorkerPolice::query()->get()->first();
         $this->assertEquals(10, $checkDB->vpn_protection_query_count);
 
         $resetStatsController = new ResetStatsController();
         $resetStatsController->resetVPNQueryCountPerMinute();
 
-        $checkDB = ts3BotWorkerPolice::query()->get()->first();
+        $checkDB = tsBotWorkerPolice::query()->get()->first();
         $this->assertEquals(0, $checkDB->vpn_protection_query_count);
     }
 
@@ -54,13 +54,13 @@ class ResetStatsTest extends TestCase
             'vpn_protection_query_per_day' => 100,
         ]);
 
-        $checkDB = ts3BotWorkerPolice::query()->get()->first();
+        $checkDB = tsBotWorkerPolice::query()->get()->first();
         $this->assertEquals(100, $checkDB->vpn_protection_query_per_day);
 
         $resetStatsController = new ResetStatsController();
         $resetStatsController->resetVPNQueryPerDay();
 
-        $checkDB = ts3BotWorkerPolice::query()->get()->first();
+        $checkDB = tsBotWorkerPolice::query()->get()->first();
         $this->assertEquals(0, $checkDB->vpn_protection_query_per_day);
     }
 
@@ -71,23 +71,23 @@ class ResetStatsTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
 
-        $logController = new Ts3LogController('factory', 1);
+        $logController = new tsLogController('factory', 1);
         for ($i = 1; $i <= 50; $i++) {
             $logController->setCustomLog(
                 1,
-                ts3BotLog::SUCCESS,
+                tsBotLog::SUCCESS,
                 'factory test',
                 'factory entry '.$i,
             );
         }
 
-        $checkDB = ts3BotLog::query()->get();
+        $checkDB = tsBotLog::query()->get();
         $this->assertCount(50, $checkDB);
 
         $resetStatsController = new ResetStatsController();
         $resetStatsController->deleteBotLogs();
 
-        $checkDB = ts3BotLog::query()->get();
+        $checkDB = tsBotLog::query()->get();
         $this->assertCount(50, $checkDB);
         $this->assertEquals('factory entry 50', $checkDB->last()->description);
         $this->assertEquals('factory entry 1', $checkDB->first()->description);
@@ -96,17 +96,17 @@ class ResetStatsTest extends TestCase
         for ($i = 51; $i <= 120; $i++) {
             $logController->setCustomLog(
                 1,
-                ts3BotLog::SUCCESS,
+                tsBotLog::SUCCESS,
                 'factory test',
                 'factory entry '.$i,
             );
         }
 
-        $checkDB = ts3BotLog::query()->get();
+        $checkDB = tsBotLog::query()->get();
         $this->assertCount(120, $checkDB);
         $resetStatsController->deleteBotLogs();
 
-        $checkDB = ts3BotLog::query()->get();
+        $checkDB = tsBotLog::query()->get();
         $this->assertCount(100, $checkDB);
         $this->assertEquals('factory entry 21', $checkDB->first()->description);
         $this->assertEquals('factory entry 120', $checkDB->last()->description);

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Models\tsBot\tsServerConfig;
 use Illuminate\Support\Facades\Log;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\AdapterException;
@@ -40,12 +40,12 @@ class MigrationController extends Controller
      */
     public function setup_connections()
     {
-        $source_server_config = ts3ServerConfig::query()
+        $source_server_config = tsServerConfig::query()
             ->where('id', '=', $this->source_server_id)
             ->first();
 
         //set up source server
-        $uriSourceHelperClass = new Ts3UriStringHelperController();
+        $uriSourceHelperClass = new tsUriStringHelperController();
         $uriSource = $uriSourceHelperClass->getStandardUriString(
             $source_server_config->qa_name,
             $source_server_config->qa_pw,
@@ -56,11 +56,11 @@ class MigrationController extends Controller
             $this->source_server_id
         );
 
-        $target_server_config = ts3ServerConfig::query()
+        $target_server_config = tsServerConfig::query()
             ->where('id', '=', $this->target_server_id)
             ->first();
         //set up source server
-        $uriTargetHelperClass = new Ts3UriStringHelperController();
+        $uriTargetHelperClass = new tsUriStringHelperController();
         $uriTarget = $uriTargetHelperClass->getStandardUriString(
             $target_server_config->qa_name,
             $target_server_config->qa_pw,

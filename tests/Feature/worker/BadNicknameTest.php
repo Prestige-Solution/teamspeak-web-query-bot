@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\worker;
 
-use App\Http\Controllers\ts3Config\BadNameController;
+use App\Http\Controllers\tsConfig\BadNameController;
 use App\Models\sys\badName;
 use App\Models\User;
 use Database\Factories\CreateBadNicknameFactory;

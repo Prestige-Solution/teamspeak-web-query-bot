@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Channel\CreateChannelRemoverRequest;
 use App\Http\Requests\Channel\DeleteChannelRemoverRequest;
 use App\Http\Requests\Channel\ViewListChannelRemoverRequest;
-use App\Models\ts3Bot\ts3Channel;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
+use App\Models\tsBot\tsChannel;
+use App\Models\tsBotWorkers\tsBotWorkerChannelsRemove;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -18,13 +18,13 @@ class ChannelRemoverController extends Controller
 {
     public function viewChannelRemoverJobs(ViewListChannelRemoverRequest $request): View|Factory|RedirectResponse|Application
     {
-        $jobs = ts3BotWorkerChannelsRemove::query()
+        $jobs = tsBotWorkerChannelsRemove::query()
             ->with('rel_channels')
             ->where('server_id', '=', $request->validated('server_id'))
             ->orderBy('channel_cid')
             ->get();
 
-        $channels = ts3Channel::query()
+        $channels = tsChannel::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
 
@@ -46,7 +46,7 @@ class ChannelRemoverController extends Controller
         };
 
         //store
-        ts3BotWorkerChannelsRemove::query()->updateOrCreate(
+        tsBotWorkerChannelsRemove::query()->updateOrCreate(
             [
                 'server_id'=>$request->validated('server_id'),
                 'channel_cid'=>$request->validated('channel_cid'),
@@ -73,7 +73,7 @@ class ChannelRemoverController extends Controller
         return $channels
             ->where('pid', $pid)
             ->sortBy('channel_order')
-            ->flatMap(function (ts3Channel $channel) use ($channels, $level): Collection {
+            ->flatMap(function (tsChannel $channel) use ($channels, $level): Collection {
                 $channel->tree_channel_name = str_repeat('-', $level).$channel->channel_name;
 
                 return collect([$channel])->merge(
@@ -85,7 +85,7 @@ class ChannelRemoverController extends Controller
 
     private function deleteChannelRemoveJobsById(int $server_id, int $id): void
     {
-        ts3BotWorkerChannelsRemove::query()
+        tsBotWorkerChannelsRemove::query()
             ->where('id', '=', $id)
             ->where('server_id', '=', $server_id)
             ->delete();
@@ -93,6 +93,6 @@ class ChannelRemoverController extends Controller
 
     public function deleteChannelRemoveJobsByServerId(int $server_id): void
     {
-        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
     }
 }

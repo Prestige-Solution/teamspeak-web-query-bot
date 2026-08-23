@@ -4,15 +4,15 @@ namespace App\Http\Controllers\sys;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Migration\StartMigrationRequest;
-use App\Jobs\ts3MigrationQueue;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Jobs\tsMigrationQueue;
+use App\Models\tsBot\tsServerConfig;
 use Illuminate\Support\Facades\Auth;
 
 class MigrationController extends Controller
 {
     public function viewMigration()
     {
-        $servers = ts3ServerConfig::query()
+        $servers = tsServerConfig::query()
             ->where('user_id', '=', Auth::user()->id)
             ->get();
 
@@ -36,7 +36,7 @@ class MigrationController extends Controller
      */
     public function startMigration(StartMigrationRequest $request)
     {
-        ts3MigrationQueue::dispatch($request->validated('source_server_id'), $request->validated('target_server_id'))->onConnection('worker')->onQueue('migration');
+        tsMigrationQueue::dispatch($request->validated('source_server_id'), $request->validated('target_server_id'))->onConnection('worker')->onQueue('migration');
 
         return redirect()->route('migration.view.migrationSettings')->with('success', 'Migration started');
     }

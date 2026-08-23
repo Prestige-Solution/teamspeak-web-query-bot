@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\worker;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
+use App\Models\tsBotWorkers\tsBotWorkerAfk;
 use App\Models\User;
 use Database\Factories\CreateChannelFactory;
 use Database\Factories\CreateChannelGroupFactory;
@@ -57,7 +57,7 @@ class AfkWorkerTest extends TestCase
         $response->assertRedirectToRoute('worker.view.createOrUpdateAfkWorker');
 
         //checks
-        $dbResult = ts3BotWorkerAfk::query()->get();
+        $dbResult = tsBotWorkerAfk::query()->get();
         $this->assertCount(1, $dbResult);
         $this->assertEquals(1, $dbResult->first()->is_afk_active);
         $this->assertEquals(1, $dbResult->first()->is_afk_kicker_active);

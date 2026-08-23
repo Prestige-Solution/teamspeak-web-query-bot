@@ -31,7 +31,7 @@
                     <h5 class="card-title fw-bold">Notes</h5>
                     <p class="card-text">
                         If you are using a Teamspeak 3 server, make sure you have configured and prepared it correctly. Instructions can be found here
-                        <a href="https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/docker/make-ts3-ssh-compatible.md#setup-a-ssh_rsa_host_key" target="_blank">Setup a ssh_rsa_host_key</a>
+                        <a href="https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/docker/make-ts-ssh-compatible.md#setup-a-ssh_rsa_host_key" target="_blank">Setup a ssh_rsa_host_key</a>
                     </p>
                 </div>
             </div>

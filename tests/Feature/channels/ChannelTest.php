@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\channels;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
+use App\Models\tsBotWorkers\tsBotWorkerChannelsCreate;
+use App\Models\tsBotWorkers\tsBotWorkerChannelsRemove;
 use App\Models\User;
 use Database\Factories\CreateChannelFactory;
 use Database\Factories\CreateChannelGroupFactory;
@@ -64,7 +64,7 @@ class ChannelTest extends TestCase
         $response->assertRedirectToRoute('channel.view.channelJobs');
         $response->assertSessionHas(['success' => 'The job was successfully updated']);
 
-        $checkDB = ts3BotWorkerChannelsCreate::query()->get();
+        $checkDB = tsBotWorkerChannelsCreate::query()->get();
         $this->assertEquals(1, $checkDB->count());
         $this->assertEquals('clientmoved', $checkDB->first()->on_event);
         $this->assertEquals(9, $checkDB->first()->channel_cgid);
@@ -87,7 +87,7 @@ class ChannelTest extends TestCase
         $response->assertRedirectToRoute('channel.view.channelJobs');
         $response->assertSessionHas(['success' => 'The job was successfully updated']);
 
-        $checkDB = ts3BotWorkerChannelsCreate::query()->get();
+        $checkDB = tsBotWorkerChannelsCreate::query()->get();
         $this->assertEquals(1, $checkDB->count());
         $this->assertEquals('clientmoved', $checkDB->first()->on_event);
         $this->assertEquals(9, $checkDB->first()->channel_cgid);
@@ -110,7 +110,7 @@ class ChannelTest extends TestCase
         $response->assertRedirectToRoute('channel.view.channelJobs');
         $response->assertSessionHas(['success' => 'The job was successfully deleted']);
 
-        $checkDB = ts3BotWorkerChannelsCreate::query()->get();
+        $checkDB = tsBotWorkerChannelsCreate::query()->get();
         $this->assertEquals(0, $checkDB->count());
 
         $response = $this->actingAs($this->user)->get(route('channel.view.channelJobs'));
@@ -152,7 +152,7 @@ class ChannelTest extends TestCase
         $response->assertRedirectToRoute('channel.view.listChannelRemover');
         $response->assertSessionHas(['success' => 'The job was successfully updated']);
 
-        $checkDB = ts3BotWorkerChannelsRemove::query()->get();
+        $checkDB = tsBotWorkerChannelsRemove::query()->get();
         $this->assertEquals(1, $checkDB->count());
         $this->assertEquals('h', $checkDB->first()->channel_max_time_format);
         $this->assertEquals(2 * 60 * 60, $checkDB->first()->channel_max_seconds_empty);
@@ -173,7 +173,7 @@ class ChannelTest extends TestCase
         $response->assertRedirectToRoute('channel.view.listChannelRemover');
         $response->assertSessionHas(['success' => 'The job was successfully deleted']);
 
-        $checkDB = ts3BotWorkerChannelsRemove::query()->get();
+        $checkDB = tsBotWorkerChannelsRemove::query()->get();
         $this->assertEquals(0, $checkDB->count());
 
         $response = $this->actingAs($this->user)->get(route('channel.view.listChannelRemover'));

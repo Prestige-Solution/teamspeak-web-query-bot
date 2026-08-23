@@ -7,11 +7,11 @@ use App\Http\Requests\Client\UpdateAfkWorkerSettingsRequest;
 use App\Http\Requests\Client\UpdatePoliceWorkerSettingsRequest;
 use App\Http\Requests\Client\ViewUpsertAfkWorkerRequest;
 use App\Http\Requests\Client\ViewUpsertPoliceWorkerRequest;
-use App\Models\ts3Bot\ts3Channel;
-use App\Models\ts3Bot\ts3ServerGroup;
-use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
-use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
-use App\Models\ts3BotWorkers\ts3BotWorkerPoliceVpnProtection;
+use App\Models\tsBot\tsChannel;
+use App\Models\tsBot\tsServerGroup;
+use App\Models\tsBotWorkers\tsBotWorkerAfk;
+use App\Models\tsBotWorkers\tsBotWorkerPolice;
+use App\Models\tsBotWorkers\tsBotWorkerPoliceVpnProtection;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -22,11 +22,11 @@ class ClientController extends Controller
 {
     public function viewPoliceWorker(ViewUpsertPoliceWorkerRequest $request): View|Factory|RedirectResponse|Application
     {
-        $policeWorkerSetting = ts3BotWorkerPolice::query()
+        $policeWorkerSetting = tsBotWorkerPolice::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->first();
 
-        $serverGroups = ts3ServerGroup::query()
+        $serverGroups = tsServerGroup::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->where('type', '=', 1)
             ->get(['sgid', 'name']);
@@ -40,25 +40,25 @@ class ClientController extends Controller
     public function viewAfkWorker(ViewUpsertAfkWorkerRequest $request): View|Factory|RedirectResponse|Application
     {
         //Vorlagengruppen = Typ 0 //Normale Gruppen = Typ 1 //ServerQuery Gruppen = Typ 2
-        $serverGroups = ts3ServerGroup::query()
+        $serverGroups = tsServerGroup::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->where('type', '=', 1)
             ->get(['sgid', 'name']);
 
-        $tsChannels = ts3Channel::query()
+        $tsChannels = tsChannel::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->orderBy('channel_order')
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
 
-        $afkWorkerAfkChannel = ts3BotWorkerAfk::query()
+        $afkWorkerAfkChannel = tsBotWorkerAfk::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->first('afk_channel_cid');
 
-        $afkWorkerOptions = ts3BotWorkerAfk::query()
+        $afkWorkerOptions = tsBotWorkerAfk::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->first();
 
-        $afkExcludedServerGroups = ts3BotWorkerAfk::query()
+        $afkExcludedServerGroups = tsBotWorkerAfk::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->get(['excluded_servergroup']);
 
@@ -77,7 +77,7 @@ class ClientController extends Controller
 
     public function updatePoliceWorkerSettings(UpdatePoliceWorkerSettingsRequest $request): RedirectResponse
     {
-        ts3BotWorkerPolice::query()
+        tsBotWorkerPolice::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->update([
                 'is_discord_webhook_active'=>$request->validated('is_discord_webhook_active'),
@@ -97,13 +97,13 @@ class ClientController extends Controller
     public function updateAfkWorkerSettings(UpdateAfkWorkerSettingsRequest $request): RedirectResponse
     {
         //clear afk worker table
-        ts3BotWorkerAfk::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        tsBotWorkerAfk::query()->where('server_id', '=', $request->validated('server_id'))->delete();
         //create afk worker config
         $excludedServerGroups = collect($request->validated('excluded_servergroup'));
         //exists excluded Groups
         if ($excludedServerGroups->count() != 0) {
             foreach ($excludedServerGroups as $excludedServerGroup) {
-                ts3BotWorkerAfk::query()->create([
+                tsBotWorkerAfk::query()->create([
                     'server_id'=>$request->validated('server_id'),
                     'is_afk_active'=>$request->validated('is_afk_active'),
                     'max_client_idle_time'=>$request->validated('max_client_idle_time') * 1000 * 60,
@@ -117,14 +117,14 @@ class ClientController extends Controller
         }
 
         //exclude // Vorlagengruppen > Typ 0 //Normale Gruppen > Typ 1 //ServerQuery Gruppen > Typ 2
-        $excludeStandardServerGroups = ts3ServerGroup::query()
+        $excludeStandardServerGroups = tsServerGroup::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->where('type', '=', 0)
             ->orWhere('type', '=', 2)
             ->get(['sgid', 'name']);
 
         foreach ($excludeStandardServerGroups as $excludeStandardServerGroup) {
-            ts3BotWorkerAfk::query()->create([
+            tsBotWorkerAfk::query()->create([
                 'server_id'=>$request->validated('server_id'),
                 'is_afk_active'=>$request->validated('is_afk_active'),
                 'max_client_idle_time'=>$request->validated('max_client_idle_time') * 1000 * 60,
@@ -141,16 +141,16 @@ class ClientController extends Controller
 
     public function deleteAfkWorkerSettingsByServerId(int $server_id): void
     {
-        ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
     }
 
     public function deletePoliceWorkerSettingsByServerId(int $server_id): void
     {
-        ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerPolice::query()->where('server_id', '=', $server_id)->delete();
     }
 
     public function deletePoliceVpnProtectionWorkerSettingsByServerId(int $server_id): void
     {
-        ts3BotWorkerPoliceVpnProtection::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerPoliceVpnProtection::query()->where('server_id', '=', $server_id)->delete();
     }
 }

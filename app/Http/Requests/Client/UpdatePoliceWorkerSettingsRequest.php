@@ -33,7 +33,7 @@ class UpdatePoliceWorkerSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts_server_configs,id',
             'is_discord_webhook_active'=>'required|boolean',
             'discord_webhook_url'=>'nullable|url',
             'is_check_bot_alive_active'=>'required|boolean',

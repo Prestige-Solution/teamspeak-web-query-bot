@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Backend\UpdateChangePasswordRequest;
 use App\Models\sys\statistic;
-use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\tsBot\tsBotLog;
+use App\Models\tsBot\tsServerConfig;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -23,16 +23,16 @@ class BackendController extends Controller
             ->get()
             ->first();
 
-        $server = ts3ServerConfig::query()
+        $server = tsServerConfig::query()
             ->with('rel_bot_status')
             ->where('id', '=', Auth::user()->active_server_id)
             ->first();
 
-        $availableServers = ts3ServerConfig::query()
+        $availableServers = tsServerConfig::query()
             ->orderBy('server_ip')
             ->get(['id', 'server_name']);
 
-        $botLogs = ts3BotLog::query()->with('rel_bot_status')
+        $botLogs = tsBotLog::query()->with('rel_bot_status')
             ->where('server_id', '=', Auth::user()->active_server_id)
             ->where('job', '!=', 'queuingWorkers')
             ->orderByDesc('id')
@@ -49,12 +49,12 @@ class BackendController extends Controller
 
     public function viewBotControlCenter(): Factory|View|RedirectResponse|Application
     {
-        $server = ts3ServerConfig::query()
+        $server = tsServerConfig::query()
             ->with('rel_bot_status')
             ->where('id', '=', Auth::user()->active_server_id)
             ->first();
 
-        $availableServers = ts3ServerConfig::query()->orderBy('server_ip')->get(['id', 'server_name']);
+        $availableServers = tsServerConfig::query()->orderBy('server_ip')->get(['id', 'server_name']);
 
         return view('backend.control-center.bot-control')->with([
             'server'=>$server,
@@ -64,16 +64,16 @@ class BackendController extends Controller
 
     public function viewBotLogs(): View|\Illuminate\Foundation\Application|Factory|Application
     {
-        $server = ts3ServerConfig::query()
+        $server = tsServerConfig::query()
             ->with('rel_bot_status')
             ->where('id', '=', Auth::user()->active_server_id)
             ->first();
 
-        $availableServers = ts3ServerConfig::query()
+        $availableServers = tsServerConfig::query()
             ->orderBy('server_ip')
             ->get(['id', 'server_name']);
 
-        $botLogs = ts3BotLog::query()->with('rel_bot_status')
+        $botLogs = tsBotLog::query()->with('rel_bot_status')
             ->where('server_id', '=', Auth::user()->active_server_id)
             ->where('job', '!=', 'queuingWorkers')
             ->orderByDesc('id')

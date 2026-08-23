@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\botControl;
 
-use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\tsBot\tsBotLog;
+use App\Models\tsBot\tsServerConfig;
 use App\Models\User;
 use Database\Factories\CreateChannelFactory;
 use Database\Factories\CreateChannelGroupFactory;
@@ -38,18 +38,18 @@ class BotControlTest extends TestCase
         User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
-        $response = $this->actingAs($this->user)->post(route('ts3.start.ts3Bot'));
+        $response = $this->actingAs($this->user)->post(route('ts.start.tsBot'));
         $response->assertStatus(302);
         $response->assertSessionHas(['success' => 'The bot is started and immediately logs onto the server.']);
 
         //check server config
-        $configDB = ts3ServerConfig::query()->get();
-        $this->assertTrue((bool) $configDB->first()->is_ts3_start);
+        $configDB = tsServerConfig::query()->get();
+        $this->assertTrue((bool) $configDB->first()->is_ts_start);
         $this->assertTrue((bool) $configDB->first()->is_active);
 
         //check log config
-        $logDB = ts3BotLog::query()->get();
-        $this->assertEquals(ts3BotLog::SUCCESS, $logDB->last()->status_id);
+        $logDB = tsBotLog::query()->get();
+        $this->assertEquals(tsBotLog::SUCCESS, $logDB->last()->status_id);
         $this->assertEquals('startBot', $logDB->last()->job);
         $this->assertEquals('Bot started via web interface', $logDB->last()->description);
     }
@@ -64,18 +64,18 @@ class BotControlTest extends TestCase
         User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
-        $response = $this->actingAs($this->user)->post(route('ts3.stop.ts3Bot'));
+        $response = $this->actingAs($this->user)->post(route('ts.stop.tsBot'));
         $response->assertStatus(302);
         $response->assertSessionHas(['success' => 'Bot is shutting down. This may take a moment.']);
 
         //check server config
-        $configDB = ts3ServerConfig::query()->get();
-        $this->assertFalse((bool) $configDB->first()->is_ts3_start);
+        $configDB = tsServerConfig::query()->get();
+        $this->assertFalse((bool) $configDB->first()->is_ts_start);
         $this->assertFalse((bool) $configDB->first()->is_active);
 
         //check log config
-        $logDB = ts3BotLog::query()->get();
-        $this->assertEquals(ts3BotLog::SUCCESS, $logDB->last()->status_id);
+        $logDB = tsBotLog::query()->get();
+        $this->assertEquals(tsBotLog::SUCCESS, $logDB->last()->status_id);
         $this->assertEquals('botStop', $logDB->last()->job);
         $this->assertEquals('Bot shutting down via web interface', $logDB->last()->description);
 

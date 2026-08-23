@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
+use App\Models\tsBotWorkers\tsBotWorkerPolice;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Crypt;
 
 class CreateWorkerPoliceSettingsFactory extends Factory
 {
-    protected $model = ts3BotWorkerPolice::class;
+    protected $model = tsBotWorkerPolice::class;
 
     /**
      * Define the model's default state.
