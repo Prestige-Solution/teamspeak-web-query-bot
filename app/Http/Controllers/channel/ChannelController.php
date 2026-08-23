@@ -13,6 +13,7 @@ use App\Models\ts3BotEvents\ts3BotAction;
 use App\Models\ts3BotEvents\ts3BotActionUser;
 use App\Models\ts3BotEvents\ts3BotEvent;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
+use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -103,11 +104,7 @@ class ChannelController extends Controller
 
     public function deleteChannelJob(DeleteChannelJobRequest $request): RedirectResponse
     {
-        //delete entry
-        ts3BotWorkerChannelsCreate::query()
-            ->where('id', '=', $request->validated('id'))
-            ->where('server_id', '=', $request->validated('server_id'))
-            ->delete();
+        $this->deleteChannelCreateJobsById($request->validated('server_id'), $request->validated('id'));
 
         return redirect()->route('channel.view.channelJobs')->with(['success'=>'The job was successfully deleted']);
     }
@@ -125,5 +122,18 @@ class ChannelController extends Controller
                 );
             })
             ->values();
+    }
+
+    private function deleteChannelCreateJobsById(int $server_id, int $id): void
+    {
+        ts3BotWorkerChannelsCreate::query()
+            ->where('id', '=', $id)
+            ->where('server_id', '=', $server_id)
+            ->delete();
+    }
+
+    public function deleteChannelCreateJobsByServerId(int $server_id): void
+    {
+        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
     }
 }

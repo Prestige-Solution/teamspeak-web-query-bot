@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\sys;
 
+use App\Http\Controllers\banner\BannerController;
+use App\Http\Controllers\channel\ChannelController;
+use App\Http\Controllers\channel\ChannelRemoverController;
+use App\Http\Controllers\client\ClientController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ts3Config\BadNameController;
 use App\Http\Controllers\ts3Config\Ts3ConfigController;
@@ -10,16 +14,12 @@ use App\Http\Requests\Config\DeleteServerRequest;
 use App\Http\Requests\Config\SwitchDefaultServerRequest;
 use App\Http\Requests\Config\UpdateServerInitRequest;
 use App\Http\Requests\Config\UpdateServerRequest;
-use App\Models\bannerCreator\banner;
-use App\Models\bannerCreator\bannerOption;
 use App\Models\sys\statistic;
 use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ChannelGroup;
 use App\Models\ts3Bot\ts3ServerConfig;
 use App\Models\ts3Bot\ts3ServerGroup;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
 use App\Models\ts3BotWorkers\ts3BotWorkerPoliceVpnProtection;
 use App\Models\User;
@@ -28,7 +28,6 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Storage;
 
 class ServerController extends Controller
 {
@@ -70,11 +69,6 @@ class ServerController extends Controller
             return redirect()->back()->withErrors(['error' => 'Server creation failed']);
         }
 
-        //setup police worker
-        ts3BotWorkerPolice::query()->create([
-            'server_id'=>$server_id,
-        ]);
-
         //initializing server only in production mode
         if (config('app.env') !== 'testing') {
             $status = $this->initialisingTs3Server($server_id);
@@ -87,11 +81,6 @@ class ServerController extends Controller
                 }
             }
         }
-
-        //create entry in statistics
-        statistic::query()->firstOrCreate([
-            'server_id'=>$server_id,
-        ]);
 
         return redirect()->route('serverConfig.view.serverList');
     }
@@ -120,7 +109,7 @@ class ServerController extends Controller
      */
     public function updateServerInit(UpdateServerInitRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $status = $this->initialisingTs3Server($request->validated('server_id'));
+        $status = $this->initialisingTs3Server($request->validated('server_id'), true);
 
         if ($status != 0) {
             if ($status['status'] == 1) {
@@ -154,24 +143,12 @@ class ServerController extends Controller
         $this->deleteTsDatabaseEntrys($request->validated('server_id'));
 
         //delete server banner
-        $banners = banner::query()->where('server_id', '=', $request->validated('server_id'))->get();
-        foreach ($banners as $banner) {
-            if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
-                Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
-            }
-
-            if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
-                Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
-            }
-
-            bannerOption::query()->where('banner_id', '=', $banner->id)->delete();
-            banner::query()->where('id', '=', $banner->id)->delete();
-        }
+        $this->deleteBanners($request->validated('server_id'));
 
         //delete server
         ts3ServerConfig::query()->where('id', '=', $request->validated('server_id'))->delete();
 
-        //check if a server is available else set users default server to 0
+        //check if a server is available else set user active_server_id to 0
         $serverlist = ts3ServerConfig::query()->get();
 
         if ($serverlist->count() > 0) {
@@ -187,9 +164,36 @@ class ServerController extends Controller
      * @param  int|null  $server_id
      * @throws \Exception
      */
-    private function initialisingTs3Server(int $server_id = null): array|int
+    private function initialisingTs3Server(int $server_id = null, bool $update = false): array|int
     {
-        if ($server_id !== null) {
+        //if create new server
+        if ($update === false)
+        {
+            //setup police worker
+            ts3BotWorkerPolice::query()->create(['server_id'=>$server_id]);
+
+            //create entry in statistics
+            statistic::query()->firstOrCreate(['server_id'=>$server_id]);
+
+            $reInit = new Ts3ConfigController();
+            $returnCode = $reInit->ts3ServerInitializing($server_id);
+        }
+
+        if ($update === true && $server_id !== null) {
+            //delete logs and stats
+            $this->deleteBotLogs($server_id);
+            $this->deleteStatistics($server_id);
+
+            //delete all worker configs
+            $this->deleteWorkerConfigs($server_id);
+            $this->deleteBadNameEntrys($server_id);
+
+            //delete ts data
+            $this->deleteTsDatabaseEntrys($server_id);
+
+            //delete server banner
+            $this->deleteBanners($server_id);
+
             $reInit = new Ts3ConfigController();
             $returnCode = $reInit->ts3ServerInitializing($server_id);
         }
@@ -206,11 +210,17 @@ class ServerController extends Controller
 
     private function deleteWorkerConfigs(int $server_id): void
     {
-        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerPoliceVpnProtection::query()->where('server_id', '=', $server_id)->delete();
+        $channelCreateJobsController = new ChannelController();
+        $channelCreateJobsController->deleteChannelCreateJobsByServerId($server_id);
+
+        $channelRemoveJobsController = new ChannelRemoverController();
+        $channelRemoveJobsController->deleteChannelRemoveJobsByServerId($server_id);
+
+        $clientController = new ClientController();
+        $clientController->deleteAfkWorkerSettingsByServerId($server_id);
+        $clientController->deletePoliceWorkerSettingsByServerId($server_id);
+        $clientController->deletePoliceVpnProtectionWorkerSettingsByServerId($server_id);
+
     }
 
     private function deleteBotLogs(int $server_id): void
@@ -229,5 +239,11 @@ class ServerController extends Controller
     {
         $statisticsController = new StatisticController();
         $statisticsController->deleteStatisticsByServerID($server_id);
+    }
+
+    private function deleteBanners(int $server_id): void
+    {
+        $bannerController = new BannerController();
+        $bannerController->deleteBannersByServerID($server_id);
     }
 }

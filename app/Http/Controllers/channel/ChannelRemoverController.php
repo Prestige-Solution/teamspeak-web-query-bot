@@ -63,11 +63,7 @@ class ChannelRemoverController extends Controller
 
     public function deleteChannelRemoverJob(DeleteChannelRemoverRequest $request): RedirectResponse
     {
-        //delete entry
-        ts3BotWorkerChannelsRemove::query()
-            ->where('id', '=', $request->validated('id'))
-            ->where('server_id', '=', $request->validated('server_id'))
-            ->delete();
+        $this->deleteChannelRemoveJobsById($request->validated('server_id'), $request->validated('id'));
 
         return redirect()->route('channel.view.listChannelRemover')->with(['success'=>'The job was successfully deleted']);
     }
@@ -85,5 +81,18 @@ class ChannelRemoverController extends Controller
                 );
             })
             ->values();
+    }
+
+    private function deleteChannelRemoveJobsById(int $server_id, int $id): void
+    {
+        ts3BotWorkerChannelsRemove::query()
+            ->where('id', '=', $id)
+            ->where('server_id', '=', $server_id)
+            ->delete();
+    }
+
+    public function deleteChannelRemoveJobsByServerId(int $server_id): void
+    {
+        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
     }
 }

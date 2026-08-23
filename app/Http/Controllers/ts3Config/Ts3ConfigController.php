@@ -47,28 +47,6 @@ class Ts3ConfigController extends Controller
             ->where('id', '=', $server_id)
             ->first();
 
-        ts3Channel::query()->where('server_id', '=', $server_id)->delete();
-        ts3ServerGroup::query()->where('server_id', '=', $server_id)->delete();
-        ts3ChannelGroup::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
-        ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->update(['allow_sgid_vpn'=>1]);
-
-        $banners = banner::query()->where('server_id', '=', $server_id)->get();
-        foreach ($banners as $banner) {
-            if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
-                Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
-            }
-
-            if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
-                Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
-            }
-
-            bannerOption::query()->where('banner_id', '=', $banner->id)->delete();
-            banner::query()->where('id', '=', $banner->id)->delete();
-        }
-
         try {
             $uri = new Ts3UriStringHelperController();
             $this->uri = $uri->getStandardUriString(
@@ -189,7 +167,7 @@ class Ts3ConfigController extends Controller
         $this->ts3LogController->setCustomLog(
             $server_id,
             ts3BotLog::SUCCESS,
-            'Config Initialisation',
+            'Config Initialization',
             'The server has been successfully initialized.',
         );
 

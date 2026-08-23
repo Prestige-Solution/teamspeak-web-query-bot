@@ -11,6 +11,7 @@ use App\Models\ts3Bot\ts3Channel;
 use App\Models\ts3Bot\ts3ServerGroup;
 use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
+use App\Models\ts3BotWorkers\ts3BotWorkerPoliceVpnProtection;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -136,5 +137,20 @@ class ClientController extends Controller
         }
 
         return redirect()->route('worker.view.createOrUpdateAfkWorker')->with(['success'=>'Settings successfully updated']);
+    }
+
+    public function deleteAfkWorkerSettingsByServerId(int $server_id): void
+    {
+        ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
+    }
+
+    public function deletePoliceWorkerSettingsByServerId(int $server_id): void
+    {
+        ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->delete();
+    }
+
+    public function deletePoliceVpnProtectionWorkerSettingsByServerId(int $server_id): void
+    {
+        ts3BotWorkerPoliceVpnProtection::query()->where('server_id', '=', $server_id)->delete();
     }
 }
