@@ -35,7 +35,7 @@ class ChannelTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateJobChannelCreatorFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->get(route('channel.view.channelJobs'));
@@ -55,7 +55,7 @@ class ChannelTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $createChannelArray = CreateJobChannelCreatorFactory::new()->make()->toArray();
@@ -78,7 +78,7 @@ class ChannelTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateJobChannelCreatorFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $updateChannelArray = CreateJobChannelCreatorFactory::new()->make(['notify_message_server_group_message'=>'edited', 'action_min_clients'=>10])->toArray();
@@ -103,7 +103,7 @@ class ChannelTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateJobChannelCreatorFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->post(route('channel.delete.channelJob', ['id' => 1]));
@@ -126,7 +126,7 @@ class ChannelTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateJobChannelRemoverFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->get(route('channel.view.listChannelRemover'));
@@ -143,7 +143,7 @@ class ChannelTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateJobChannelRemoverFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $updateChannelArray = CreateJobChannelRemoverFactory::new()->make(['channel_max_seconds_empty'=>2, 'channel_max_time_format'=>'h'])->toArray();
@@ -165,7 +165,7 @@ class ChannelTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateJobChannelRemoverFactory::new()->create();
-        User::query()->where('id', 1)->update(['default_server_id' => 1]);
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->post(route('channel.delete.channelRemover', ['id' => 1]));

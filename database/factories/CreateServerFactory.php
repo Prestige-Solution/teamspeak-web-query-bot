@@ -19,12 +19,11 @@ class CreateServerFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'=>User::first(),
             'server_ip'=>'127.0.0.1',
             'server_name'=>'Factory-Server',
             'qa_name'=>'bot-query-name',
             'qa_pw'=>Crypt::encryptString('password'),
-            'server_query_port'=>'10011',
+            'server_query_port'=>'10022',
             'server_port'=>'9987',
             'description'=>'description',
             'qa_nickname'=>'bot-nickname',

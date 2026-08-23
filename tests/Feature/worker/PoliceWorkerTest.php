@@ -32,7 +32,7 @@ class PoliceWorkerTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->get(route('worker.view.upsertPoliceWorker'));
@@ -46,7 +46,7 @@ class PoliceWorkerTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $updateArray = CreateWorkerPoliceSettingsFactory::new()->make(['discord_webhook_url'=>'https://discord-test.de'])->toArray();

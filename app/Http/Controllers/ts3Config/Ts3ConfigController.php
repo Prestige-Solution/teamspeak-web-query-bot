@@ -7,7 +7,6 @@ use App\Http\Controllers\sys\StatisticController;
 use App\Http\Controllers\sys\Ts3LogController;
 use App\Http\Requests\Ts3Config\CreateStartBotRequest;
 use App\Http\Requests\Ts3Config\CreateStopBotRequest;
-use App\Jobs\ts3BotStartQueue;
 use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
 use App\Models\sys\statistic;
@@ -42,7 +41,7 @@ class Ts3ConfigController extends Controller
      */
     public function ts3ServerInitializing(int $server_id): array
     {
-        $this->ts3LogController = new Ts3LogController('Server initializing', Auth::user()->default_server_id);
+        $this->ts3LogController = new Ts3LogController('Server initializing', Auth::user()->active_server_id);
 
         $ts3ServerConfig = ts3ServerConfig::query()
             ->where('id', '=', $server_id)
@@ -88,7 +87,7 @@ class Ts3ConfigController extends Controller
         try {
             TeamSpeak3::init();
             $ts3_VirtualServer = TeamSpeak3::factory($this->uri);
-            $this->statisticController = new StatisticController($ts3_VirtualServer);
+            $this->statisticController = new StatisticController();
         } catch (Exception $e) {
             $this->ts3LogController->setCustomLog(
                 $server_id,
@@ -195,7 +194,7 @@ class Ts3ConfigController extends Controller
         );
 
         //update virtual server statistic
-        $this->statisticController->gatherVirtualServerStatistic($server_id);
+        $this->statisticController->gatherVirtualServerStatistic($server_id, $ts3_VirtualServer);
 
         return ['status'=>1, 'msg'=>'success'];
     }
@@ -227,7 +226,7 @@ class Ts3ConfigController extends Controller
             $request->validated('server_id'),
             ts3BotLog::SUCCESS,
             'botStop',
-            'Bot stopped via web interface',
+            'Bot shutting down via web interface',
         );
 
         ts3ServerConfig::query()
@@ -237,7 +236,7 @@ class Ts3ConfigController extends Controller
                 'is_active'=>false,
             ]);
 
-        return redirect()->back()->with('success', 'Bot is stopped. This may take a moment.');
+        return redirect()->back()->with('success', 'Bot is shutting down. This may take a moment.');
     }
 
     public function createChannels(int $server_id, array $channelInfo, string $channelName): void

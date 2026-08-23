@@ -23,7 +23,7 @@ class CreateStopBotRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id' => Auth::user()->default_server_id,
+            'server_id' => Auth::user()->active_server_id,
         ]);
     }
 

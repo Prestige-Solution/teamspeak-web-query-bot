@@ -43,7 +43,7 @@ class StopBotSingleCommand extends Command
         }
 
         $instanceResult = $this->choice(
-            'Which instance should be stopped?',
+            'Which instance should be shutdown?',
             $choice,
             null,
             2
@@ -58,7 +58,7 @@ class StopBotSingleCommand extends Command
             $server_id,
             ts3BotLog::SUCCESS,
             'startBot',
-            'Bot stopped via cli'
+            'Bot shutdown via cli'
         );
 
         $this->info('Bot is stopping');

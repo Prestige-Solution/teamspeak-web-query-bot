@@ -84,33 +84,24 @@ class Ts3LogController extends Controller
                     $ts3Exception->getCode(),
                     $ts3Exception->getMessage());
         }
-
-        //debug log
-        if (config('app.bot_debug') == true) {
-            // print the error message returned by the server
-            $errorCodeMsg = 'Server: '.$this->server_id.' | Status: '.$botStatus.' | Bot: '.$this->botFunctionName.' | Job: '.$job.' | Error '.$ts3Exception->getCode().': '.$ts3Exception->getMessage()."\n";
-            echo $errorCodeMsg;
-        }
-    }
-
-    private function setLogDatabaseEntry(int $server_id, int $status_id, string $job, string $description, $errCode, $errMsg): void
-    {
-        ts3BotLog::query()->create([
-            'server_id'=>$server_id,
-            'status_id'=>$status_id,
-            'job'=>$job,
-            'error_code'=>$errCode,
-            'error_message'=>$errMsg,
-            'description'=>$description,
-            'worker'=> $this->botFunctionName,
-        ]);
     }
 
     /**
+     * Set custom log entrys
      * @param  null  $errCode
      * @param  null  $errMsg
      */
     public function setCustomLog(int $server_id, int $status_id, string $job, string $description, $errCode = null, $errMsg = null): void
+    {
+        $this->setLogDatabaseEntry($server_id, $status_id, $job, $description, $errCode, $errMsg);
+    }
+
+    public function deleteLogEntrysByServerID(): void
+    {
+        ts3BotLog::query()->where('server_id', '=', $this->server_id)->delete();
+    }
+
+    private function setLogDatabaseEntry(int $server_id, int $status_id, string $job, string $description, $errCode, $errMsg): void
     {
         ts3BotLog::query()->create([
             'server_id'=>$server_id,

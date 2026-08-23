@@ -22,7 +22,7 @@ class catBotStatusSeeder extends Seeder
             'status_name'=>'Trying to (re)connect',
         ]);
         catBotStatus::query()->create([
-            'status_name'=>'Stopped',
+            'status_name'=>'Shutdown',
         ]);
         catBotStatus::query()->create([
             'status_name'=>'Failed',

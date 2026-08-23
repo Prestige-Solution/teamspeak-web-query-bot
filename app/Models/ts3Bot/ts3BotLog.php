@@ -8,17 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class ts3BotLog extends Model
 {
-    use HasFactory;
+    public const int RUNNING = 1;
 
-    public const RUNNING = 1;
+    public const int TRY_RECONNECT = 2;
 
-    public const TRY_RECONNECT = 2;
+    public const int SHUTDOWN = 3;
 
-    public const STOPPED = 3;
+    public const int FAILED = 4;
 
-    public const FAILED = 4;
-
-    public const SUCCESS = 5;
+    public const int SUCCESS = 5;
 
     protected $fillable = [
         'server_id',

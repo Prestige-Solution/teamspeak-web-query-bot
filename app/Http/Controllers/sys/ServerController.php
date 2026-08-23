@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\sys;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ts3Config\BadNameController;
 use App\Http\Controllers\ts3Config\Ts3ConfigController;
 use App\Http\Requests\Config\CreateServerRequest;
 use App\Http\Requests\Config\DeleteServerRequest;
@@ -20,6 +21,7 @@ use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
 use App\Models\ts3BotWorkers\ts3BotWorkerChannelsRemove;
 use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
+use App\Models\ts3BotWorkers\ts3BotWorkerPoliceVpnProtection;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -49,7 +51,6 @@ class ServerController extends Controller
     {
         $server_id = ts3ServerConfig::query()->create(
             [
-                'user_id'=>Auth::user()->id,
                 'server_ip'=>$request->validated('server_ip'),
                 'server_name'=>$request->validated('server_name'),
                 'qa_name'=>$request->validated('qa_name'),
@@ -62,18 +63,17 @@ class ServerController extends Controller
             ]
         )->id;
 
+        //set created new server as active
+        if (! empty($server_id)) {
+            User::query()->where('id', '=', Auth::user()->id)->update(['active_server_id' => $server_id]);
+        }else{
+            return redirect()->back()->withErrors(['error' => 'Server creation failed']);
+        }
+
         //setup police worker
         ts3BotWorkerPolice::query()->create([
             'server_id'=>$server_id,
         ]);
-
-        if (! empty($server_id)) {
-            ts3ServerConfig::query()->where('id', '=', $server_id)->update([
-                'is_default'=>true,
-            ]);
-
-            User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $server_id]);
-        }
 
         //initializing server only in production mode
         if (config('app.env') !== 'testing') {
@@ -135,30 +135,23 @@ class ServerController extends Controller
 
     public function updateSwitchDefaultServer(SwitchDefaultServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //normalize
-        ts3ServerConfig::query()->where('is_default', '=', true)->update([
-            'is_default'=>false,
-        ]);
+        User::query()->where('id', '=', Auth::user()->id)->update(['active_server_id' => $request->validated('server_id')]);
 
-        ts3ServerConfig::query()->where('id', '=', $request->validated('server_id'))->update([
-            'is_default'=>true,
-        ]);
-
-        User::query()->where('id', '=', Auth::user()->id)->update(['default_server_id' => $request->validated('server_id')]);
-
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Server switched successfully');
     }
 
     public function deleteServer(DeleteServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        //delete all relations in used tables
-        ts3Channel::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3ServerGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3ChannelGroup::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3BotWorkerAfk::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $request->validated('server_id'))->delete();
-        ts3BotWorkerPolice::query()->where('server_id', '=', $request->validated('server_id'))->delete();
+        //delete logs and stats
+        $this->deleteBotLogs($request->validated('server_id'));
+        $this->deleteStatistics($request->validated('server_id'));
+
+        //delete all worker configs
+        $this->deleteWorkerConfigs($request->validated('server_id'));
+        $this->deleteBadNameEntrys($request->validated('server_id'));
+
+        //delete ts data
+        $this->deleteTsDatabaseEntrys($request->validated('server_id'));
 
         //delete server banner
         $banners = banner::query()->where('server_id', '=', $request->validated('server_id'))->get();
@@ -182,13 +175,10 @@ class ServerController extends Controller
         $serverlist = ts3ServerConfig::query()->get();
 
         if ($serverlist->count() > 0) {
-            User::query()->update(['default_server_id' => $serverlist->first()->id]);
+            User::query()->update(['active_server_id' => $serverlist->first()->id]);
         } else {
-            User::query()->update(['default_server_id' => 0]);
+            User::query()->update(['active_server_id' => 0]);
         }
-
-        //delete statistics
-        statistic::query()->where('server_id', '=', $request->validated('server_id'))->delete();
 
         return redirect()->route('serverConfig.view.serverList');
     }
@@ -205,5 +195,39 @@ class ServerController extends Controller
         }
 
         return $returnCode ?? 0;
+    }
+
+    private function deleteTsDatabaseEntrys(int $server_id): void
+    {
+        ts3Channel::query()->where('server_id', '=', $server_id)->delete();
+        ts3ServerGroup::query()->where('server_id', '=', $server_id)->delete();
+        ts3ChannelGroup::query()->where('server_id', '=', $server_id)->delete();
+    }
+
+    private function deleteWorkerConfigs(int $server_id): void
+    {
+        ts3BotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerPolice::query()->where('server_id', '=', $server_id)->delete();
+        ts3BotWorkerPoliceVpnProtection::query()->where('server_id', '=', $server_id)->delete();
+    }
+
+    private function deleteBotLogs(int $server_id): void
+    {
+        $botLogsController = new Ts3LogController('ServerController',$server_id);
+        $botLogsController->deleteLogEntrysByServerID();
+    }
+
+    private function deleteBadNameEntrys(int $server_id): void
+    {
+        $badNamesController = new BadNameController();
+        $badNamesController->deleteBadNameEntrysByServerID($server_id);
+    }
+
+    private function deleteStatistics(int $server_id): void
+    {
+        $statisticsController = new StatisticController();
+        $statisticsController->deleteStatisticsByServerID($server_id);
     }
 }

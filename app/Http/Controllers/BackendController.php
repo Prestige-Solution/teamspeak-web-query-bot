@@ -19,13 +19,13 @@ class BackendController extends Controller
     public function viewBackendDashboard(): View|Factory|RedirectResponse|Application
     {
         $stats = statistic::query()
-            ->where('server_id', '=', Auth::user()->default_server_id)
+            ->where('server_id', '=', Auth::user()->active_server_id)
             ->get()
             ->first();
 
         $server = ts3ServerConfig::query()
             ->with('rel_bot_status')
-            ->where('is_default', '=', true)
+            ->where('id', '=', Auth::user()->active_server_id)
             ->first();
 
         $availableServers = ts3ServerConfig::query()
@@ -33,7 +33,7 @@ class BackendController extends Controller
             ->get(['id', 'server_name']);
 
         $botLogs = ts3BotLog::query()->with('rel_bot_status')
-            ->where('server_id', '=', Auth::user()->default_server_id)
+            ->where('server_id', '=', Auth::user()->active_server_id)
             ->where('job', '!=', 'queuingWorkers')
             ->orderByDesc('id')
             ->limit(8)
@@ -51,7 +51,7 @@ class BackendController extends Controller
     {
         $server = ts3ServerConfig::query()
             ->with('rel_bot_status')
-            ->where('is_default', '=', true)
+            ->where('id', '=', Auth::user()->active_server_id)
             ->first();
 
         $availableServers = ts3ServerConfig::query()->orderBy('server_ip')->get(['id', 'server_name']);
@@ -66,7 +66,7 @@ class BackendController extends Controller
     {
         $server = ts3ServerConfig::query()
             ->with('rel_bot_status')
-            ->where('is_default', '=', true)
+            ->where('id', '=', Auth::user()->active_server_id)
             ->first();
 
         $availableServers = ts3ServerConfig::query()
@@ -74,7 +74,7 @@ class BackendController extends Controller
             ->get(['id', 'server_name']);
 
         $botLogs = ts3BotLog::query()->with('rel_bot_status')
-            ->where('server_id', '=', Auth::user()->default_server_id)
+            ->where('server_id', '=', Auth::user()->active_server_id)
             ->where('job', '!=', 'queuingWorkers')
             ->orderByDesc('id')
             ->limit(50)

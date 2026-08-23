@@ -13,14 +13,13 @@ class ts3ServerConfig extends Model
 {
     use HasFactory;
 
-    public const BotReconnectTrue = 1;
+    public const int BotReconnectTrue = 1;
 
-    public const BotReconnectFalse = 0;
+    public const int BotReconnectFalse = 0;
 
-    public const TS3ConnectModeSSH = 2;
+    public const int TS3ConnectModeSSH = 2;
 
     protected $fillable = [
-        'user_id',
         'server_name',
         'server_ip',
         'qa_name',
@@ -32,18 +31,12 @@ class ts3ServerConfig extends Model
         'qa_nickname',
         'is_ts3_start',
         'is_active',
-        'is_default',
         'mode',
     ];
 
     public function rel_bot_status(): HasOne
     {
         return $this->hasOne(catBotStatus::class, 'id', 'bot_status_id');
-    }
-
-    public function rel_ts3serverConfig(): HasOne
-    {
-        return $this->hasOne(User::class, 'id', 'user_id');
     }
 
     protected static function newFactory(): CreateServerFactory

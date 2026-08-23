@@ -100,7 +100,7 @@ class Ts3BotController extends Controller
             );
 
             $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-            $this->StatisticController = new StatisticController($this->ts3_VirtualServer);
+            $this->StatisticController = new StatisticController();
 
             $whoami = $this->ts3_VirtualServer->whoami();
             $this->self_clid = $whoami['client_id'];
@@ -143,9 +143,9 @@ class Ts3BotController extends Controller
             if ($this->isBotStop == true) {
                 $this->logController->setCustomLog(
                     $this->server_id,
-                    ts3BotLog::STOPPED,
+                    ts3BotLog::SHUTDOWN,
                     'startBot',
-                    'Bot stopped',
+                    'Bot shutting down',
                 );
                 $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
@@ -164,7 +164,7 @@ class Ts3BotController extends Controller
                 ts3ServerConfig::query()
                     ->where('id', '=', $this->server_id)
                     ->update([
-                        'bot_status_id'=>ts3BotLog::STOPPED,
+                        'bot_status_id'=>ts3BotLog::SHUTDOWN,
                         'is_ts3_start'=>false,
                         'is_active'=>false,
                     ]);
@@ -264,14 +264,14 @@ class Ts3BotController extends Controller
             ts3ServerConfig::query()
                 ->where('id', '=', $this->server_id)
                 ->update([
-                    'bot_status_id'=>ts3BotLog::STOPPED,
+                    'bot_status_id'=>ts3BotLog::SHUTDOWN,
                     'is_ts3_start'=>false,
                     'is_active'=>false,
                 ]);
 
             $this->logController->setCustomLog(
                 $this->server_id,
-                ts3BotLog::STOPPED,
+                ts3BotLog::SHUTDOWN,
                 'botStopSignal',
                 'Bot stop signal received',
             );
@@ -718,7 +718,7 @@ class Ts3BotController extends Controller
      */
     private function gather_virtualServer_stats()
     {
-        $this->StatisticController->gatherVirtualServerStatistic($this->server_id);
+        $this->StatisticController->gatherVirtualServerStatistic($this->server_id, $this->ts3_VirtualServer);
     }
 
     /**
@@ -739,7 +739,7 @@ class Ts3BotController extends Controller
                 $this->logController->setLog($e, ts3BotLog::FAILED, 'startBot');
                 break;
             case 0:
-                //connection to server lost will also be triggered if the bot is stopped.
+                //connection to server lost will also be triggered if the bot is offline.
                 if ($this->isBotStop === false) {
                     $this->reconnectCode = ts3ServerConfig::BotReconnectTrue;
                 } else {

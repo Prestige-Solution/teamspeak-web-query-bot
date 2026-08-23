@@ -35,7 +35,7 @@ class BotControlTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->post(route('ts3.start.ts3Bot'));
@@ -49,7 +49,7 @@ class BotControlTest extends TestCase
 
         //check log config
         $logDB = ts3BotLog::query()->get();
-        $this->assertEquals(5, $logDB->last()->status_id);
+        $this->assertEquals(ts3BotLog::SUCCESS, $logDB->last()->status_id);
         $this->assertEquals('startBot', $logDB->last()->job);
         $this->assertEquals('Bot started via web interface', $logDB->last()->description);
     }
@@ -61,12 +61,12 @@ class BotControlTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->post(route('ts3.stop.ts3Bot'));
         $response->assertStatus(302);
-        $response->assertSessionHas(['success' => 'Bot is stopped. This may take a moment.']);
+        $response->assertSessionHas(['success' => 'Bot is shutting down. This may take a moment.']);
 
         //check server config
         $configDB = ts3ServerConfig::query()->get();
@@ -75,9 +75,9 @@ class BotControlTest extends TestCase
 
         //check log config
         $logDB = ts3BotLog::query()->get();
-        $this->assertEquals(5, $logDB->last()->status_id);
+        $this->assertEquals(ts3BotLog::SUCCESS, $logDB->last()->status_id);
         $this->assertEquals('botStop', $logDB->last()->job);
-        $this->assertEquals('Bot stopped via web interface', $logDB->last()->description);
+        $this->assertEquals('Bot shutting down via web interface', $logDB->last()->description);
 
         //check queue entry
         $queueDB = DB::table('queue_bot')->get();

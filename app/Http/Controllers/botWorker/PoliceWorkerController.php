@@ -245,7 +245,7 @@ class PoliceWorkerController extends Controller
             if ($this->is_bot_alive === false) {
                 $this->logController->setCustomLog(
                     $this->server_id,
-                    ts3BotLog::STOPPED,
+                    ts3BotLog::SHUTDOWN,
                     'checkBotWork',
                     'No active bot found on the server',
                 );
@@ -253,7 +253,7 @@ class PoliceWorkerController extends Controller
                 ts3ServerConfig::query()
                     ->where('id', '=', $this->server_id)
                     ->update([
-                        'bot_status_id'=>ts3BotLog::STOPPED,
+                        'bot_status_id'=>ts3BotLog::SHUTDOWN,
                     ]);
 
                 $policeWorkerSetting = ts3BotWorkerPolice::query()

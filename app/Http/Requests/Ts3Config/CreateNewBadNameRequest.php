@@ -24,7 +24,7 @@ class CreateNewBadNameRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id' => Auth::user()->default_server_id,
+            'server_id' => Auth::user()->active_server_id,
         ]);
     }
 
@@ -42,7 +42,7 @@ class CreateNewBadNameRequest extends FormRequest
             'value'=>['required'], [
                 Rule::unique('bad_names')->where(function ($query) use ($value) {
                     return $query->where('value', '=', $value)
-                        ->where('server_id', '=', Auth::user()->default_server_id);
+                        ->where('server_id', '=', Auth::user()->active_server_id);
                 }),
             ],
         ];

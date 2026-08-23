@@ -15,7 +15,6 @@ return new class extends Migration
     {
         Schema::create('ts3_server_configs', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id');
             $table->string('server_name');
             $table->string('server_ip');
             $table->string('qa_name');
@@ -27,10 +26,7 @@ return new class extends Migration
             $table->string('qa_nickname')->nullable();
             $table->boolean('is_ts3_start')->default(false);
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_default')->default(true);
             $table->integer('mode')->default(1);
-            $table->boolean('is_bot_update')->default(false);
-            $table->boolean('is_system_running_before_update')->default(false);
             $table->timestamps();
         });
     }

@@ -21,7 +21,7 @@ class BadNameController extends Controller
     public function viewListBadNames(): View|Factory|Application
     {
         $badNames = badName::query()
-            ->where('server_id', '=', Auth::user()->default_server_id)
+            ->where('server_id', '=', Auth::user()->active_server_id)
             ->get();
 
         $globalBadNames = badName::query()
@@ -48,10 +48,7 @@ class BadNameController extends Controller
 
     public function deleteBadName(DeleteBadNameRequest $request): RedirectResponse
     {
-        badName::query()
-            ->where('server_id', '=', $request->validated('server_id'))
-            ->where('id', '=', $request->input('id'))
-            ->delete();
+        $this->deleteBadNameEntryByID($request->validated('server_id'), $request->input('id'));
 
         return redirect()->route('worker.view.badNames');
     }
@@ -119,4 +116,18 @@ class BadNameController extends Controller
 
         return false;
     }
+
+    public function deleteBadNameEntryByID(int $server_id, int $id): void
+    {
+        badName::query()
+            ->where('server_id', '=', $server_id)
+            ->where('id', '=', $id)
+            ->delete();
+    }
+
+    public function deleteBadNameEntrysByServerID(int $server_id): void
+    {
+        badName::query()->where('server_id', '=', $server_id)->delete();
+    }
+
 }

@@ -43,7 +43,7 @@ class ServerTest extends TestCase
     {
         CreateServerFactory::new()->create();
         $updateServer = CreateServerFactory::new()->make(['server_name'=>'updated name'])->toArray();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->post(route('serverConfig.update.server'), $updateServer);
@@ -62,9 +62,15 @@ class ServerTest extends TestCase
     public function test_post_switch_active_server()
     {
         CreateServerFactory::new()->create();
-        CreateServerFactory::new()->sequence(['user_id' => 1, 'server_ip' => '127.0.0.2'])->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        CreateServerFactory::new()->sequence(['server_ip' => '127.0.0.2'])->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
+
+        $checkDB = ts3ServerConfig::query()->get();
+        $userDB = User::query()->get()->first();
+
+        $this->assertEquals(1, $userDB->active_server_id);
+        $this->assertEquals(2, $checkDB->count());
 
         $response = $this->actingAs($this->user)->post(route('serverConfig.update.switchDefaultServer'), ['server_id'=>2]);
         $response->assertStatus(302);
@@ -72,16 +78,14 @@ class ServerTest extends TestCase
         $checkDB = ts3ServerConfig::query()->get();
         $userDB = User::query()->get()->first();
 
-        $this->assertEquals(2, $userDB->default_server_id);
+        $this->assertEquals(2, $userDB->active_server_id);
         $this->assertEquals(2, $checkDB->count());
-        $this->assertEquals(0, $checkDB->first()->is_default);
-        $this->assertEquals(1, $checkDB->last()->is_default);
     }
 
     public function test_post_delete_server_config()
     {
         CreateServerFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->post(route('serverConfig.delete.server'), ['server_id'=>1]);
@@ -90,7 +94,7 @@ class ServerTest extends TestCase
         $checkDB = ts3ServerConfig::query()->get();
         $userDB = User::query()->where('id', '=', 1)->get()->first();
         $this->assertEquals(0, $checkDB->count());
-        $this->assertEquals(0, $userDB->default_server_id);
+        $this->assertEquals(0, $userDB->active_server_id);
     }
 
     private function update_user(): void
