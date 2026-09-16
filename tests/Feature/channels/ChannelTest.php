@@ -156,6 +156,28 @@ class ChannelTest extends TestCase
         $this->assertEquals(1, $checkDB->count());
         $this->assertEquals('h', $checkDB->first()->channel_max_time_format);
         $this->assertEquals(2 * 60 * 60, $checkDB->first()->channel_max_seconds_empty);
+
+        $updateChannelArray = CreateJobChannelRemoverFactory::new()->make(['channel_max_seconds_empty'=>2, 'channel_max_time_format'=>'d'])->toArray();
+        $response = $this->actingAs($this->user)->post(route('channel.upsert.newChannelRemover'), $updateChannelArray);
+
+        $response->assertRedirectToRoute('channel.view.listChannelRemover');
+        $response->assertSessionHas(['success' => 'The job was successfully updated']);
+
+        $checkDB = tsBotWorkerChannelsRemove::query()->get();
+        $this->assertEquals(1, $checkDB->count());
+        $this->assertEquals('d', $checkDB->last()->channel_max_time_format);
+        $this->assertEquals(2 * 24 * 60 * 60, $checkDB->first()->channel_max_seconds_empty);
+
+        $updateChannelArray = CreateJobChannelRemoverFactory::new()->make(['channel_max_seconds_empty'=>2])->toArray();
+        $response = $this->actingAs($this->user)->post(route('channel.upsert.newChannelRemover'), $updateChannelArray);
+
+        $response->assertRedirectToRoute('channel.view.listChannelRemover');
+        $response->assertSessionHas(['success' => 'The job was successfully updated']);
+
+        $checkDB = tsBotWorkerChannelsRemove::query()->get();
+        $this->assertEquals(1, $checkDB->count());
+        $this->assertEquals('m', $checkDB->last()->channel_max_time_format);
+        $this->assertEquals(2 * 60, $checkDB->first()->channel_max_seconds_empty);
     }
 
     public function test_post_delete_channel_remover_job()
