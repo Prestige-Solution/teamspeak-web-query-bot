@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\BannerWorkerController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -49,7 +49,7 @@ class tsBannerWorkerQueue implements ShouldQueue, ShouldBeUnique
             $bannerWorker = new BannerWorkerController($this->server_id);
             $bannerWorker->bannerWorkerCreateBanner();
         } catch (Exception $e) {
-            $tsLogging = new tsLogController('Banner-Worker', $this->server_id);
+            $tsLogging = new TsLogController('Banner-Worker', $this->server_id);
             $tsLogging->setCustomLog(
                 $this->server_id,
                 tsBotLog::FAILED,

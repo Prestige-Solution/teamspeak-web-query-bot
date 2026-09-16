@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\bot;
 
-use App\Http\Controllers\sys\tsLogController;
-use App\Jobs\tsBotStartQueue;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsServerConfig;
 use Illuminate\Console\Command;
@@ -52,7 +51,7 @@ class StopBotSingleCommand extends Command
         $server_id = tsServerConfig::query()->where('server_ip', '=', $instanceResult)->get()->first()->id;
         $this->stop_single_instance($server_id);
 
-        $logController = new tsLogController('CLI-Commands', $server_id);
+        $logController = new TsLogController('CLI-Commands', $server_id);
 
         $logController->setCustomLog(
             $server_id,

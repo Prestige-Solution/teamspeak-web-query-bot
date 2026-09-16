@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Http\Controllers\tsConfig\tsUriStringHelperController;
 use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
@@ -25,14 +25,14 @@ class BannerWorkerController extends Controller
 
     protected string $qa_name;
 
-    protected tsLogController $logController;
+    protected TsLogController $logController;
 
     protected Server|Adapter|Host|Node $ts_VirtualServer;
 
     public function __construct(int $server_id)
     {
         $this->server_id = $server_id;
-        $this->logController = new tsLogController('Banner-Worker', $this->server_id);
+        $this->logController = new TsLogController('Banner-Worker', $this->server_id);
     }
 
     /**

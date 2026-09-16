@@ -4,7 +4,7 @@ namespace App\Http\Controllers\tsConfig;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\StatisticController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Http\Requests\tsConfig\CreateStartBotRequest;
 use App\Http\Requests\tsConfig\CreateStopBotRequest;
 use App\Models\bannerCreator\banner;
@@ -26,7 +26,7 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class TsConfigController extends Controller
 {
-    protected tsLogController $tsLogController;
+    protected TsLogController $tsLogController;
 
     protected StatisticController $statisticController;
 
@@ -41,7 +41,7 @@ class TsConfigController extends Controller
      */
     public function tsServerInitializing(int $server_id): array
     {
-        $this->tsLogController = new tsLogController('Server initializing', Auth::user()->active_server_id);
+        $this->tsLogController = new TsLogController('Server initializing', Auth::user()->active_server_id);
 
         $tsServerConfig = tsServerConfig::query()
             ->where('id', '=', $server_id)
@@ -67,7 +67,7 @@ class TsConfigController extends Controller
             $ts_VirtualServer = TeamSpeak3::factory($this->uri);
             $this->statisticController = new StatisticController();
         } catch (Exception $e) {
-            $this->tsLogController->setCustomLog(
+            $this->TsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Connect to server failed',
@@ -102,7 +102,7 @@ class TsConfigController extends Controller
                 }
             }
         } catch (Exception $e) {
-            $this->tsLogController->setCustomLog(
+            $this->TsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Channels',
@@ -127,7 +127,7 @@ class TsConfigController extends Controller
                 $this->createServerGroups($server_id, $serverGroupInfo);
             }
         } catch (Exception $e) {
-            $this->tsLogController->setCustomLog(
+            $this->TsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Server Groups',
@@ -152,7 +152,7 @@ class TsConfigController extends Controller
                 $this->createChannelGroups($server_id, $channelGroupInfo);
             }
         } catch (Exception $e) {
-            $this->tsLogController->setCustomLog(
+            $this->TsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Channel Groups',
@@ -164,7 +164,7 @@ class TsConfigController extends Controller
             return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
-        $this->tsLogController->setCustomLog(
+        $this->TsLogController->setCustomLog(
             $server_id,
             tsBotLog::SUCCESS,
             'Config Initialization',
@@ -179,7 +179,7 @@ class TsConfigController extends Controller
 
     public function tsStartBot(CreateStartBotRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $logController = new tsLogController('Webinterface', $request->validated('server_id'));
+        $logController = new TsLogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
             $request->validated('server_id'),
             tsBotLog::SUCCESS,
@@ -199,7 +199,7 @@ class TsConfigController extends Controller
 
     public function tsStopBot(CreateStopBotRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $logController = new tsLogController('Webinterface', $request->validated('server_id'));
+        $logController = new TsLogController('Webinterface', $request->validated('server_id'));
         $logController->setCustomLog(
             $request->validated('server_id'),
             tsBotLog::SUCCESS,

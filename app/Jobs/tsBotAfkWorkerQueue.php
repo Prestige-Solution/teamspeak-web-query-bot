@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\AfkWorkerController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -50,7 +50,7 @@ class tsBotAfkWorkerQueue implements ShouldQueue, ShouldBeUnique
             $afkWorker = new AfkWorkerController($this->server_id);
             $afkWorker->afkMoverWorker();
         } catch (Exception $e) {
-            $tsLogging = new tsLogController('Afk-Worker', $this->server_id);
+            $tsLogging = new TsLogController('Afk-Worker', $this->server_id);
             $tsLogging->setCustomLog(
                 $this->server_id,
                 tsBotLog::FAILED,

@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\PoliceWorkerController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -48,7 +48,7 @@ class tsBotPoliceWorkerQueue implements ShouldQueue, ShouldBeUnique
             $worker = new PoliceWorkerController($this->server_id);
             $worker->startPolice();
         } catch (Exception $e) {
-            $tsLogging = new tsLogController('Police-Worker', $this->server_id);
+            $tsLogging = new TsLogController('Police-Worker', $this->server_id);
             $tsLogging->setCustomLog(
                 $this->server_id,
                 tsBotLog::FAILED,

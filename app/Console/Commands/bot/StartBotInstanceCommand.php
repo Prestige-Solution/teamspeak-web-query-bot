@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\bot;
 
-use App\Http\Controllers\bot\tsBotController;
+use App\Http\Controllers\bot\TsBotController;
 use App\Models\tsBot\tsServerConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -43,7 +43,7 @@ class StartBotInstanceCommand extends Command
             fflush($lockHandle);
 
             try {
-                new tsBotController($serverId);
+                new TsBotController($serverId);
 
                 return self::SUCCESS;
             } finally {

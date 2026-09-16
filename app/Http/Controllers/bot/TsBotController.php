@@ -4,7 +4,7 @@ namespace App\Http\Controllers\bot;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\StatisticController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Http\Controllers\tsConfig\BadNameController;
 use App\Http\Controllers\tsConfig\tsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
@@ -31,7 +31,7 @@ class TsBotController extends Controller
 {
     protected Server|Adapter|Node|Host $ts_VirtualServer;
 
-    protected tsLogController $logController;
+    protected TsLogController $logController;
 
     protected StatisticController $StatisticController;
 
@@ -56,7 +56,7 @@ class TsBotController extends Controller
     {
         $this->server_id = $server_id;
         $this->reconnectCode = tsServerConfig::BotReconnectFalse; //Default is dont try to reconnect
-        $this->logController = new tsLogController('Bot', $this->server_id);
+        $this->logController = new TsLogController('Bot', $this->server_id);
 
         try {
             TeamSpeak3::init();

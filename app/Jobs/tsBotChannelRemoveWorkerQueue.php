@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\ChannelRemoveWorkerController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -48,7 +48,7 @@ class tsBotChannelRemoveWorkerQueue implements ShouldQueue, ShouldBeUnique
             $worker = new ChannelRemoveWorkerController($this->server_id);
             $worker->channelRemoverWorker();
         } catch (Exception $e) {
-            $tsLogging = new tsLogController('Channel-Remover-Worker', $this->server_id);
+            $tsLogging = new TsLogController('Channel-Remover-Worker', $this->server_id);
             $tsLogging->setCustomLog(
                 $this->server_id,
                 tsBotLog::FAILED,

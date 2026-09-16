@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\tsConfig;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Support\Facades\Crypt;
@@ -24,7 +24,7 @@ class TsUriStringHelperController extends Controller
         } elseif (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) || filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
             $validatedHost = '['.$host.']';
         } else {
-            $logController = new tsLogController('validate uri', $server_id);
+            $logController = new TsLogController('validate uri', $server_id);
             $logController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,

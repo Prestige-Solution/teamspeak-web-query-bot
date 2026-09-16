@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Controllers\botWorker\BannerWorkerController;
 use App\Http\Controllers\botWorker\MigrationController;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -52,7 +52,7 @@ class tsMigrationQueue implements ShouldQueue
             $job = new MigrationController($this->source_server_id, $this->target_server_id);
             $job->setup_connections();
         } catch (Exception $e) {
-            $tsLogging = new tsLogController('Migration Job', $this->source_server_id);
+            $tsLogging = new TsLogController('Migration Job', $this->source_server_id);
             $tsLogging->setCustomLog(
                 $this->server_id,
                 tsBotLog::FAILED,

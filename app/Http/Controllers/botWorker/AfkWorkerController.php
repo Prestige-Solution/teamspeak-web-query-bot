@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\sys\TsLogController;
 use App\Http\Controllers\tsConfig\tsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsServerConfig;
@@ -21,14 +21,14 @@ class AfkWorkerController extends Controller
 
     protected string $qa_name;
 
-    protected tsLogController $logController;
+    protected TsLogController $logController;
 
     protected Server|Adapter|Host|Node $tsVirtualServer;
 
     public function __construct(int $server_id)
     {
         $this->server_id = $server_id;
-        $this->logController = new tsLogController('Afk-Worker', $this->server_id);
+        $this->logController = new TsLogController('Afk-Worker', $this->server_id);
     }
 
     /**
