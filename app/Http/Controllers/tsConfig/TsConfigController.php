@@ -67,7 +67,7 @@ class TsConfigController extends Controller
             $ts_VirtualServer = TeamSpeak3::factory($this->uri);
             $this->statisticController = new StatisticController();
         } catch (Exception $e) {
-            $this->TsLogController->setCustomLog(
+            $this->tsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Connect to server failed',
@@ -102,7 +102,7 @@ class TsConfigController extends Controller
                 }
             }
         } catch (Exception $e) {
-            $this->TsLogController->setCustomLog(
+            $this->tsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Channels',
@@ -127,7 +127,7 @@ class TsConfigController extends Controller
                 $this->createServerGroups($server_id, $serverGroupInfo);
             }
         } catch (Exception $e) {
-            $this->TsLogController->setCustomLog(
+            $this->tsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Server Groups',
@@ -152,7 +152,7 @@ class TsConfigController extends Controller
                 $this->createChannelGroups($server_id, $channelGroupInfo);
             }
         } catch (Exception $e) {
-            $this->TsLogController->setCustomLog(
+            $this->tsLogController->setCustomLog(
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Channel Groups',
@@ -164,7 +164,7 @@ class TsConfigController extends Controller
             return ['status'=>0, 'msg'=>'Fehler: '.$e->getCode().': '.$e->getMessage()];
         }
 
-        $this->TsLogController->setCustomLog(
+        $this->tsLogController->setCustomLog(
             $server_id,
             tsBotLog::SUCCESS,
             'Config Initialization',
