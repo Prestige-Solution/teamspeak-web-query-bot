@@ -229,7 +229,7 @@ class ServerController extends Controller
 
     private function deleteBotLogs(int $server_id): void
     {
-        $botLogsController = new tsLogController('ServerController',$server_id);
+        $botLogsController = new TsLogController('ServerController',$server_id);
         $botLogsController->deleteLogEntrysByServerID();
     }
 
