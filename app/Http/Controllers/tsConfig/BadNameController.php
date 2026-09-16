@@ -55,11 +55,11 @@ class BadNameController extends Controller
 
     public function checkBadName(string $proofName, int $server_id): bool
     {
-        $is_globalListActive = tsBotWorkerPolice::query()
+        $isGlobalListActive = tsBotWorkerPolice::query()
             ->where('server_id', '=', $server_id)
             ->first('is_bad_name_protection_global_list_active')->is_bad_name_protection_global_list_active;
 
-        if ($is_globalListActive == true) {
+        if ($isGlobalListActive == true) {
             $checkNames = badName::query()
                 ->where(function ($query) use ($server_id) {
                     $query->where('server_id', '=', $server_id)
@@ -77,6 +77,9 @@ class BadNameController extends Controller
         }
 
         foreach ($checkNames as $checkName) {
+
+            $badNameResultRegex = 0;
+
             try {
                 $badNameResultRegex = preg_match($checkName->value, $proofName);
             } catch (Exception) {

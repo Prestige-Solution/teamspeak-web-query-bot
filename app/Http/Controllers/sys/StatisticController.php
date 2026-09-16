@@ -18,15 +18,15 @@ class StatisticController extends Controller
      * @throws NodeException
      * @throws ServerQueryException
      */
-    public function gatherVirtualServerStatistic(int $server_id, Server $ts_VirtualServer): void
+    public function gatherVirtualServerStatistic(int $server_id, Server $tsVirtualServer): void
     {
         //
 
         //update virtual server statistic
-        $stats = $ts_VirtualServer->getInfo(true, true);
-        $serverGroupsCount = count($ts_VirtualServer->serverGroupList(['type'=>1]));
-        $serverChannelGroupsCount = count($ts_VirtualServer->channelGroupList(['type'=>1]));
-        $banListCount = $ts_VirtualServer->banCount();
+        $stats = $tsVirtualServer->getInfo(true, true);
+        $serverGroupsCount = count($tsVirtualServer->serverGroupList(['type'=>1]));
+        $serverChannelGroupsCount = count($tsVirtualServer->channelGroupList(['type'=>1]));
+        $banListCount = $tsVirtualServer->banCount();
 
         statistic::query()->updateOrCreate(
             [

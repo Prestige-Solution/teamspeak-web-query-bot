@@ -21,9 +21,9 @@ class ClearingWorkerController extends Controller
 {
     protected int $server_id;
 
-    protected string $qaName;
+    protected string $qa_name;
 
-    protected Server|Adapter|Host|Node $ts_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
     protected TsLogController $logController;
 
@@ -42,9 +42,9 @@ class ClearingWorkerController extends Controller
             ->where('id', '=', $this->server_id)->first();
 
         if ($tsServerConfig->qa_nickname != null) {
-            $this->qaName = $tsServerConfig->qa_nickname;
+            $this->qa_name = $tsServerConfig->qa_nickname;
         } else {
-            $this->qaName = $tsServerConfig->qa_name;
+            $this->qa_name = $tsServerConfig->qa_name;
         }
 
         $tsUriStringHelper = new TsUriStringHelperController();
@@ -54,12 +54,12 @@ class ClearingWorkerController extends Controller
             $tsServerConfig->server_ip,
             $tsServerConfig->server_query_port,
             $tsServerConfig->server_port,
-            $this->qaName.'-Clearing-Worker',
+            $this->qa_name.'-Clearing-Worker',
             $this->server_id,
         );
 
         try {
-            $this->ts_VirtualServer = TeamSpeak3::factory($uri);
+            $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
@@ -73,7 +73,7 @@ class ClearingWorkerController extends Controller
 
         $this->updateChannelList();
 
-        $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     /**
@@ -84,7 +84,7 @@ class ClearingWorkerController extends Controller
     {
         try {
             //get all channels as a collection without SubChannels
-            $updateTsChannels = collect($this->ts_VirtualServer->channelList());
+            $updateTsChannels = collect($this->tsVirtualServer->channelList());
 
             $channelList = [];
             foreach ($updateTsChannels->keys()->all() as $cid) {
@@ -94,7 +94,7 @@ class ClearingWorkerController extends Controller
             //get for each key - cid connection the channel info and store in db
             foreach ($updateTsChannels->keys()->all() as $cid) {
                 //get channel by id
-                $channel = $this->ts_VirtualServer->channelGetById($cid);
+                $channel = $this->tsVirtualServer->channelGetById($cid);
                 //get channel info
                 $channelInfo = $channel->getInfo();
                 //update or create channel information
@@ -108,8 +108,8 @@ class ClearingWorkerController extends Controller
                 ->get();
 
             //delete channels from db
-            foreach ($deletingChannelList as $deleteChannelsFromDB) {
-                $this->deleteChannelFromDB($deleteChannelsFromDB->cid);
+            foreach ($deletingChannelList as $channelToDelete) {
+                $this->deleteChannelFromDB($channelToDelete->cid);
             }
         } catch(Exception $e) {
             $this->logController->setCustomLog(
@@ -121,7 +121,7 @@ class ClearingWorkerController extends Controller
                 $e->getMessage()
             );
 
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 

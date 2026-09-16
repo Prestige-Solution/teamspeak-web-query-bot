@@ -118,8 +118,10 @@ class ClientController extends Controller
         //exclude // Vorlagengruppen > Typ 0 //Normale Gruppen > Typ 1 //ServerQuery Gruppen > Typ 2
         $excludeStandardServerGroups = tsServerGroup::query()
             ->where('server_id', '=', $request->validated('server_id'))
-            ->where('type', '=', 0)
-            ->orWhere('type', '=', 2)
+            ->where(function ($query){
+                $query->where('type', '=', 0)
+                    ->orWhere('type', '=', 2);
+            })
             ->get(['sgid', 'name']);
 
         foreach ($excludeStandardServerGroups as $excludeStandardServerGroup) {

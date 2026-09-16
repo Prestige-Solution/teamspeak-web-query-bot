@@ -27,9 +27,9 @@ class PoliceWorkerController extends Controller
 
     protected string $qa_name;
 
-    protected bool $is_bot_alive = false;
+    protected bool $isBotAlive = false;
 
-    protected Server|Adapter|Host|Node $ts_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
     protected TsLogController $logController;
 
@@ -57,7 +57,7 @@ class PoliceWorkerController extends Controller
         //get uri with StringHelper
         $tsStringHelper = new TsUriStringHelperController();
         $uri = $tsStringHelper->getStandardUriString(
-            $tsServerConfig->qa_name,
+            $tsServerConfig->qa_mame,
             $tsServerConfig->qa_pw,
             $tsServerConfig->server_ip,
             $tsServerConfig->server_query_port,
@@ -67,7 +67,7 @@ class PoliceWorkerController extends Controller
         );
 
         try {
-            $this->ts_VirtualServer = TeamSpeak3::factory($uri);
+            $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
@@ -97,7 +97,7 @@ class PoliceWorkerController extends Controller
             $this->checkBadName();
         }
 
-        $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     private function checkVpn($policeWorkerSetting): void
@@ -125,11 +125,11 @@ class PoliceWorkerController extends Controller
             //if not reach api max query per day
             if ($apiQueryCountPerDaySum <= $policeWorkerSetting->vpn_protection_max_query_per_day) {
                 //get clients
-                $this->ts_VirtualServer->clientListReset();
-                $clientList = collect($this->ts_VirtualServer->clientList(['clid']));
+                $this->tsVirtualServer->clientListReset();
+                $clientList = collect($this->tsVirtualServer->clientList(['clid']));
 
                 foreach ($clientList->keys()->all() as $clid) {
-                    $clidInfo = $this->ts_VirtualServer->clientGetById($clid)->getInfo();
+                    $clidInfo = $this->tsVirtualServer->clientGetById($clid)->getInfo();
                     $clidIP = $clidInfo['connection_client_ip'];
                     $checked = false;
                     $kickResult = false;
@@ -204,8 +204,8 @@ class PoliceWorkerController extends Controller
                         }
                     }
                     if ($kickResult == true) {
-                        $this->ts_VirtualServer->clientPoke($clid, 'VPN was detected. Pleas report to a Teamspeak administrator or turn off VPN');
-                        $this->ts_VirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'VPN was detected. Pleas report to a Teamspeak administrator or turn off VPN');
+                        $this->tsVirtualServer->clientPoke($clid, 'VPN was detected. Please report to a Teamspeak administrator or turn off VPN');
+                        $this->tsVirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'VPN was detected. Please report to a Teamspeak administrator or turn off VPN');
                     }
                 }
 
@@ -225,24 +225,24 @@ class PoliceWorkerController extends Controller
                 $e->getMessage()
             );
 
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
     private function checkBotKeepAlive(): void
     {
         try {
-            $checkBotIsWorking = collect($this->ts_VirtualServer->clientList(['client_nickname'=>$this->qa_name]));
+            $checkBotIsWorking = collect($this->tsVirtualServer->clientList(['client_nickname'=>$this->qa_name]));
 
             foreach ($checkBotIsWorking->keys()->all() as $clid) {
-                $BotQueryName = $this->ts_VirtualServer->clientGetById($clid);
+                $BotQueryName = $this->tsVirtualServer->clientGetById($clid);
 
                 if ($BotQueryName['client_nickname'] == $this->qa_name) {
-                    $this->is_bot_alive = true;
+                    $this->isBotAlive = true;
                 }
             }
 
-            if ($this->is_bot_alive === false) {
+            if ($this->isBotAlive === false) {
                 $this->logController->setCustomLog(
                     $this->server_id,
                     tsBotLog::SHUTDOWN,
@@ -286,7 +286,7 @@ class PoliceWorkerController extends Controller
                 $e->getMessage()
             );
 
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -296,20 +296,20 @@ class PoliceWorkerController extends Controller
 
         try {
             //get all clients
-            $this->ts_VirtualServer->clientListReset();
-            $clientList = collect($this->ts_VirtualServer->clientList(['clid']));
+            $this->tsVirtualServer->clientListReset();
+            $clientList = collect($this->tsVirtualServer->clientList(['clid']));
 
             foreach ($clientList->keys()->all() as $clid) {
                 //proof only client_type = 0 / 1 = serverquery
-                $clidInfo = $this->ts_VirtualServer->clientGetById($clid);
+                $clidInfo = $this->tsVirtualServer->clientGetById($clid);
 
                 if ($clidInfo['client_type'] == 0) {
                     $badNameProofResult = $badNameController->checkBadName($clidInfo['client_nickname'], $this->server_id);
 
                     if ($badNameProofResult == true) {
                         //kick client
-                        $this->ts_VirtualServer->clientPoke($clid, 'Your nickname is not allowed on this server!');
-                        $this->ts_VirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'Your nickname is not allowed on this server!');
+                        $this->tsVirtualServer->clientPoke($clid, 'Your nickname is not allowed on this server!');
+                        $this->tsVirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'Your nickname is not allowed on this server!');
                     }
                 }
             }
@@ -323,7 +323,7 @@ class PoliceWorkerController extends Controller
                 $e->getMessage()
             );
 
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

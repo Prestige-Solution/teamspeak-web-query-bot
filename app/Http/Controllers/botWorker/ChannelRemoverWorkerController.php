@@ -16,7 +16,7 @@ use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
-class ChannelRemoveWorkerController extends Controller
+class ChannelRemoverWorkerController extends Controller
 {
     protected int $server_id;
 
@@ -24,7 +24,7 @@ class ChannelRemoveWorkerController extends Controller
 
     protected string $qa_name;
 
-    protected Server|Adapter|Host|Node $ts_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
     public function __construct(int $server_id)
     {
@@ -59,7 +59,7 @@ class ChannelRemoveWorkerController extends Controller
                 $this->server_id,
             );
 
-            $this->ts_VirtualServer = TeamSpeak3::factory($uri);
+            $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog($this->server_id,
                 tsBotLog::FAILED,
@@ -71,7 +71,7 @@ class ChannelRemoveWorkerController extends Controller
         }
 
         $this->channelRemover();
-        $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     /**
@@ -88,15 +88,15 @@ class ChannelRemoveWorkerController extends Controller
 
             foreach ($subChannelRemoves as $subChannelRemove) {
                 //get sub-channel list
-                $subChannels = collect($this->ts_VirtualServer->channelList(['pid'=>$subChannelRemove->channel_cid]));
+                $subChannels = collect($this->tsVirtualServer->channelList(['pid'=>$subChannelRemove->channel_cid]));
 
                 //proof delete time
                 foreach ($subChannels->keys()->all() as $subChannel) {
-                    $subChannelInfo = $this->ts_VirtualServer->channelGetById($subChannel)->getInfo();
+                    $subChannelInfo = $this->tsVirtualServer->channelGetById($subChannel)->getInfo();
 
                     //seconds = -1 means the channel is currently in use
                     if ($subChannelInfo['seconds_empty'] != '-1' && $subChannelInfo['seconds_empty'] >= $subChannelRemove->channel_max_seconds_empty) {
-                        $this->ts_VirtualServer->channelDelete($subChannel);
+                        $this->tsVirtualServer->channelDelete($subChannel);
 
                         tsChannel::query()
                             ->where('server_id', '=', $this->server_id)
@@ -118,7 +118,7 @@ class ChannelRemoveWorkerController extends Controller
                 $e->getMessage()
             );
 
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

@@ -45,14 +45,14 @@ class catBannerOptionSeeder extends Seeder
 
         catBannerOption::query()->create([
             'name'=>'Plattform',
-            'pes_code'=>'get_server_plattform',
+            'pes_code'=>'get_server_platform',
             'ts_attribut'=>'virtualserver_platform',
             'category'=>'server',
         ]);
 
         catBannerOption::query()->create([
             'name'=>'Latenz',
-            'pes_code'=>'get_sever_latency',
+            'pes_code'=>'get_server_latency',
             'ts_attribut'=>'virtualserver_total_ping',
             'category'=>'server',
         ]);

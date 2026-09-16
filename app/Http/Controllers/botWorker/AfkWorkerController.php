@@ -4,7 +4,7 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\TsLogController;
-use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsServerConfig;
 use App\Models\tsBotWorkers\tsBotWorkerAfk;
@@ -23,7 +23,7 @@ class AfkWorkerController extends Controller
 
     protected TsLogController $logController;
 
-    protected Server|Adapter|Host|Node $ts_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
     public function __construct(int $server_id)
     {
@@ -59,7 +59,7 @@ class AfkWorkerController extends Controller
                 $this->server_id,
             );
 
-            $this->ts_VirtualServer = TeamSpeak3::factory($uri);
+            $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
@@ -80,7 +80,7 @@ class AfkWorkerController extends Controller
             $this->afkKicker();
         }
 
-        $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     /**
@@ -90,7 +90,7 @@ class AfkWorkerController extends Controller
     {
         try {
             //get all Clients on server
-            $allClientsOnServer = collect($this->ts_VirtualServer->clientList());
+            $allClientsOnServer = collect($this->tsVirtualServer->clientList());
             //has worker excluded servergroups
             $afkWorkerExcludedServerGroups = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->get();
             $afkWorkerConfig = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->first();
@@ -119,7 +119,7 @@ class AfkWorkerController extends Controller
                 if ($excludedServerGroupExistsResult == false && $afkChannelCid != $clientChannelCid) {
                     //if max idle time reached
                     if ($clientIdleTime > $maxIdleTime) {
-                        $this->ts_VirtualServer->clientMove($clientClid, $afkChannelCid);
+                        $this->tsVirtualServer->clientMove($clientClid, $afkChannelCid);
                     }
                 }
             }
@@ -132,7 +132,7 @@ class AfkWorkerController extends Controller
                 $e->getCode(),
                 $e->getMessage()
             );
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -143,14 +143,14 @@ class AfkWorkerController extends Controller
     {
         try {
             //get all Clients on server
-            $allClientsOnServer = collect($this->ts_VirtualServer->clientList());
+            $allClientsOnServer = collect($this->tsVirtualServer->clientList());
             //has worker excluded servergroups
             $afkWorkerExcludedServerGroups = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->get();
             $afkWorkerConfig = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->first();
             //get worker config
             $afkKickerMaxIdleTime = $afkWorkerConfig->afk_kicker_max_idle_time;
             //serverSlots
-            $serverClientsOnline = $this->ts_VirtualServer->getProperty('virtualserver_clientsonline');
+            $serverClientsOnline = $this->tsVirtualServer->getProperty('virtualserver_clientsonline');
 
             foreach ($allClientsOnServer as $client) {
                 //get Client info
@@ -175,12 +175,12 @@ class AfkWorkerController extends Controller
                         $kickMsg = 'You have reached maximum inactivity and have been kicked from the server!';
                         //if max idle time reached
                         if ($clientIdleTime > $afkKickerMaxIdleTime) {
-                            $this->ts_VirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
+                            $this->tsVirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
                         }
                     } else {
                         if ($serverClientsOnline > $afkWorkerConfig->afk_kicker_slots_online) {
                             $kickMsg = 'Sorry, but the server is getting full!';
-                            $this->ts_VirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
+                            $this->tsVirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
 
                             //decrease online counter
                             $serverClientsOnline = $serverClientsOnline - 1;
@@ -197,7 +197,7 @@ class AfkWorkerController extends Controller
                 $e->getCode(),
                 $e->getMessage()
             );
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

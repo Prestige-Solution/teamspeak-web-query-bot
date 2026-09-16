@@ -22,26 +22,26 @@ class MigrationController extends Controller
 
     protected Server|Adapter|Node|Host $targetConnection;
 
-    protected int $source_server_id = 0;
+    protected int $sourceServerId = 0;
 
-    protected int $target_server_id = 0;
+    protected int $targetServerId = 0;
 
     /**
      * @throws \Exception
      */
-    public function __construct(int $source_server_id, int $target_server_id)
+    public function __construct(int $sourceServerId, int $targetServerId)
     {
-        $this->source_server_id = $source_server_id;
-        $this->target_server_id = $target_server_id;
+        $this->sourceServerId = $sourceServerId;
+        $this->targetServerId = $targetServerId;
     }
 
     /**
      * @throws \Exception
      */
-    public function setup_connections()
+    public function setupConnections()
     {
         $source_server_config = tsServerConfig::query()
-            ->where('id', '=', $this->source_server_id)
+            ->where('id', '=', $this->sourceServerId)
             ->first();
 
         //set up source server
@@ -53,11 +53,11 @@ class MigrationController extends Controller
             $source_server_config->server_query_port,
             $source_server_config->server_port,
             'migrate-bot',
-            $this->source_server_id
+            $this->sourceServerId
         );
 
         $target_server_config = tsServerConfig::query()
-            ->where('id', '=', $this->target_server_id)
+            ->where('id', '=', $this->targetServerId)
             ->first();
         //set up source server
         $uriTargetHelperClass = new TsUriStringHelperController();
@@ -68,7 +68,7 @@ class MigrationController extends Controller
             $target_server_config->server_query_port,
             $target_server_config->server_port,
             'migrate-bot',
-            $this->target_server_id
+            $this->targetServerId
         );
 
         try {
@@ -85,15 +85,15 @@ class MigrationController extends Controller
 
         Log::channel('migration')->info('## Start Migration ##');
         //migration channels with permissions
-        $this->migrate_channels();
+        $this->migrateChannels();
         Log::channel('migration')->info('Create Channel Completed');
 
         //migrate servergroups with permissions
-        $this->migrate_servergroups();
+        $this->migrateServergroups();
         Log::channel('migration')->info('Create Server Groups Completed');
 
         //migrate channelgroups
-        $this->migrate_channelgroups();
+        $this->migrateChannelgroups();
         Log::channel('migration')->info('Create Channel Groups Completed');
 
         //disconnect
@@ -107,7 +107,7 @@ class MigrationController extends Controller
      * @throws ServerQueryException
      * @throws TransportException
      */
-    private function migrate_channels()
+    private function migrateChannels()
     {
         $sourceChannelList = $this->sourceConnection->channelList();
         $pid = 0;
@@ -202,7 +202,7 @@ class MigrationController extends Controller
                 //TODO add migrate channel files
 
             } catch (\Exception $e) {
-                Log::channel('migration')->error('Create Servergroup failed: '.$e->getMessage());
+                Log::channel('migration')->error('Create channel failed: '.$e->getMessage());
             }
         }
     }
@@ -213,7 +213,7 @@ class MigrationController extends Controller
      * @throws TransportException
      * @throws ServerQueryException
      */
-    private function migrate_servergroups()
+    private function migrateServergroups()
     {
         $sourceServerGroupList = $this->sourceConnection->serverGroupList(['type'=>1]);
 
@@ -243,7 +243,7 @@ class MigrationController extends Controller
                     $iconId = $this->targetConnection->iconUpload($iconContent);
                     $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
 
-                    $this->targetConnection->servergroupPermAssign($sid, ['i_icon_id'], $signedIconId);
+                    $this->targetConnection->serverGroupPermAssign($sid, ['i_icon_id'], $signedIconId);
                 }
 
             } catch (\Exception $e) {
@@ -257,7 +257,7 @@ class MigrationController extends Controller
      * @throws TransportException
      * @throws ServerQueryException
      */
-    private function migrate_channelgroups()
+    private function migrateChannelgroups()
     {
         $sourceChannelGroupList = $this->sourceConnection->channelGroupList(['type'=>1]);
 
@@ -279,15 +279,15 @@ class MigrationController extends Controller
                 }
 
                 //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
-                $hasIcon = $this->sourceConnection->channelgroupGetById($sourceChannelGroup['cgid'])->permList(true);
+                $hasIcon = $this->sourceConnection->channelGroupGetById($sourceChannelGroup['cgid'])->permList(true);
 
                 if ($hasIcon['i_icon_id']['permvalue'] !== 0)
                 {
-                    $iconContent = $this->sourceConnection->channelgroupGetById($sourceChannelGroup['cgid'])->iconDownload();
+                    $iconContent = $this->sourceConnection->channelGroupGetById($sourceChannelGroup['cgid'])->iconDownload();
                     $iconId = $this->targetConnection->iconUpload($iconContent);
                     $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
 
-                    $this->targetConnection->channelgroupPermAssign($cgid, ['i_icon_id'], $signedIconId);
+                    $this->targetConnection->channelGroupPermAssign($cgid, ['i_icon_id'], $signedIconId);
                 }
 
             } catch (\Exception $e) {

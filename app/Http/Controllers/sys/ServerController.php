@@ -69,7 +69,7 @@ class ServerController extends Controller
 
         //initializing server only in production mode
         if (config('app.env') !== 'testing') {
-            $status = $this->initialisingTsServer($server_id);
+            $status = $this->initializeTsServer($server_id);
 
             if ($status != 0) {
                 if ($status['status'] == 1) {
@@ -107,7 +107,7 @@ class ServerController extends Controller
      */
     public function updateServerInit(UpdateServerInitRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $status = $this->initialisingTsServer($request->validated('server_id'), true);
+        $status = $this->initializeTsServer($request->validated('server_id'), true);
 
         if ($status != 0) {
             if ($status['status'] == 1) {
@@ -135,10 +135,10 @@ class ServerController extends Controller
 
         //delete all worker configs
         $this->deleteWorkerConfigs($request->validated('server_id'));
-        $this->deleteBadNameEntrys($request->validated('server_id'));
+        $this->deleteBadNameEntries($request->validated('server_id'));
 
         //delete ts data
-        $this->deleteTsDatabaseEntrys($request->validated('server_id'));
+        $this->deleteTsDatabaseEntries($request->validated('server_id'));
 
         //delete server banner
         $this->deleteBanners($request->validated('server_id'));
@@ -162,7 +162,7 @@ class ServerController extends Controller
      * @param  int|null  $server_id
      * @throws \Exception
      */
-    private function initialisingTsServer(int $server_id = null, bool $update = false): array|int
+    private function initializeTsServer(int $server_id = null, bool $update = false): array|int
     {
         //if create new server
         if ($update === false)
@@ -184,10 +184,10 @@ class ServerController extends Controller
 
             //delete all worker configs
             $this->deleteWorkerConfigs($server_id);
-            $this->deleteBadNameEntrys($server_id);
+            $this->deleteBadNameEntries($server_id);
 
             //delete ts data
-            $this->deleteTsDatabaseEntrys($server_id);
+            $this->deleteTsDatabaseEntries($server_id);
 
             //delete server banner
             $this->deleteBanners($server_id);
@@ -205,7 +205,7 @@ class ServerController extends Controller
         return $returnCode ?? 0;
     }
 
-    private function deleteTsDatabaseEntrys(int $server_id): void
+    private function deleteTsDatabaseEntries(int $server_id): void
     {
         tsChannel::query()->where('server_id', '=', $server_id)->delete();
         tsServerGroup::query()->where('server_id', '=', $server_id)->delete();
@@ -233,7 +233,7 @@ class ServerController extends Controller
         $botLogsController->deleteLogEntrysByServerID();
     }
 
-    private function deleteBadNameEntrys(int $server_id): void
+    private function deleteBadNameEntries(int $server_id): void
     {
         $badNamesController = new BadNameController();
         $badNamesController->deleteBadNameEntrysByServerID($server_id);

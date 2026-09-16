@@ -29,7 +29,7 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class TsBotController extends Controller
 {
-    protected Server|Adapter|Node|Host $ts_VirtualServer;
+    protected Server|Adapter|Node|Host $tsVirtualServer;
 
     protected TsLogController $logController;
 
@@ -81,9 +81,9 @@ class TsBotController extends Controller
                 ->where('id', '=', $this->server_id)->first();
 
             if ($tsServerConfig->qa_nickname != null) {
-                $qaName = $tsServerConfig->qa_nickname;
+                $qa_name = $tsServerConfig->qa_nickname;
             } else {
-                $qaName = $tsServerConfig->qa_name;
+                $qa_name = $tsServerConfig->qa_name;
             }
 
             //get uri with StringHelper
@@ -94,22 +94,22 @@ class TsBotController extends Controller
                 $tsServerConfig->server_ip,
                 $tsServerConfig->server_query_port,
                 $tsServerConfig->server_port,
-                $qaName,
+                $qa_name,
                 $this->server_id,
             );
 
-            $this->ts_VirtualServer = TeamSpeak3::factory($uri);
+            $this->tsVirtualServer = TeamSpeak3::factory($uri);
             $this->StatisticController = new StatisticController();
 
-            $whoami = $this->ts_VirtualServer->whoami();
+            $whoami = $this->tsVirtualServer->whoami();
             $this->self_clid = $whoami['client_id'];
             $this->standard_channel_id = $whoami['client_channel_id'];
 
             Signal::getInstance()->subscribe('serverqueryWaitTimeout', [$this, 'checkKeepAlive']);
-            Signal::getInstance()->subscribe('notifyEvent', [$this, 'EventListener']);
+            Signal::getInstance()->subscribe('notifyEvent', [$this, 'eventListener']);
 
-            $this->ts_VirtualServer->serverGetSelected()->notifyRegister('server');
-            $this->ts_VirtualServer->serverGetSelected()->notifyRegister('channel');
+            $this->tsVirtualServer->serverGetSelected()->notifyRegister('server');
+            $this->tsVirtualServer->serverGetSelected()->notifyRegister('channel');
 
             tsServerConfig::query()->where('id', '=', $this->server_id)->update([
                 'bot_status_id'=> tsBotLog::RUNNING,
@@ -123,7 +123,7 @@ class TsBotController extends Controller
             );
 
             while ($this->isBotStop == false) {
-                $this->ts_VirtualServer->getParent()->getAdapter()->wait();
+                $this->tsVirtualServer->getParent()->getAdapter()->wait();
             }
         } catch(TeamSpeak3Exception $e) {
             $this->errorHandlingTeamSpeak3Exception($e);
@@ -146,7 +146,7 @@ class TsBotController extends Controller
                     'startBot',
                     'Bot shutting down',
                 );
-                $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
 
             //proof is a bot reconnect signal
@@ -168,7 +168,7 @@ class TsBotController extends Controller
                         'is_active'=>false,
                     ]);
 
-                $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
         }
     }
@@ -183,14 +183,14 @@ class TsBotController extends Controller
         }
 
         //set stats
-        $this->gather_virtualServer_stats();
+        $this->gatherVirtualServerStats();
 
         //check bot stop
         $this->botStopSignal();
 
         if ($this->isBotStop == false) {
             try {
-                $keepAliveStatus = $this->ts_VirtualServer->getAdapter()->request('clientupdate');
+                $keepAliveStatus = $this->tsVirtualServer->getAdapter()->request('clientupdate');
 
                 if ($keepAliveStatus->getErrorProperty('msg')->toString() != 'ok') {
                     $this->logController->setCustomLog(
@@ -282,7 +282,7 @@ class TsBotController extends Controller
 
     private function eventClientEnterView($event): void
     {
-        $this->ts_VirtualServer->clientListReset();
+        $this->tsVirtualServer->clientListReset();
         $getData = $event->getData($event);
 
         try {
@@ -301,8 +301,8 @@ class TsBotController extends Controller
 
                 if ($badNameResult == true) {
                     $kickMsg = 'The nickname is not allowed on this server.';
-                    $this->ts_VirtualServer->clientPoke($getCLID, $kickMsg);
-                    $this->ts_VirtualServer->clientKick($getCLID, TeamSpeak3::KICK_SERVER, $kickMsg);
+                    $this->tsVirtualServer->clientPoke($getCLID, $kickMsg);
+                    $this->tsVirtualServer->clientKick($getCLID, TeamSpeak3::KICK_SERVER, $kickMsg);
                 }
             }
         } catch (TeamSpeak3Exception | Exception $e) {
@@ -370,7 +370,7 @@ class TsBotController extends Controller
             $getData = $event->getData($event);
             $getCID = $getData['cid'];
             $getCLID = $getData['invokerid'];
-            $getCIDInfo = $this->ts_VirtualServer->channelGetById($getCID);
+            $getCIDInfo = $this->tsVirtualServer->channelGetById($getCID);
             $getChannelName = $getCIDInfo['channel_name']->tostring();
 
             //proof Name
@@ -378,10 +378,10 @@ class TsBotController extends Controller
             $badNameResult = $badNameController->checkBadName($getChannelName, $this->server_id);
 
             if ($badNameResult == true) {
-                $this->ts_VirtualServer->channelDelete($getCID, true);
+                $this->tsVirtualServer->channelDelete($getCID, true);
 
                 $msg = 'The channel name is not allowed on this server.';
-                $this->ts_VirtualServer->clientPoke($getCLID, $msg);
+                $this->tsVirtualServer->clientPoke($getCLID, $msg);
             }
         } catch (TeamSpeak3Exception $e) {
             //set log
@@ -445,40 +445,40 @@ class TsBotController extends Controller
             }
 
             //reset list objects
-            $this->ts_VirtualServer->channelListReset();
-            $this->ts_VirtualServer->clientListReset();
-            $this->ts_VirtualServer->channelGroupListReset();
-            $this->ts_VirtualServer->serverGroupListReset();
+            $this->tsVirtualServer->channelListReset();
+            $this->tsVirtualServer->clientListReset();
+            $this->tsVirtualServer->channelGroupListReset();
+            $this->tsVirtualServer->serverGroupListReset();
 
             //Client Name
-            $clName = $this->ts_VirtualServer->clientGetById($clid);
+            $clName = $this->tsVirtualServer->clientGetById($clid);
             $clDbID = $clName['client_database_id'];
 
             //get Channel attributes
-            $chGetByID = $this->ts_VirtualServer->channelGetById($job->on_cid);
-            $clientsOnChannel = collect($this->ts_VirtualServer->clientList(['cid'=>$job->on_cid]));
+            $chGetByID = $this->tsVirtualServer->channelGetById($job->on_cid);
+            $clientsOnChannel = collect($this->tsVirtualServer->clientList(['cid'=>$job->on_cid]));
             $chInfo = $chGetByID->getInfo();
             $chName = $chInfo['channel_name'];
 
             //proof is set user a channel with server admin?
             $isOwnChannelExist = false;
-            $channelList = collect($this->ts_VirtualServer->channelList(['pid'=>$job->on_cid]));
+            $channelList = collect($this->tsVirtualServer->channelList(['pid'=>$job->on_cid]));
 
             //ownChannelgroups
             foreach ($channelList->keys()->all() as $channelListCID) {
                 //if client in Channel Group
-                $ownChannelGroupLists = $this->ts_VirtualServer->channelGroupClientList($job->channel_cgid, $channelListCID, $clDbID);
+                $ownChannelGroupLists = $this->tsVirtualServer->channelGroupClientList($job->channel_cgid, $channelListCID, $clDbID);
                 //proof own channel is existing
                 foreach ($ownChannelGroupLists as $ownChannelGrouplist) {
                     if ($ownChannelGrouplist['cid'] == $channelListCID && $isOwnChannelExist === false) {
                         //channel exists
                         $isOwnChannelExist = true;
                         //move user to channel
-                        $this->ts_VirtualServer->clientMove($clid, $channelListCID);
+                        $this->tsVirtualServer->clientMove($clid, $channelListCID);
 
                         if ($isGoBackFlag === true) {
                             //bot goes back in the standard channel
-                            $this->ts_VirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
+                            $this->tsVirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
                         }
                     }
                 }
@@ -495,7 +495,7 @@ class TsBotController extends Controller
                 while ($ifAvailable == false) {
                     //set channelname
                     $newChannelname = substr($chName, 0, 37).'-'.$channelDisplayCount;
-                    $channelAvailable = $this->ts_VirtualServer->channelList([
+                    $channelAvailable = $this->tsVirtualServer->channelList([
                         'channel_name' => $newChannelname,
                     ]);
                     $channelAvailableCount = collect($channelAvailable)->count();
@@ -519,7 +519,7 @@ class TsBotController extends Controller
                     $templateChannel = tsChannel::query()->where('cid', '=', $job->channel_template_cid)->first();
 
                     //create standard channel
-                    $createdCID = $this->ts_VirtualServer->channelCreate([
+                    $createdCID = $this->tsVirtualServer->channelCreate([
                         'channel_name' => $newChannelname,
                         'channel_codec' => $templateChannel->channel_codec,
                         'channel_codec_quality' => $templateChannel->channel_codec_quality,
@@ -533,11 +533,11 @@ class TsBotController extends Controller
                         'cpid' => $job->on_cid,
                     ]);
 
-                    $templatePermission = $this->ts_VirtualServer->channelGetById($templateChannel->cid);
+                    $templatePermission = $this->tsVirtualServer->channelGetById($templateChannel->cid);
                     $templatePermission = $templatePermission->permList();
 
                     //get created channel
-                    $createdChannel = $this->ts_VirtualServer->channelGetById($createdCID);
+                    $createdChannel = $this->tsVirtualServer->channelGetById($createdCID);
 
                     //set permissions
                     foreach ($templatePermission as $permission) {
@@ -545,7 +545,7 @@ class TsBotController extends Controller
                     }
                 } elseif ($ifMaxChannelReached == false) {
                     //create standard channel
-                    $createdCID = $this->ts_VirtualServer->channelCreate([
+                    $createdCID = $this->tsVirtualServer->channelCreate([
                         'channel_name' => $newChannelname,
                         'channel_codec' => 4,
                         'channel_codec_quality' => 6,
@@ -560,28 +560,28 @@ class TsBotController extends Controller
                     //if client min count configured move all clients in the created channel
                     if ($job->action_min_clients <= $clientsOnChannel->count() && $job->action_min_clients > 1) {
                         foreach ($clientsOnChannel->keys()->all() as $clientID) {
-                            $this->ts_VirtualServer->clientMove($clientID, $createdCID);
+                            $this->tsVirtualServer->clientMove($clientID, $createdCID);
                         }
                     } else {
                         //move the client in the created channel
-                        $this->ts_VirtualServer->clientMove($clid, $createdCID);
+                        $this->tsVirtualServer->clientMove($clid, $createdCID);
                     }
 
                     //if channel group id not 0, then set the Channel Group cgid
                     if ($job->channel_cgid != 0) {
-                        $this->ts_VirtualServer->clientSetChannelGroup($clDbID, $createdCID, $job->channel_cgid);
+                        $this->tsVirtualServer->clientSetChannelGroup($clDbID, $createdCID, $job->channel_cgid);
                     }
                 }
 
                 //if channel temp, then bot go back in the standard channel
                 if ($isGoBackFlag == true) {
                     //bot goes back in the standard channel
-                    $this->ts_VirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
+                    $this->tsVirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
                 }
 
                 //notify_message_server_group = true
                 if ($job->is_notify_message_server_group == true && $ifMaxChannelReached == false) {
-                    $notifyClients = collect($this->ts_VirtualServer->clientList(['client_servergroups'=>$job->notify_message_server_group_sgid]));
+                    $notifyClients = collect($this->tsVirtualServer->clientList(['client_servergroups'=>$job->notify_message_server_group_sgid]));
                     //build Message
                     $msg = str_replace(
                         ['{client-name}', '{channel-name}'],
@@ -590,7 +590,7 @@ class TsBotController extends Controller
                     );
 
                     foreach ($notifyClients as $notifyClient) {
-                        $notifyUser = $this->ts_VirtualServer->clientGetById($notifyClient['clid']);
+                        $notifyUser = $this->tsVirtualServer->clientGetById($notifyClient['clid']);
 
                         if ($job->notify_option == tsBotWorkerChannelsCreate::textMessage) {
                             $notifyUser->message($msg);
@@ -620,7 +620,7 @@ class TsBotController extends Controller
             ->where('on_cid', '=', $cid)
             ->delete();
 
-        tsBotWorkerChannelsRemove::class::query()
+        tsBotWorkerChannelsRemove::query()
             ->where('server_id', '=', $this->server_id)
             ->where('channel_cid', '=', $cid)
             ->delete();
@@ -660,9 +660,9 @@ class TsBotController extends Controller
      * @throws NodeException
      * @throws ServerQueryException
      */
-    private function gather_virtualServer_stats(): void
+    private function gatherVirtualServerStats(): void
     {
-        $this->StatisticController->gatherVirtualServerStatistic($this->server_id, $this->ts_VirtualServer);
+        $this->StatisticController->gatherVirtualServerStatistic($this->server_id, $this->tsVirtualServer);
     }
 
     /**

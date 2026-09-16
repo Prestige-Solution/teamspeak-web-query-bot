@@ -56,7 +56,7 @@ class TsConfigController extends Controller
 
         try {
             TeamSpeak3::init();
-            $ts_VirtualServer = TeamSpeak3::factory($this->uri);
+            $tsVirtualServer = TeamSpeak3::factory($this->uri);
             $this->statisticController = new StatisticController();
         } catch (Exception $e) {
             $this->tsLogController->setCustomLog(
@@ -75,11 +75,11 @@ class TsConfigController extends Controller
         try {
             //CHANNELS
             //get all channels as a collection without SubChannels
-            $tsChannels = collect($ts_VirtualServer->channelList(['pid'=>0]));
+            $tsChannels = collect($tsVirtualServer->channelList(['pid'=>0]));
             //get for each key - channelID connection the channel info and store in db
             foreach ($tsChannels->keys()->all() as $cid) {
                 //get channel by id
-                $channel = $ts_VirtualServer->channelGetById($cid);
+                $channel = $tsVirtualServer->channelGetById($cid);
                 //get channel info
                 $channelInfo = $channel->getInfo();
                 //store info
@@ -88,7 +88,7 @@ class TsConfigController extends Controller
                 //sub-channels available
                 $subChannels = collect($channel->subChannelList());
                 foreach ($subChannels->keys()->all() as $subChannelCid) {
-                    $subChannel = $ts_VirtualServer->channelGetById($subChannelCid);
+                    $subChannel = $tsVirtualServer->channelGetById($subChannelCid);
                     $subChannelInfo = $subChannel->getInfo();
                     $this->createChannels($server_id, $subChannelInfo, $subChannel->toString());
                 }
@@ -98,6 +98,7 @@ class TsConfigController extends Controller
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Channels',
+                '',
                 $e->getMessage(),
                 $e->getCode(),
             );
@@ -109,11 +110,11 @@ class TsConfigController extends Controller
         try {
             //SERVER-GROUPS
             //get server groups as a collection
-            $tsServerGroups = collect($ts_VirtualServer->serverGroupList());
+            $tsServerGroups = collect($tsVirtualServer->serverGroupList());
             //insert server groups in db
             foreach ($tsServerGroups->keys()->all() as $sgid) {
                 //get server group by id
-                $serverGroup = $ts_VirtualServer->serverGroupGetById($sgid);
+                $serverGroup = $tsVirtualServer->serverGroupGetById($sgid);
                 $serverGroupInfo = $serverGroup->getInfo();
                 //store info
                 $this->createServerGroups($server_id, $serverGroupInfo);
@@ -123,6 +124,7 @@ class TsConfigController extends Controller
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Server Groups',
+                '',
                 $e->getCode(),
                 $e->getMessage(),
             );
@@ -134,11 +136,11 @@ class TsConfigController extends Controller
         try {
             //CHANNEL GROUPS
             //get channel Groups
-            $tsChannelGroups = collect($ts_VirtualServer->channelGroupList());
+            $tsChannelGroups = collect($tsVirtualServer->channelGroupList());
             //insert channel groups in db
             foreach ($tsChannelGroups->keys()->all() as $cgid) {
                 //get channel group by id
-                $channelGroup = $ts_VirtualServer->channelGroupGetById($cgid);
+                $channelGroup = $tsVirtualServer->channelGroupGetById($cgid);
                 $channelGroupInfo = $channelGroup->getInfo();
                 //store info
                 $this->createChannelGroups($server_id, $channelGroupInfo);
@@ -148,6 +150,7 @@ class TsConfigController extends Controller
                 $server_id,
                 tsBotLog::FAILED,
                 'Setup - Channel Groups',
+                '',
                 $e->getCode(),
                 $e->getMessage(),
             );
@@ -164,7 +167,7 @@ class TsConfigController extends Controller
         );
 
         //update virtual server statistic
-        $this->statisticController->gatherVirtualServerStatistic($server_id, $ts_VirtualServer);
+        $this->statisticController->gatherVirtualServerStatistic($server_id, $tsVirtualServer);
 
         return ['status'=>1, 'msg'=>'success'];
     }

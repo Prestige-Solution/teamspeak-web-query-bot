@@ -27,7 +27,7 @@ class BannerWorkerController extends Controller
 
     protected TsLogController $logController;
 
-    protected Server|Adapter|Host|Node $ts_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
     public function __construct(int $server_id)
     {
@@ -60,7 +60,7 @@ class BannerWorkerController extends Controller
                 //get the latest unused banner
                 $banner = banner::query()
                     ->where('server_id', '=', $this->server_id)
-                    ->orderBy('next_check_at')
+                    ->oldest('next_check_at')
                     ->first();
 
                 if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name) == false) {
@@ -86,8 +86,8 @@ class BannerWorkerController extends Controller
                     $this->server_id,
                 );
 
-                $this->ts_VirtualServer = TeamSpeak3::factory($uri);
-                $tsServerInfo = $this->ts_VirtualServer->getInfo();
+                $this->tsVirtualServer = TeamSpeak3::factory($uri);
+                $tsServerInfo = $this->tsVirtualServer->getInfo();
 
                 //check if delay arrived
                 if (Carbon::now() >= $banner->next_check_at) {
@@ -124,20 +124,20 @@ class BannerWorkerController extends Controller
                                 case 'get_clients_online':
                                     $text = $tsServerInfo['virtualserver_clientsonline'];
                                     break;
-                                case 'get_server_plattform':
+                                case 'get_server_platform':
                                     $text = $tsServerInfo['virtualserver_platform'];
                                     break;
-                                case 'get_sever_latency':
+                                case 'get_server_latency':
                                     $text = $tsServerInfo['virtualserver_total_ping'];
                                     $pos = strpos($text, '.');
                                     $text = substr($text, 0, $pos);
                                     break;
                                 case 'get_server_group_online':
-                                    $clientGroupOnline = collect($this->ts_VirtualServer->clientList(['client_servergroups' => $bannerOption->extra_option]));
+                                    $clientGroupOnline = collect($this->tsVirtualServer->clientList(['client_servergroups' => $bannerOption->extra_option]));
                                     $text = $clientGroupOnline->count();
                                     break;
                                 case 'get_server_group_max_clients':
-                                    $clientGroupCount = collect($this->ts_VirtualServer->serverGroupClientList($bannerOption->extra_option));
+                                    $clientGroupCount = collect($this->tsVirtualServer->serverGroupClientList($bannerOption->extra_option));
                                     $text = $clientGroupCount->count();
                                     break;
                                 case 'get_server_status':
@@ -177,7 +177,7 @@ class BannerWorkerController extends Controller
                                 'bannerWorkerCreateBanner',
                                 'Viewer file name could not be found.');
 
-                            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
 
                             return;
                         }
@@ -198,32 +198,32 @@ class BannerWorkerController extends Controller
                         }
 
                         if ($tsServerInfo['virtualserver_hostbanner_gfx_url'] != asset('banner/viewer/'.$banner->banner_viewer_file_name)) {
-                            $this->ts_VirtualServer['virtualserver_hostbanner_gfx_url'] = asset('banner/viewer/'.$banner->banner_viewer_file_name);
+                            $this->tsVirtualServer['virtualserver_hostbanner_gfx_url'] = asset('banner/viewer/'.$banner->banner_viewer_file_name);
                         }
                         if ($tsServerInfo['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url) {
-                            $this->ts_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
+                            $this->tsVirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
                         }
                         //update every x minutes - ts server side
                         if ($tsServerInfo['virtualserver_hostbanner_gfx_interval'] != 180) {
-                            $this->ts_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
+                            $this->tsVirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
                         }
                         //update size
                         if ($tsServerInfo['virtualserver_hostbanner_mode'] != 2) {
-                            $this->ts_VirtualServer['virtualserver_hostbanner_mode'] = 2;
+                            $this->tsVirtualServer['virtualserver_hostbanner_mode'] = 2;
                         }
                     } else {
                         banner::query()->where('id', '=', $banner->id)->update([
                             'next_check_at'=>Carbon::now()->addMinutes($banner->delay),
                         ]);
 
-                        $this->ts_VirtualServer['virtualserver_hostbanner_gfx_url'] = '';
-                        $this->ts_VirtualServer['virtualserver_hostbanner_url'] = '';
+                        $this->tsVirtualServer['virtualserver_hostbanner_gfx_url'] = '';
+                        $this->tsVirtualServer['virtualserver_hostbanner_url'] = '';
                     }
                     //update updated_at
                     $banner->touch();
                 }
 
-                $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
         } catch(Exception $e) {
             $this->logController->setCustomLog($this->server_id,
@@ -234,7 +234,7 @@ class BannerWorkerController extends Controller
                 $e->getMessage()
             );
 
-            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }
