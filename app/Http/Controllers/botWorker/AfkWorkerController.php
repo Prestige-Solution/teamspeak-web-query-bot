@@ -23,7 +23,7 @@ class AfkWorkerController extends Controller
 
     protected TsLogController $logController;
 
-    protected Server|Adapter|Host|Node $tsVirtualServer;
+    protected Server|Adapter|Host|Node $ts_VirtualServer;
 
     public function __construct(int $server_id)
     {
