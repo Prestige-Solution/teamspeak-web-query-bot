@@ -30,7 +30,7 @@ class StartBotSingleCommand extends Command
     public function handle(): void
     {
         $choice = tsServerConfig::query()
-            ->where('is_tsstart', '=', false)
+            ->where('is_ts_start', '=', false)
             ->orderBy('server_ip')
             ->get();
 
@@ -67,7 +67,7 @@ class StartBotSingleCommand extends Command
     private function start_single_instance(int $server_id): void
     {
         tsServerConfig::query()->where('id', '=', $server_id)->update([
-            'is_tsstart'=>true,
+            'is_ts_start'=>true,
             'is_active'=>true,
         ]);
 

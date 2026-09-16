@@ -61,7 +61,7 @@ class StartBotInstanceCommand extends Command
     {
         return tsServerConfig::query()
             ->where('is_active', '=', true)
-            ->where('is_tsstart', '=', true)
+            ->where('is_ts_start', '=', true)
             ->pluck('id')->toArray();
     }
 }
