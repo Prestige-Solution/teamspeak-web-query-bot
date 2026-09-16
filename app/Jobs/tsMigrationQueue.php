@@ -2,14 +2,12 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\botWorker\BannerWorkerController;
 use App\Http\Controllers\botWorker\MigrationController;
 use App\Http\Controllers\sys\TsLogController;
 use App\Models\tsBot\tsBotLog;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;

@@ -2,7 +2,6 @@
 
 namespace App\Models\tsBotEvents;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class tsBotEvent extends Model

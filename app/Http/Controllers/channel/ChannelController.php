@@ -13,7 +13,6 @@ use App\Models\tsBotEvents\tsBotAction;
 use App\Models\tsBotEvents\tsBotActionUser;
 use App\Models\tsBotEvents\tsBotEvent;
 use App\Models\tsBotWorkers\tsBotWorkerChannelsCreate;
-use App\Models\tsBotWorkers\tsBotWorkerChannelsRemove;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;

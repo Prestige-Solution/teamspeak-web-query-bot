@@ -3,7 +3,6 @@
 namespace App\Models\tsBot;
 
 use App\Models\category\catBotStatus;
-use App\Models\User;
 use Database\Factories\CreateServerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
