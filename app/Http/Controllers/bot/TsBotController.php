@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\StatisticController;
 use App\Http\Controllers\sys\tsLogController;
 use App\Http\Controllers\tsConfig\BadNameController;
-use App\Http\Controllers\tsConfig\tsConfigController;
 use App\Http\Controllers\tsConfig\tsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsChannel;

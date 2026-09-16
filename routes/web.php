@@ -9,7 +9,7 @@ use App\Http\Controllers\sys\LoginController;
 use App\Http\Controllers\sys\MigrationController;
 use App\Http\Controllers\sys\ServerController;
 use App\Http\Controllers\tsConfig\BadNameController;
-use App\Http\Controllers\tsConfig\tsConfigController;
+use App\Http\Controllers\tsConfig\TsConfigController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -85,8 +85,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('/bot-control')->name('ts.')->group(function () {
-        Route::post('/start', [tsConfigController::class, 'tsStartBot'])->name('start.tsBot');
-        Route::post('/stop', [tsConfigController::class, 'tsStopBot'])->name('stop.tsBot');
+        Route::post('/start', [TsConfigController::class, 'tsStartBot'])->name('start.tsBot');
+        Route::post('/stop', [TsConfigController::class, 'tsStopBot'])->name('stop.tsBot');
     });
 
     Route::prefix('/banner')->name('banner.')->group(function () {

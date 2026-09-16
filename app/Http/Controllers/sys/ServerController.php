@@ -8,7 +8,7 @@ use App\Http\Controllers\channel\ChannelRemoverController;
 use App\Http\Controllers\client\ClientController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\tsConfig\BadNameController;
-use App\Http\Controllers\tsConfig\tsConfigController;
+use App\Http\Controllers\tsConfig\TsConfigController;
 use App\Http\Requests\Config\CreateServerRequest;
 use App\Http\Requests\Config\DeleteServerRequest;
 use App\Http\Requests\Config\SwitchDefaultServerRequest;
@@ -173,7 +173,7 @@ class ServerController extends Controller
             //create default entry in statistics
             statistic::query()->firstOrCreate(['server_id'=>$server_id]);
 
-            $reInit = new tsConfigController();
+            $reInit = new TsConfigController();
             $returnCode = $reInit->tsServerInitializing($server_id);
         }
 
@@ -198,7 +198,7 @@ class ServerController extends Controller
             //create default entry in statistics
             statistic::query()->firstOrCreate(['server_id'=>$server_id]);
 
-            $reInit = new tsConfigController();
+            $reInit = new TsConfigController();
             $returnCode = $reInit->tsServerInitializing($server_id);
         }
 
