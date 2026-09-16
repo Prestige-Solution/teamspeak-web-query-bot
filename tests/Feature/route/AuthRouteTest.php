@@ -4,6 +4,7 @@ namespace Tests\Feature\route;
 
 use App\Models\User;
 use Database\Factories\CreateServerFactory;
+use Database\Factories\CreateStatisticFactory;
 use Database\Factories\CreateWorkerPoliceSettingsFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -130,6 +131,19 @@ class AuthRouteTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('backend.banner-creator.banner-list');
+    }
+
+    public function test_can_view_dashboard(): void
+    {
+        CreateServerFactory::new()->create();
+        CreateStatisticFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->get(route('backend.view.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('backend.dashboard.dashboard');
     }
 
     public function update_user(): void
