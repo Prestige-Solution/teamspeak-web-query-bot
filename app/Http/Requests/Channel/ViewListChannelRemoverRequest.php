@@ -23,7 +23,7 @@ class ViewListChannelRemoverRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id'=>Auth::user()->default_server_id,
+            'server_id'=>Auth::user()->active_server_id,
         ]);
     }
 
@@ -33,7 +33,7 @@ class ViewListChannelRemoverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts_server_configs,id',
         ];
     }
 

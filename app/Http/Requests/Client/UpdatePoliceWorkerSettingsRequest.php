@@ -23,7 +23,7 @@ class UpdatePoliceWorkerSettingsRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id'=>Auth::user()->default_server_id,
+            'server_id'=>Auth::user()->active_server_id,
         ]);
     }
 
@@ -33,14 +33,13 @@ class UpdatePoliceWorkerSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts_server_configs,id',
             'is_discord_webhook_active'=>'required|boolean',
             'discord_webhook_url'=>'nullable|url',
             'is_check_bot_alive_active'=>'required|boolean',
             'is_vpn_protection_active'=>'required|boolean',
             'vpn_protection_api_register_mail'=>'nullable|email|required_if_accepted:is_vpn_protection_active',
             'allow_sgid_vpn'=>'required|integer',
-            'is_channel_auto_update_active'=>'required|boolean',
             'is_bad_name_protection_active'=>'required|boolean',
             'is_bad_name_protection_global_list_active'=>'required|boolean',
         ];
@@ -62,8 +61,6 @@ class UpdatePoliceWorkerSettingsRequest extends FormRequest
             'vpn_protection_api_register_mail.required_if_accepted'=>'Enter an e-mail address for the API function',
             'allow_sgid_vpn.required'=>'Oops, something went wrong',
             'allow_sgid_vpn.integer'=>'Oops, something went wrong',
-            'is_channel_auto_update_active.required'=>'Oops, something went wrong',
-            'is_channel_auto_update_active.boolean'=>'Oops, something went wrong',
             'is_bad_name_protection_active.required'=>'Oops, something went wrong',
             'is_bad_name_protection_active.boolean'=>'Oops, something went wrong',
             'is_bad_name_protection_global_list_active.required'=>'Oops, something went wrong',

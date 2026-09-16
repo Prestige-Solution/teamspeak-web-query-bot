@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
+use App\Models\tsBotWorkers\tsBotWorkerChannelsCreate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateJobChannelCreatorFactory extends Factory
 {
-    protected $model = ts3BotWorkerChannelsCreate::class;
+    protected $model = tsBotWorkerChannelsCreate::class;
 
     /**
      * Define the model's default state.

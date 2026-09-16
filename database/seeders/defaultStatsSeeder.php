@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\sys\statistic;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\tsBot\tsServerConfig;
 use Illuminate\Database\Seeder;
 
 class defaultStatsSeeder extends Seeder
@@ -14,7 +14,7 @@ class defaultStatsSeeder extends Seeder
     public function run(): void
     {
         //get all configured servers
-        $servers = ts3ServerConfig::query()->get();
+        $servers = tsServerConfig::query()->get();
 
         //set default stats for each server
         foreach ($servers as $server) {

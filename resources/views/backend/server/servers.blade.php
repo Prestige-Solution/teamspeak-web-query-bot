@@ -49,16 +49,16 @@
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-bold">Status:</span>
                                 <span class="text-secondary">
-                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$running)
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$RUNNING)
                                         <span class="badge text-bg-success">{{$server->rel_bot_status->status_name}}</span>
                                     @endif
-                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$reconnect)
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$RECONNECT)
                                         <span class="badge text-bg-warning">{{$server->rel_bot_status->status_name}}</span>
                                     @endif
-                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$stopped)
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$SHUTDOWN)
                                         <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
                                     @endif
-                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$failed)
+                                    @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$FAILED)
                                         <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
                                 @endif
                             </li>
@@ -88,7 +88,7 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-bold">Edit mode:</span>
-                                @if($server->id === \Illuminate\Support\Facades\Auth::user()->default_server_id && \Illuminate\Support\Facades\Auth::user()->default_server_id !== 0)
+                                @if($server->id === \Illuminate\Support\Facades\Auth::user()->active_server_id && \Illuminate\Support\Facades\Auth::user()->active_server_id !== 0)
                                     <span class="badge text-bg-success">Active</span>
                                 @else
                                     <form class="m-0 p-0" method="post" action="{{route('serverConfig.update.switchDefaultServer')}}">

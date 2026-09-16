@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands\worker;
 
-use App\Jobs\ts3ClearingWorkerQueue;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Jobs\tsClearingWorkerQueue;
+use App\Models\tsBot\tsServerConfig;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -29,14 +29,14 @@ class StartClearingCommand extends Command
      */
     public function handle(): void
     {
-        $servers = ts3ServerConfig::query()
-            ->where('is_ts3_start', '=', true)
+        $servers = tsServerConfig::query()
+            ->where('is_ts_start', '=', true)
             ->where('is_active', '=', true)
             ->get(['id']);
 
         foreach ($servers as $server) {
             try {
-                ts3ClearingWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('clearing');
+                tsClearingWorkerQueue::dispatch($server->id)->onConnection('worker')->onQueue('clearing');
             } catch (Exception $e) {
                 Log::channel('queueWorker')->error($e);
             }

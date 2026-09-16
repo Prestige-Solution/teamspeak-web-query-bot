@@ -83,6 +83,6 @@ sudo echo '* * * * * www-data php /var/www/psbot/artisan schedule:run' > /etc/cr
 ```
 
 # Setup Teamspeak SSH access
-If you are using a Teamspeak 3 Server, you musst create a new ``ssh_rsa_host_key`` [You find Instructions here](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/docker/make-ts3-ssh-compatible.md#setup-a-ssh_rsa_host_key)
+If you are using a Teamspeak 3 Server, you musst create a new ``ssh_rsa_host_key`` [You find Instructions here](https://github.com/Prestige-Solution/ts-x-php-framework/blob/main/doc/docker/make-ts-ssh-compatible.md#setup-a-ssh_rsa_host_key)
 
 Add at your Teamspeak server ``query_ip_allowlist.txt`` the IP from your Webserver where running this application 

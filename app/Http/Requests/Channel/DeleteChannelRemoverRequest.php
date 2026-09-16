@@ -23,7 +23,7 @@ class DeleteChannelRemoverRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id'=>Auth::user()->default_server_id,
+            'server_id'=>Auth::user()->active_server_id,
         ]);
     }
 
@@ -33,8 +33,8 @@ class DeleteChannelRemoverRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id' => 'required|integer|exists:ts3_server_configs,id',
-            'id'=>'required|integer|exists:ts3_bot_worker_channels_removes,id',
+            'server_id' => 'required|integer|exists:ts_server_configs,id',
+            'id'=>'required|integer|exists:ts_bot_worker_channels_removes,id',
         ];
     }
 

@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\sys\Ts3LogController;
-use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
+use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\tsConfig\tsUriStringHelperController;
 use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
 use App\Models\category\catFont;
-use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\tsBot\tsBotLog;
+use App\Models\tsBot\tsServerConfig;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Storage;
@@ -25,14 +25,14 @@ class BannerWorkerController extends Controller
 
     protected string $qa_name;
 
-    protected Ts3LogController $logController;
+    protected tsLogController $logController;
 
-    protected Server|Adapter|Host|Node $ts3_VirtualServer;
+    protected Server|Adapter|Host|Node $ts_VirtualServer;
 
     public function __construct(int $server_id)
     {
         $this->server_id = $server_id;
-        $this->logController = new Ts3LogController('Banner-Worker', $this->server_id);
+        $this->logController = new tsLogController('Banner-Worker', $this->server_id);
     }
 
     /**
@@ -48,13 +48,13 @@ class BannerWorkerController extends Controller
 
             if ($bannerAvailable > 0) {
                 //get Server config
-                $ts3ServerConfig = ts3ServerConfig::query()
+                $tsServerConfig = tsServerConfig::query()
                     ->where('id', '=', $this->server_id)->first();
 
-                if ($ts3ServerConfig->qa_nickname != null) {
-                    $this->qa_name = $ts3ServerConfig->qa_nickname;
+                if ($tsServerConfig->qa_nickname != null) {
+                    $this->qa_name = $tsServerConfig->qa_nickname;
                 } else {
-                    $this->qa_name = $ts3ServerConfig->qa_name;
+                    $this->qa_name = $tsServerConfig->qa_name;
                 }
 
                 //get the latest unused banner
@@ -66,7 +66,7 @@ class BannerWorkerController extends Controller
                 if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name) == false) {
                     $this->logController->setCustomLog(
                         $this->server_id,
-                        ts3BotLog::FAILED,
+                        tsBotLog::FAILED,
                         'bannerWorkerCreateBanner',
                         'Original banner template file could not be found.',
                     );
@@ -75,19 +75,19 @@ class BannerWorkerController extends Controller
                 }
 
                 //get uri with StringHelper
-                $ts3StringHelper = new Ts3UriStringHelperController();
-                $uri = $ts3StringHelper->getStandardUriString(
-                    $ts3ServerConfig->qa_name,
-                    $ts3ServerConfig->qa_pw,
-                    $ts3ServerConfig->server_ip,
-                    $ts3ServerConfig->server_query_port,
-                    $ts3ServerConfig->server_port,
+                $tsStringHelper = new tsUriStringHelperController();
+                $uri = $tsStringHelper->getStandardUriString(
+                    $tsServerConfig->qa_name,
+                    $tsServerConfig->qa_pw,
+                    $tsServerConfig->server_ip,
+                    $tsServerConfig->server_query_port,
+                    $tsServerConfig->server_port,
                     $this->qa_name.'-Banner-Worker',
                     $this->server_id,
                 );
 
-                $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
-                $ts3ServerInfo = $this->ts3_VirtualServer->getInfo();
+                $this->ts_VirtualServer = TeamSpeak3::factory($uri);
+                $tsServerInfo = $this->ts_VirtualServer->getInfo();
 
                 //check if delay arrived
                 if (Carbon::now() >= $banner->next_check_at) {
@@ -119,32 +119,32 @@ class BannerWorkerController extends Controller
                             //get dynamic options
                             switch ($bannerOption->rel_cat_banner_option->pes_code) {
                                 case 'get_max_slots':
-                                    $text = $ts3ServerInfo['virtualserver_maxclients'];
+                                    $text = $tsServerInfo['virtualserver_maxclients'];
                                     break;
                                 case 'get_clients_online':
-                                    $text = $ts3ServerInfo['virtualserver_clientsonline'];
+                                    $text = $tsServerInfo['virtualserver_clientsonline'];
                                     break;
                                 case 'get_server_plattform':
-                                    $text = $ts3ServerInfo['virtualserver_platform'];
+                                    $text = $tsServerInfo['virtualserver_platform'];
                                     break;
                                 case 'get_sever_latency':
-                                    $text = $ts3ServerInfo['virtualserver_total_ping'];
+                                    $text = $tsServerInfo['virtualserver_total_ping'];
                                     $pos = strpos($text, '.');
                                     $text = substr($text, 0, $pos);
                                     break;
                                 case 'get_server_group_online':
-                                    $clientGroupOnline = collect($this->ts3_VirtualServer->clientList(['client_servergroups' => $bannerOption->extra_option]));
+                                    $clientGroupOnline = collect($this->ts_VirtualServer->clientList(['client_servergroups' => $bannerOption->extra_option]));
                                     $text = $clientGroupOnline->count();
                                     break;
                                 case 'get_server_group_max_clients':
-                                    $clientGroupCount = collect($this->ts3_VirtualServer->serverGroupClientList($bannerOption->extra_option));
+                                    $clientGroupCount = collect($this->ts_VirtualServer->serverGroupClientList($bannerOption->extra_option));
                                     $text = $clientGroupCount->count();
                                     break;
                                 case 'get_server_status':
-                                    $text = $ts3ServerInfo['virtualserver_status'];
+                                    $text = $tsServerInfo['virtualserver_status'];
                                     break;
                                 case 'get_online_time':
-                                    $timeSeconds = $ts3ServerInfo['virtualserver_uptime'];
+                                    $timeSeconds = $tsServerInfo['virtualserver_uptime'];
                                     $day = floor($timeSeconds / 86400);
                                     $hours = floor(($timeSeconds - ($day * 86400)) / 3600);
                                     $minutes = floor(($timeSeconds / 60) % 60);
@@ -173,11 +173,11 @@ class BannerWorkerController extends Controller
                         } else {
                             $this->logController->setCustomLog(
                                 $this->server_id,
-                                ts3BotLog::FAILED,
+                                tsBotLog::FAILED,
                                 'bannerWorkerCreateBanner',
                                 'Viewer file name could not be found.');
 
-                            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
 
                             return;
                         }
@@ -197,44 +197,44 @@ class BannerWorkerController extends Controller
                             ]);
                         }
 
-                        if ($ts3ServerInfo['virtualserver_hostbanner_gfx_url'] != asset('banner/viewer/'.$banner->banner_viewer_file_name)) {
-                            $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = asset('banner/viewer/'.$banner->banner_viewer_file_name);
+                        if ($tsServerInfo['virtualserver_hostbanner_gfx_url'] != asset('banner/viewer/'.$banner->banner_viewer_file_name)) {
+                            $this->ts_VirtualServer['virtualserver_hostbanner_gfx_url'] = asset('banner/viewer/'.$banner->banner_viewer_file_name);
                         }
-                        if ($ts3ServerInfo['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url) {
-                            $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
+                        if ($tsServerInfo['virtualserver_hostbanner_url'] != $banner->banner_hostbanner_url) {
+                            $this->ts_VirtualServer['virtualserver_hostbanner_url'] = $banner->banner_hostbanner_url;
                         }
-                        //update every x minutes - ts3 server side
-                        if ($ts3ServerInfo['virtualserver_hostbanner_gfx_interval'] != 180) {
-                            $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
+                        //update every x minutes - ts server side
+                        if ($tsServerInfo['virtualserver_hostbanner_gfx_interval'] != 180) {
+                            $this->ts_VirtualServer['virtualserver_hostbanner_gfx_interval'] = 180;
                         }
                         //update size
-                        if ($ts3ServerInfo['virtualserver_hostbanner_mode'] != 2) {
-                            $this->ts3_VirtualServer['virtualserver_hostbanner_mode'] = 2;
+                        if ($tsServerInfo['virtualserver_hostbanner_mode'] != 2) {
+                            $this->ts_VirtualServer['virtualserver_hostbanner_mode'] = 2;
                         }
                     } else {
                         banner::query()->where('id', '=', $banner->id)->update([
                             'next_check_at'=>Carbon::now()->addMinutes($banner->delay),
                         ]);
 
-                        $this->ts3_VirtualServer['virtualserver_hostbanner_gfx_url'] = '';
-                        $this->ts3_VirtualServer['virtualserver_hostbanner_url'] = '';
+                        $this->ts_VirtualServer['virtualserver_hostbanner_gfx_url'] = '';
+                        $this->ts_VirtualServer['virtualserver_hostbanner_url'] = '';
                     }
                     //update updated_at
                     $banner->touch();
                 }
 
-                $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
         } catch(Exception $e) {
             $this->logController->setCustomLog($this->server_id,
-                ts3BotLog::FAILED,
+                tsBotLog::FAILED,
                 'bannerWorkerCreateBanner',
                 'There was an error during create banner',
                 $e->getCode(),
                 $e->getMessage()
             );
 
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

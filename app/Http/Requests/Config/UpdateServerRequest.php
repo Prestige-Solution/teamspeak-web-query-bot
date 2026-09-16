@@ -25,12 +25,12 @@ class UpdateServerRequest extends FormRequest
         if (str_replace(' ', '', $this->input('qa_nickname') == '')) {
             $this->merge([
                 'qa_nickname' => 'web-query-bot',
-                'server_id' => Auth::user()->default_server_id,
+                'server_id' => Auth::user()->active_server_id,
             ]);
         } else {
             $this->merge([
                 'qa_nickname' => str_replace(' ', '', $this->input('qa_nickname')),
-                'server_id' => Auth::user()->default_server_id,
+                'server_id' => Auth::user()->active_server_id,
             ]);
         }
     }
@@ -41,7 +41,7 @@ class UpdateServerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts_server_configs,id',
             'server_name'=>'required',
             'server_ip' => 'required',
             'qa_name' => 'required',

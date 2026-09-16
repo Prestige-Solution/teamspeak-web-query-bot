@@ -22,7 +22,7 @@
                         <div class="col-lg-9">
                             <input class="form-control" type="text" name="server_ip" id="server_ip" value="{{ $server->server_ip }}" placeholder="IPv4 or IPv6 or DNS address" required>
                             <div class="invalid-feedback">
-                                Example: IPv4: 127.0.0.1 | IPv6: 0:0:0:0:0:0:0:1 or ::1 | DNS: ts3.example.com
+                                Example: IPv4: 127.0.0.1 | IPv6: 0:0:0:0:0:0:0:1 or ::1 | DNS: ts.example.com
                             </div>
                         </div>
                     </div>
@@ -66,7 +66,7 @@
                         <label class="col-lg-3 col-form-label fw-bold" for="mode">Connection mode</label>
                         <div class="col-lg-9">
                             <select class="form-select" name="mode" id="mode">
-                                <option value="{{\App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH}}" @if($server->mode === \App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH) selected @endif>SSH</option>
+                                <option value="{{\App\Models\tsBot\tsServerConfig::tsConnectModeSSH}}" @if($server->mode === \App\Models\tsBot\tsServerConfig::tsConnectModeSSH) selected @endif>SSH</option>
                             </select>
                         </div>
                     </div>

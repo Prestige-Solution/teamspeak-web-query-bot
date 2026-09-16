@@ -23,7 +23,7 @@ class UpdateAfkWorkerSettingsRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id' => Auth::user()->default_server_id,
+            'server_id' => Auth::user()->active_server_id,
         ]);
     }
 
@@ -33,7 +33,7 @@ class UpdateAfkWorkerSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'server_id'=>'required|integer|exists:ts_server_configs,id',
             'is_afk_active'=>'required|boolean',
             'max_client_idle_time'=>'required|integer',
             'afk_channel_cid'=>'required_if:is_afk_active,true|integer',

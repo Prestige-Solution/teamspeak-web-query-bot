@@ -131,27 +131,6 @@
                 </div>
             </div>
         </div>
-        <div class="row mt-3">
-            <div class="col-lg-6 d-flex align-items-stretch">
-                <div class="card flex-fill">
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <p class="fs-4 fw-bold"><i class="fa-solid fa-rotate"></i> Synchronize channels automatically</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" for="is_channel_auto_update_active">Status:</label>
-                            <select class="form-select" name="is_channel_auto_update_active" id="is_channel_auto_update_active">
-                                <option value="1" @if($policeWorker->is_channel_auto_update_active == true) selected @endif>Active</option>
-                                <option value="0" @if($policeWorker->is_channel_auto_update_active == false) selected @endif>Inactive</option>
-                            </select>
-                            <div class="col-lg-12">
-                                <p class="form-text col-form-label">Each channel action is updated in the backend. Otherwise a clearing process will handle it.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </form>
 </div>
 @endsection

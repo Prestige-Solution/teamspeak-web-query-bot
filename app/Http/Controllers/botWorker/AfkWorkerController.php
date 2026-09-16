@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\sys\Ts3LogController;
-use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
-use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3Bot\ts3ServerConfig;
-use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
+use App\Http\Controllers\sys\tsLogController;
+use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Models\tsBot\tsBotLog;
+use App\Models\tsBot\tsServerConfig;
+use App\Models\tsBotWorkers\tsBotWorkerAfk;
 use Exception;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
@@ -21,14 +21,14 @@ class AfkWorkerController extends Controller
 
     protected string $qa_name;
 
-    protected Ts3LogController $logController;
+    protected tsLogController $logController;
 
-    protected Server|Adapter|Host|Node $ts3_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
     public function __construct(int $server_id)
     {
         $this->server_id = $server_id;
-        $this->logController = new Ts3LogController('Afk-Worker', $this->server_id);
+        $this->logController = new tsLogController('Afk-Worker', $this->server_id);
     }
 
     /**
@@ -38,32 +38,32 @@ class AfkWorkerController extends Controller
     public function afkMoverWorker(): void
     {
         try {
-            $ts3ServerConfig = ts3ServerConfig::query()
+            $tsServerConfig = tsServerConfig::query()
                 ->where('id', '=', $this->server_id)->first();
 
-            if ($ts3ServerConfig->qa_nickname != null) {
-                $this->qa_name = $ts3ServerConfig->qa_nickname;
+            if ($tsServerConfig->qa_nickname != null) {
+                $this->qa_name = $tsServerConfig->qa_nickname;
             } else {
-                $this->qa_name = $ts3ServerConfig->qa_name;
+                $this->qa_name = $tsServerConfig->qa_name;
             }
 
             //get uri with StringHelper
-            $ts3StringHelper = new Ts3UriStringHelperController();
-            $uri = $ts3StringHelper->getStandardUriString(
-                $ts3ServerConfig->qa_name,
-                $ts3ServerConfig->qa_pw,
-                $ts3ServerConfig->server_ip,
-                $ts3ServerConfig->server_query_port,
-                $ts3ServerConfig->server_port,
+            $tsStringHelper = new tsUriStringHelperController();
+            $uri = $tsStringHelper->getStandardUriString(
+                $tsServerConfig->qa_name,
+                $tsServerConfig->qa_pw,
+                $tsServerConfig->server_ip,
+                $tsServerConfig->server_query_port,
+                $tsServerConfig->server_port,
                 $this->qa_name.'-AFK-Worker',
                 $this->server_id,
             );
 
-            $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
+            $this->ts_VirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
-                ts3BotLog::FAILED,
+                tsBotLog::FAILED,
                 'AFK-Worker',
                 'There was an error while attempting to communicate with the server',
                 $e->getCode(),
@@ -71,7 +71,7 @@ class AfkWorkerController extends Controller
             );
         }
 
-        $functionIsActive = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id);
+        $functionIsActive = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id);
         if ($functionIsActive->count() > 0 && $functionIsActive->first()->is_afk_active == true) {
             $this->afkMover();
         }
@@ -80,7 +80,7 @@ class AfkWorkerController extends Controller
             $this->afkKicker();
         }
 
-        $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     /**
@@ -90,10 +90,10 @@ class AfkWorkerController extends Controller
     {
         try {
             //get all Clients on server
-            $allClientsOnServer = collect($this->ts3_VirtualServer->clientList());
+            $allClientsOnServer = collect($this->ts_VirtualServer->clientList());
             //has worker excluded servergroups
-            $afkWorkerExcludedServerGroups = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id)->get();
-            $afkWorkerConfig = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id)->first();
+            $afkWorkerExcludedServerGroups = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->get();
+            $afkWorkerConfig = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->first();
             //get worker config
             $maxIdleTime = $afkWorkerConfig->max_client_idle_time;
             $afkChannelCid = $afkWorkerConfig->afk_channel_cid;
@@ -119,20 +119,20 @@ class AfkWorkerController extends Controller
                 if ($excludedServerGroupExistsResult == false && $afkChannelCid != $clientChannelCid) {
                     //if max idle time reached
                     if ($clientIdleTime > $maxIdleTime) {
-                        $this->ts3_VirtualServer->clientMove($clientClid, $afkChannelCid);
+                        $this->ts_VirtualServer->clientMove($clientClid, $afkChannelCid);
                     }
                 }
             }
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
-                ts3BotLog::FAILED,
+                tsBotLog::FAILED,
                 'Afk-Mover',
                 'There was an error during afk mover.',
                 $e->getCode(),
                 $e->getMessage()
             );
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -143,14 +143,14 @@ class AfkWorkerController extends Controller
     {
         try {
             //get all Clients on server
-            $allClientsOnServer = collect($this->ts3_VirtualServer->clientList());
+            $allClientsOnServer = collect($this->ts_VirtualServer->clientList());
             //has worker excluded servergroups
-            $afkWorkerExcludedServerGroups = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id)->get();
-            $afkWorkerConfig = ts3BotWorkerAfk::query()->where('server_id', '=', $this->server_id)->first();
+            $afkWorkerExcludedServerGroups = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->get();
+            $afkWorkerConfig = tsBotWorkerAfk::query()->where('server_id', '=', $this->server_id)->first();
             //get worker config
             $afkKickerMaxIdleTime = $afkWorkerConfig->afk_kicker_max_idle_time;
             //serverSlots
-            $serverClientsOnline = $this->ts3_VirtualServer->getProperty('virtualserver_clientsonline');
+            $serverClientsOnline = $this->ts_VirtualServer->getProperty('virtualserver_clientsonline');
 
             foreach ($allClientsOnServer as $client) {
                 //get Client info
@@ -175,12 +175,12 @@ class AfkWorkerController extends Controller
                         $kickMsg = 'You have reached maximum inactivity and have been kicked from the server!';
                         //if max idle time reached
                         if ($clientIdleTime > $afkKickerMaxIdleTime) {
-                            $this->ts3_VirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
+                            $this->ts_VirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
                         }
                     } else {
                         if ($serverClientsOnline > $afkWorkerConfig->afk_kicker_slots_online) {
                             $kickMsg = 'Sorry, but the server is getting full!';
-                            $this->ts3_VirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
+                            $this->ts_VirtualServer->clientKick($clientClid, TeamSpeak3::KICK_SERVER, $kickMsg);
 
                             //decrease online counter
                             $serverClientsOnline = $serverClientsOnline - 1;
@@ -191,13 +191,13 @@ class AfkWorkerController extends Controller
         } catch(Exception $e) {
             $this->logController->setCustomLog(
                 $this->server_id,
-                ts3BotLog::FAILED,
+                tsBotLog::FAILED,
                 'Afk-Kicker',
                 'There was an error during afk kicker',
                 $e->getCode(),
                 $e->getMessage()
             );
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->ts_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

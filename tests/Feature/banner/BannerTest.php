@@ -36,7 +36,7 @@ class BannerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->get(route('banner.view.listBanner'));
@@ -51,7 +51,7 @@ class BannerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         Storage::fake('banner');
@@ -69,7 +69,7 @@ class BannerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         //prepare
@@ -89,7 +89,7 @@ class BannerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         //prepare
@@ -133,7 +133,7 @@ class BannerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         //prepare

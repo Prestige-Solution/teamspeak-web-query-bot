@@ -12,26 +12,21 @@ use PlanetTeamSpeak\TeamSpeak3Framework\Node\Server;
 
 class StatisticController extends Controller
 {
-    protected Server $ts3_VirtualServer;
-
-    public function __construct($ts3_VirtualServer)
-    {
-        $this->ts3_VirtualServer = $ts3_VirtualServer;
-    }
-
     /**
      * @throws AdapterException
      * @throws TransportException
      * @throws NodeException
      * @throws ServerQueryException
      */
-    public function gatherVirtualServerStatistic(int $server_id)
+    public function gatherVirtualServerStatistic(int $server_id, Server $ts_VirtualServer)
     {
+        //
+
         //update virtual server statistic
-        $stats = $this->ts3_VirtualServer->getInfo(true, true);
-        $serverGroupsCount = count($this->ts3_VirtualServer->serverGroupList(['type'=>1]));
-        $serverChannelGroupsCount = count($this->ts3_VirtualServer->channelGroupList(['type'=>1]));
-        $banListCount = $this->ts3_VirtualServer->banCount();
+        $stats = $ts_VirtualServer->getInfo(true, true);
+        $serverGroupsCount = count($ts_VirtualServer->serverGroupList(['type'=>1]));
+        $serverChannelGroupsCount = count($ts_VirtualServer->channelGroupList(['type'=>1]));
+        $banListCount = $ts_VirtualServer->banCount();
 
         statistic::query()->updateOrCreate(
             [
@@ -55,5 +50,10 @@ class StatisticController extends Controller
                 'virtualserver_total_packetloss_speech' => $stats['virtualserver_total_packetloss_speech'],
                 'virtualserver_reserved_slots'=>$stats['virtualserver_reserved_slots'],
             ]);
+    }
+
+    public function deleteStatisticsByServerID(int $server_id): void
+    {
+        statistic::query()->where('server_id', '=', $server_id)->delete();
     }
 }

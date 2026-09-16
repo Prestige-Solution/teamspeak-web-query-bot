@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Models\tsBot\tsServerConfig;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,15 +15,13 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    const SUPERADMIN = 1;
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'default_server_id',
+        'active_server_id',
         'nickname',
         'email',
         'password',
@@ -57,6 +55,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function rel_server(): HasOne
     {
-        return $this->hasOne(ts3ServerConfig::class, 'id', 'default_server_id');
+        return $this->hasOne(tsServerConfig::class, 'id', 'active_server_id');
     }
 }

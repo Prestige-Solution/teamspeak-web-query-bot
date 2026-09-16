@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3Bot\ts3Channel;
+use App\Models\tsBot\tsChannel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateChannelFactory extends Factory
 {
-    protected $model = ts3Channel::class;
+    protected $model = tsChannel::class;
 
     /**
      * Define the model's default state.

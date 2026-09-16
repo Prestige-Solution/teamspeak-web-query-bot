@@ -12,7 +12,7 @@ use App\Models\bannerCreator\banner;
 use App\Models\bannerCreator\bannerOption;
 use App\Models\category\catBannerOption;
 use App\Models\category\catFont;
-use App\Models\ts3Bot\ts3ServerGroup;
+use App\Models\tsBot\tsServerGroup;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -36,7 +36,7 @@ class BannerController extends Controller
         $banner = banner::query()->where('id', '=', $request->validated('id'))->first();
         $bannerOptions = catBannerOption::query()->get();
         $bannerFonts = catFont::query()->get();
-        $serverGroups = ts3ServerGroup::query()
+        $serverGroups = tsServerGroup::query()
             ->where('server_id', '=', $banner->server_id)
             ->where('type', '=', 1)
             ->get();
@@ -162,7 +162,31 @@ class BannerController extends Controller
 
     public function deleteBanner(DeleteBannerRequest $request): RedirectResponse
     {
-        $banner = banner::query()->where('id', '=', $request->validated('id'))->first();
+        $this->deleteBannerById($request->validated('id'));
+
+        return redirect()->back()->with(['success'=>'Banner was successfully deleted']);
+    }
+
+    public function deleteBannersByServerID(int $server_id): void
+    {
+        $banners = banner::query()->where('server_id', '=', $server_id)->get();
+        foreach ($banners as $banner) {
+            if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
+                Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
+            }
+
+            if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
+                Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
+            }
+
+            bannerOption::query()->where('banner_id', '=', $banner->id)->delete();
+            banner::query()->where('id', '=', $banner->id)->delete();
+        }
+    }
+
+    private function deleteBannerById(int $banner_id): void
+    {
+        $banner = banner::query()->where('id', '=', $banner_id)->first();
 
         if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
             Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
@@ -172,9 +196,7 @@ class BannerController extends Controller
             Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
         }
 
-        bannerOption::query()->where('banner_id', '=', $request->validated('id'))->delete();
-        banner::query()->where('id', '=', $request->validated('id'))->delete();
-
-        return redirect()->back()->with(['success'=>'Banner was successfully deleted']);
+        bannerOption::query()->where('banner_id', '=', $banner_id)->delete();
+        banner::query()->where('id', '=', $banner_id)->delete();
     }
 }
