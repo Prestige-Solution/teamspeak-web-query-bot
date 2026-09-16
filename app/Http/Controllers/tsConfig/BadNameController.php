@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\tsConfig;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\tsConfig\CreateNewBadNameRequest;
-use App\Http\Requests\tsConfig\DeleteBadNameRequest;
+use App\Http\Requests\TsConfig\CreateNewBadNameRequest;
+use App\Http\Requests\TsConfig\DeleteBadNameRequest;
 use App\Models\sys\badName;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBotWorkers\tsBotWorkerPolice;
