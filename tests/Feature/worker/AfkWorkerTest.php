@@ -64,6 +64,21 @@ class AfkWorkerTest extends TestCase
         $this->assertEquals(2 * 1000 * 60, $dbResult->first()->afk_kicker_max_idle_time);
     }
 
+    public function test_post_update_afk_worker_settings_validation_fails_for_missing_afk_channel_when_active()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $updateArray = UpdateWorkerAfkSettingsFactory::new()->make([
+            'is_afk_active' => true,
+            'afk_channel_cid' => null,
+        ])->toArray();
+
+        $response = $this->actingAs($this->user)->post(route('worker.update.afkWorker'), $updateArray);
+        $response->assertSessionHasErrors(['afk_channel_cid']);
+    }
+
     private function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();

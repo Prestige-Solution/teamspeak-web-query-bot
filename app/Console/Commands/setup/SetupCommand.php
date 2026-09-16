@@ -41,8 +41,8 @@ class SetupCommand extends Command
         $this->info('View cache cleared');
         Artisan::call('route:clear');
         $this->info('Route cache cleared');
-        Artisan::call('cache:clear');
-        $this->info('Route cache cleared');
+        Artisan::call('config:clear');
+        $this->info('Config cache cleared');
 
         Artisan::call('optimize');
         $this->info('Optimized');

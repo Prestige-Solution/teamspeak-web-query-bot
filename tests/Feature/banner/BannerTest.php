@@ -162,6 +162,45 @@ class BannerTest extends TestCase
         $this->assertCount(0, $bannerOptions);
     }
 
+    public function test_post_upload_banner_template_validation_fails_for_invalid_file()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        Storage::fake('banner');
+        $response = $this->actingAs($this->user)->post(route('banner.create.uploadedTemplate'), [
+            'banner_original_file_name' => UploadedFile::fake()->create('document.pdf', 100),
+            'banner_name' => 'Invalid Banner',
+        ]);
+        $response->assertSessionHasErrors(['banner_original_file_name']);
+    }
+
+    public function test_post_upsert_banner_config_validation_fails_for_invalid_url()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('banner.upsert.configBanner'), [
+            'id' => 1,
+            'coord_x' => '10',
+            'coord_y' => '20',
+            'banner_hostbanner_url' => 'not-a-valid-url',
+        ]);
+        $response->assertSessionHasErrors(['banner_hostbanner_url']);
+    }
+
+    public function test_post_delete_banner_validation_fails_for_non_existent_banner()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('banner.delete.banner'), ['id' => 999]);
+        $response->assertSessionHasErrors(['id']);
+    }
+
     private function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();

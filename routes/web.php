@@ -101,8 +101,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', [MigrationController::class, 'viewMigration'])->name('view.migrationSettings');
         Route::post('/start', [MigrationController::class, 'startMigration'])->name('start.migration');
     });
-});
 
-Route::middleware(['auth'])->group(function () {
     Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 });

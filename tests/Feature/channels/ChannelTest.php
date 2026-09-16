@@ -204,6 +204,51 @@ class ChannelTest extends TestCase
         $response->assertSeeText('There are no channels added yet.');
     }
 
+    public function test_post_create_channel_creator_job_validation_fails_for_missing_fields()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('channel.upsert.channelJob'), []);
+        $response->assertSessionHasErrors(['on_cid', 'on_event', 'action_id', 'action_user_id', 'channel_cgid', 'channel_template_cid', 'action_min_clients', 'create_max_channels', 'is_active']);
+    }
+
+    public function test_post_create_channel_remover_job_validation_fails_for_invalid_format()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('channel.upsert.newChannelRemover'), [
+            'channel_cid' => 1,
+            'channel_max_seconds_empty' => 5,
+            'channel_max_time_format' => 'invalid_format',
+            'is_active' => true,
+        ]);
+        $response->assertSessionHasErrors(['channel_max_time_format']);
+    }
+
+    public function test_post_delete_channel_creator_job_validation_fails_for_non_existent_id()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('channel.delete.channelJob'), ['id' => 999]);
+        $response->assertSessionHasErrors(['id']);
+    }
+
+    public function test_post_delete_channel_remover_job_validation_fails_for_non_existent_id()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('channel.delete.channelRemover'), ['id' => 999]);
+        $response->assertSessionHasErrors(['id']);
+    }
+
     public function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();

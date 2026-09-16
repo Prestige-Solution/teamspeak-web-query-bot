@@ -146,6 +146,18 @@ class AuthRouteTest extends TestCase
         $response->assertViewIs('backend.dashboard.dashboard');
     }
 
+    public function test_can_view_migration_settings(): void
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->get(route('migration.view.migrationSettings'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('backend.utils.migration.migrate');
+    }
+
     public function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();

@@ -19,18 +19,18 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class ClearingWorkerController extends Controller
 {
-    protected int $server_id;
+    protected int $serverId;
 
-    protected string $qa_name;
+    protected string $qaName;
 
     protected Server|Adapter|Host|Node $tsVirtualServer;
 
     protected TsLogController $logController;
 
-    public function __construct(int $server_id)
+    public function __construct(int $serverId)
     {
-        $this->server_id = $server_id;
-        $this->logController = new TsLogController('Clearing-Worker', $this->server_id);
+        $this->serverId = $serverId;
+        $this->logController = new TsLogController('Clearing-Worker', $this->serverId);
     }
 
     /**
@@ -39,12 +39,12 @@ class ClearingWorkerController extends Controller
     public function startClearing(): void
     {
         $tsServerConfig = tsServerConfig::query()
-            ->where('id', '=', $this->server_id)->first();
+            ->where('id', '=', $this->serverId)->first();
 
         if ($tsServerConfig->qa_nickname != null) {
-            $this->qa_name = $tsServerConfig->qa_nickname;
+            $this->qaName = $tsServerConfig->qa_nickname;
         } else {
-            $this->qa_name = $tsServerConfig->qa_name;
+            $this->qaName = $tsServerConfig->qa_name;
         }
 
         $tsUriStringHelper = new TsUriStringHelperController();
@@ -54,21 +54,23 @@ class ClearingWorkerController extends Controller
             $tsServerConfig->server_ip,
             $tsServerConfig->server_query_port,
             $tsServerConfig->server_port,
-            $this->qa_name.'-Clearing-Worker',
-            $this->server_id,
+            $this->qaName.'-Clearing-Worker',
+            $this->serverId,
         );
 
         try {
             $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::FAILED,
                 'Start Clearing-Worker',
                 'There was an error while attempting to communicate with the server',
                 $e->getCode(),
                 $e->getMessage()
             );
+
+            return;
         }
 
         $this->updateChannelList();
@@ -103,7 +105,7 @@ class ClearingWorkerController extends Controller
 
             //get channels where not found at server side and delete in a database
             $deletingChannelList = tsChannel::query()
-                ->where('server_id', '=', $this->server_id)
+                ->where('server_id', '=', $this->serverId)
                 ->whereNotIn('cid', $channelList)
                 ->get();
 
@@ -113,7 +115,7 @@ class ClearingWorkerController extends Controller
             }
         } catch(Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::FAILED,
                 'Update Channel List',
                 'There was an error during update channel list',
@@ -130,7 +132,7 @@ class ClearingWorkerController extends Controller
         tsChannel::query()->updateOrCreate(
             [
                 'cid'=>$cid,
-                'server_id'=>$this->server_id,
+                'server_id'=>$this->serverId,
             ],
             [
                 'pid'=>$channelInfo['pid'],
@@ -173,17 +175,17 @@ class ClearingWorkerController extends Controller
     private function deleteChannelFromDB(int $cid): void
     {
         tsChannel::query()
-            ->where('server_id', '=', $this->server_id)
+            ->where('server_id', '=', $this->serverId)
             ->where('cid', '=', $cid)
             ->delete();
 
         tsBotWorkerChannelsCreate::query()
-            ->where('server_id', '=', $this->server_id)
+            ->where('server_id', '=', $this->serverId)
             ->where('on_cid', '=', $cid)
             ->delete();
 
         tsBotWorkerChannelsRemove::query()
-            ->where('server_id', '=', $this->server_id)
+            ->where('server_id', '=', $this->serverId)
             ->where('channel_cid', '=', $cid)
             ->delete();
     }

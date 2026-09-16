@@ -103,4 +103,12 @@ class PublicRouteTest extends TestCase
         $response->assertStatus(302);
         $response->assertRedirect(route('public.view.login'));
     }
+
+    public function test_can_view_migration_settings_failed(): void
+    {
+        $response = $this->get('/migration/settings');
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('public.view.login'));
+    }
 }

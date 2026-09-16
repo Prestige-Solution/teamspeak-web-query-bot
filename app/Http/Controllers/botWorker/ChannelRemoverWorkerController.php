@@ -18,18 +18,18 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class ChannelRemoverWorkerController extends Controller
 {
-    protected int $server_id;
+    protected int $serverId;
 
     protected TsLogController $logController;
 
-    protected string $qa_name;
+    protected string $qaName;
 
     protected Server|Adapter|Host|Node $tsVirtualServer;
 
-    public function __construct(int $server_id)
+    public function __construct(int $serverId)
     {
-        $this->server_id = $server_id;
-        $this->logController = new TsLogController('Channel-Remover-Worker', $this->server_id);
+        $this->serverId = $serverId;
+        $this->logController = new TsLogController('Channel-Remover-Worker', $this->serverId);
     }
 
     /**
@@ -40,12 +40,12 @@ class ChannelRemoverWorkerController extends Controller
     {
         try {
             $tsServerConfig = tsServerConfig::query()
-                ->where('id', '=', $this->server_id)->first();
+                ->where('id', '=', $this->serverId)->first();
 
             if ($tsServerConfig->qa_nickname != null) {
-                $this->qa_name = $tsServerConfig->qa_nickname;
+                $this->qaName = $tsServerConfig->qa_nickname;
             } else {
-                $this->qa_name = $tsServerConfig->qa_name;
+                $this->qaName = $tsServerConfig->qa_name;
             }
 
             $tsStringHelper = new TsUriStringHelperController();
@@ -55,19 +55,21 @@ class ChannelRemoverWorkerController extends Controller
                 $tsServerConfig->server_ip,
                 $tsServerConfig->server_query_port,
                 $tsServerConfig->server_port,
-                $this->qa_name.'-Remover-Worker',
-                $this->server_id,
+                $this->qaName.'-Remover-Worker',
+                $this->serverId,
             );
 
             $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
-            $this->logController->setCustomLog($this->server_id,
+            $this->logController->setCustomLog($this->serverId,
                 tsBotLog::FAILED,
                 'Start Channel-Remover-Worker',
                 'There was an error while attempting to communicate with the server',
                 $e->getCode(),
                 $e->getMessage()
             );
+
+            return;
         }
 
         $this->channelRemover();
@@ -82,7 +84,7 @@ class ChannelRemoverWorkerController extends Controller
         try {
             //get sub-channels
             $subChannelRemoves = tsBotWorkerChannelsRemove::query()
-                ->where('server_id', '=', $this->server_id)
+                ->where('server_id', '=', $this->serverId)
                 ->where('is_active', '=', true)
                 ->get();
 
@@ -99,7 +101,7 @@ class ChannelRemoverWorkerController extends Controller
                         $this->tsVirtualServer->channelDelete($subChannel);
 
                         tsChannel::query()
-                            ->where('server_id', '=', $this->server_id)
+                            ->where('server_id', '=', $this->serverId)
                             ->where('cid', '=', $subChannelInfo['cid'])
                             ->delete();
                     }
@@ -107,10 +109,10 @@ class ChannelRemoverWorkerController extends Controller
             }
 
             //update column updated_at
-            tsBotWorkerChannelsRemove::query()->where('server_id', '=', $this->server_id)->touch();
+            tsBotWorkerChannelsRemove::query()->where('server_id', '=', $this->serverId)->touch();
         } catch (Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::FAILED,
                 'Channel-Remover',
                 'There was an error during channel remover',

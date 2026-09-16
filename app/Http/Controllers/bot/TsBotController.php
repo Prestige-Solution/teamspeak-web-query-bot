@@ -33,17 +33,17 @@ class TsBotController extends Controller
 
     protected TsLogController $logController;
 
-    protected StatisticController $StatisticController;
+    protected StatisticController $statisticController;
 
-    protected int $server_id;
+    protected int $serverId;
 
     protected int $waitIncrease = 1;
 
     protected int $waitTimeSeconds = 10;
 
-    protected int $self_clid;
+    protected int $selfClid;
 
-    protected int $standard_channel_id;
+    protected int $standardChannelId;
 
     protected int $reconnectCode;
 
@@ -52,11 +52,11 @@ class TsBotController extends Controller
     /**
      * @throws Exception
      */
-    public function __construct($server_id)
+    public function __construct(int $serverId)
     {
-        $this->server_id = $server_id;
+        $this->serverId = $serverId;
         $this->reconnectCode = tsServerConfig::BotReconnectFalse; //Default is dont try to reconnect
-        $this->logController = new TsLogController('Bot', $this->server_id);
+        $this->logController = new TsLogController('Bot', $this->serverId);
 
         try {
             TeamSpeak3::init();
@@ -78,12 +78,23 @@ class TsBotController extends Controller
     {
         try {
             $tsServerConfig = tsServerConfig::query()
-                ->where('id', '=', $this->server_id)->first();
+                ->where('id', '=', $this->serverId)->first();
+
+            if ($tsServerConfig === null) {
+                $this->logController->setCustomLog(
+                    $this->serverId,
+                    tsBotLog::FAILED,
+                    'startBot',
+                    'Server configuration not found',
+                );
+
+                return;
+            }
 
             if ($tsServerConfig->qa_nickname != null) {
-                $qa_name = $tsServerConfig->qa_nickname;
+                $qaName = $tsServerConfig->qa_nickname;
             } else {
-                $qa_name = $tsServerConfig->qa_name;
+                $qaName = $tsServerConfig->qa_name;
             }
 
             //get uri with StringHelper
@@ -94,16 +105,16 @@ class TsBotController extends Controller
                 $tsServerConfig->server_ip,
                 $tsServerConfig->server_query_port,
                 $tsServerConfig->server_port,
-                $qa_name,
-                $this->server_id,
+                $qaName,
+                $this->serverId,
             );
 
             $this->tsVirtualServer = TeamSpeak3::factory($uri);
-            $this->StatisticController = new StatisticController();
+            $this->statisticController = new StatisticController();
 
             $whoami = $this->tsVirtualServer->whoami();
-            $this->self_clid = $whoami['client_id'];
-            $this->standard_channel_id = $whoami['client_channel_id'];
+            $this->selfClid = $whoami['client_id'];
+            $this->standardChannelId = $whoami['client_channel_id'];
 
             Signal::getInstance()->subscribe('serverqueryWaitTimeout', [$this, 'checkKeepAlive']);
             Signal::getInstance()->subscribe('notifyEvent', [$this, 'eventListener']);
@@ -111,12 +122,12 @@ class TsBotController extends Controller
             $this->tsVirtualServer->serverGetSelected()->notifyRegister('server');
             $this->tsVirtualServer->serverGetSelected()->notifyRegister('channel');
 
-            tsServerConfig::query()->where('id', '=', $this->server_id)->update([
+            tsServerConfig::query()->where('id', '=', $this->serverId)->update([
                 'bot_status_id'=> tsBotLog::RUNNING,
             ]);
 
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::RUNNING,
                 'startBot',
                 'Bot started. Wait for events',
@@ -141,18 +152,23 @@ class TsBotController extends Controller
             //proof is a bot stop signal
             if ($this->isBotStop == true) {
                 $this->logController->setCustomLog(
-                    $this->server_id,
+                    $this->serverId,
                     tsBotLog::SHUTDOWN,
                     'startBot',
                     'Bot shutting down',
                 );
-                $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                if (isset($this->tsVirtualServer)) {
+                    try {
+                        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                    } catch (Exception) {
+                    }
+                }
             }
 
             //proof is a bot reconnect signal
             if ($this->reconnectCode == tsServerConfig::BotReconnectTrue) {
                 $this->logController->setCustomLog(
-                    $this->server_id,
+                    $this->serverId,
                     tsBotLog::TRY_RECONNECT,
                     'startBot',
                     'Bot attempting to restart',
@@ -161,14 +177,19 @@ class TsBotController extends Controller
                 $this->startBot();
             } else {
                 tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                    ->where('id', '=', $this->serverId)
                     ->update([
                         'bot_status_id'=>tsBotLog::SHUTDOWN,
                         'is_ts_start'=>false,
                         'is_active'=>false,
                     ]);
 
-                $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                if (isset($this->tsVirtualServer)) {
+                    try {
+                        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+                    } catch (Exception) {
+                    }
+                }
             }
         }
     }
@@ -194,14 +215,14 @@ class TsBotController extends Controller
 
                 if ($keepAliveStatus->getErrorProperty('msg')->toString() != 'ok') {
                     $this->logController->setCustomLog(
-                        $this->server_id,
+                        $this->serverId,
                         tsBotLog::FAILED,
                         'Check Keep Alive',
                         'Bot is dead! Restart Bot',
                     );
 
                     tsServerConfig::query()
-                        ->where('id', '=', $this->server_id)
+                        ->where('id', '=', $this->serverId)
                         ->update([
                             'bot_status_id'=>tsBotLog::TRY_RECONNECT,
                         ]);
@@ -220,7 +241,7 @@ class TsBotController extends Controller
     /**
      * @throws Exception
      */
-    public function EventListener($event): void
+    public function eventListener($event): void
     {
         $this->botStopSignal();
         $getEvent = $event->getType()->toString();
@@ -256,12 +277,12 @@ class TsBotController extends Controller
     private function botStopSignal($forceStop = false): void
     {
         $statusSignal = tsServerConfig::query()
-            ->where('id', '=', $this->server_id)
-            ->first(['is_ts_start'])->is_ts_start;
+            ->where('id', '=', $this->serverId)
+            ->first(['is_ts_start'])?->is_ts_start ?? false;
 
         if ($statusSignal == false || $forceStop == true) {
             tsServerConfig::query()
-                ->where('id', '=', $this->server_id)
+                ->where('id', '=', $this->serverId)
                 ->update([
                     'bot_status_id'=>tsBotLog::SHUTDOWN,
                     'is_ts_start'=>false,
@@ -269,7 +290,7 @@ class TsBotController extends Controller
                 ]);
 
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::SHUTDOWN,
                 'botStopSignal',
                 'Bot stop signal received',
@@ -283,31 +304,31 @@ class TsBotController extends Controller
     private function eventClientEnterView($event): void
     {
         $this->tsVirtualServer->clientListReset();
-        $getData = $event->getData($event);
+        $getData = $event->getData();
 
         try {
             //proof only for clients == 0 and not for query == 1
             if ($getData['client_type'] == 0) {
-                $getCLID = $getData['clid'];
-                $getNickname = $getData['client_nickname'];
+                $clid = $getData['clid'];
+                $nickname = $getData['client_nickname'];
                 $badNameResult = false;
 
-                $badNameProtectionActive = tsBotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first();
+                $badNameProtectionActive = tsBotWorkerPolice::query()->where('server_id', '=', $this->serverId)->first();
 
-                if ($badNameProtectionActive->is_bad_name_protection_active == true) {
+                if ($badNameProtectionActive?->is_bad_name_protection_active == true) {
                     $badNameController = new BadNameController();
-                    $badNameResult = $badNameController->checkBadName($getNickname, $this->server_id);
+                    $badNameResult = $badNameController->checkBadName($nickname, $this->serverId);
                 }
 
                 if ($badNameResult == true) {
                     $kickMsg = 'The nickname is not allowed on this server.';
-                    $this->tsVirtualServer->clientPoke($getCLID, $kickMsg);
-                    $this->tsVirtualServer->clientKick($getCLID, TeamSpeak3::KICK_SERVER, $kickMsg);
+                    $this->tsVirtualServer->clientPoke($clid, $kickMsg);
+                    $this->tsVirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, $kickMsg);
                 }
             }
         } catch (TeamSpeak3Exception | Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::TRY_RECONNECT,
                 'eventClientEnterView',
                 $e->getMessage(),
@@ -320,21 +341,21 @@ class TsBotController extends Controller
         try {
             //declare variable
             $getData = $event->getData();
-            $getCTID = $getData['ctid'];
-            $getCLID = $getData['clid'];
+            $ctid = $getData['ctid'];
+            $clid = $getData['clid'];
 
             //proof jobs
             $jobsList = tsBotWorkerChannelsCreate::query()
-                ->where('on_cid', '=', $getCTID)
+                ->where('on_cid', '=', $ctid)
                 ->where('on_event', '=', 'clientmoved')
-                ->where('server_id', '=', $this->server_id)
+                ->where('server_id', '=', $this->serverId)
                 ->get();
 
             //for each entry
             if ($jobsList->count() != 0) {
                 $jobFilterCreateChannel = [];
-                foreach ($jobsList as $jobIds) {
-                    $jobFilterCreateChannel[] = $jobIds->id;
+                foreach ($jobsList as $job) {
+                    $jobFilterCreateChannel[] = $job->id;
                 }
 
                 //has the job a created channel?
@@ -348,7 +369,7 @@ class TsBotController extends Controller
                 if ($jobIsCreateChannel->count() != 0) {
                     foreach ($jobIsCreateChannel as $jobCreateChannel) {
                         //start channels create worker
-                        $this->createChannel($jobCreateChannel->id, $this->server_id, $getCLID);
+                        $this->createChannel($jobCreateChannel->id, $this->serverId, $clid);
                     }
                 }
             }
@@ -367,21 +388,21 @@ class TsBotController extends Controller
     {
         try {
             //declare variable
-            $getData = $event->getData($event);
-            $getCID = $getData['cid'];
-            $getCLID = $getData['invokerid'];
-            $getCIDInfo = $this->tsVirtualServer->channelGetById($getCID);
-            $getChannelName = $getCIDInfo['channel_name']->tostring();
+            $getData = $event->getData();
+            $cid = $getData['cid'];
+            $clid = $getData['invokerid'];
+            $cidInfo = $this->tsVirtualServer->channelGetById($cid);
+            $channelName = $cidInfo['channel_name']->toString();
 
             //proof Name
             $badNameController = new BadNameController();
-            $badNameResult = $badNameController->checkBadName($getChannelName, $this->server_id);
+            $badNameResult = $badNameController->checkBadName($channelName, $this->serverId);
 
             if ($badNameResult == true) {
-                $this->tsVirtualServer->channelDelete($getCID, true);
+                $this->tsVirtualServer->channelDelete($cid, true);
 
                 $msg = 'The channel name is not allowed on this server.';
-                $this->tsVirtualServer->clientPoke($getCLID, $msg);
+                $this->tsVirtualServer->clientPoke($clid, $msg);
             }
         } catch (TeamSpeak3Exception $e) {
             //set log
@@ -393,17 +414,17 @@ class TsBotController extends Controller
     {
         try {
             //declare variable
-            $getData = $event->getData($event);
-            $getCID = $getData['cid'];
+            $getData = $event->getData();
+            $cid = $getData['cid'];
 
-            $this->deleteChannel($getCID);
+            $this->deleteChannel($cid);
         } catch (TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, tsBotLog::FAILED, 'eventChannelDeleted');
         }
     }
 
-    private function createChannel($jobID, $server_id, $clid): void
+    private function createChannel(int $jobId, int $serverId, int $clid): void
     {
         try {
             //getJob
@@ -411,12 +432,12 @@ class TsBotController extends Controller
                 'rel_action_user',
                 'rel_action',
             ])
-                ->where('id', '=', $jobID)
-                ->where('server_id', '=', $server_id)
+                ->where('id', '=', $jobId)
+                ->where('server_id', '=', $serverId)
                 ->first();
 
             //if is_active == false, then leave
-            if ($job->is_active == false) {
+            if ($job === null || $job->is_active == false) {
                 return;
             }
 
@@ -451,34 +472,34 @@ class TsBotController extends Controller
             $this->tsVirtualServer->serverGroupListReset();
 
             //Client Name
-            $clName = $this->tsVirtualServer->clientGetById($clid);
-            $clDbID = $clName['client_database_id'];
+            $client = $this->tsVirtualServer->clientGetById($clid);
+            $clientDbId = $client['client_database_id'];
 
             //get Channel attributes
-            $chGetByID = $this->tsVirtualServer->channelGetById($job->on_cid);
+            $channel = $this->tsVirtualServer->channelGetById($job->on_cid);
             $clientsOnChannel = collect($this->tsVirtualServer->clientList(['cid'=>$job->on_cid]));
-            $chInfo = $chGetByID->getInfo();
-            $chName = $chInfo['channel_name'];
+            $channelInfo = $channel->getInfo();
+            $channelName = $channelInfo['channel_name'];
 
             //proof is set user a channel with server admin?
             $isOwnChannelExist = false;
             $channelList = collect($this->tsVirtualServer->channelList(['pid'=>$job->on_cid]));
 
             //ownChannelgroups
-            foreach ($channelList->keys()->all() as $channelListCID) {
+            foreach ($channelList->keys()->all() as $channelListCid) {
                 //if client in Channel Group
-                $ownChannelGroupLists = $this->tsVirtualServer->channelGroupClientList($job->channel_cgid, $channelListCID, $clDbID);
+                $ownChannelGroupLists = $this->tsVirtualServer->channelGroupClientList($job->channel_cgid, $channelListCid, $clientDbId);
                 //proof own channel is existing
-                foreach ($ownChannelGroupLists as $ownChannelGrouplist) {
-                    if ($ownChannelGrouplist['cid'] == $channelListCID && $isOwnChannelExist === false) {
+                foreach ($ownChannelGroupLists as $ownChannelGroupList) {
+                    if ($ownChannelGroupList['cid'] == $channelListCid && $isOwnChannelExist === false) {
                         //channel exists
                         $isOwnChannelExist = true;
                         //move user to channel
-                        $this->tsVirtualServer->clientMove($clid, $channelListCID);
+                        $this->tsVirtualServer->clientMove($clid, $channelListCid);
 
                         if ($isGoBackFlag === true) {
                             //bot goes back in the standard channel
-                            $this->tsVirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
+                            $this->tsVirtualServer->clientMove($this->selfClid, $this->standardChannelId);
                         }
                     }
                 }
@@ -490,13 +511,13 @@ class TsBotController extends Controller
                 $ifMaxChannelReached = false;
                 $channelCount = 0;
                 $channelDisplayCount = 1;
-                $newChannelname = substr($chName, 0, 37).' '.$channelCount;
+                $newChannelName = substr($channelName, 0, 37).' '.$channelCount;
 
                 while ($ifAvailable == false) {
                     //set channelname
-                    $newChannelname = substr($chName, 0, 37).'-'.$channelDisplayCount;
+                    $newChannelName = substr($channelName, 0, 37).'-'.$channelDisplayCount;
                     $channelAvailable = $this->tsVirtualServer->channelList([
-                        'channel_name' => $newChannelname,
+                        'channel_name' => $newChannelName,
                     ]);
                     $channelAvailableCount = collect($channelAvailable)->count();
 
@@ -514,69 +535,71 @@ class TsBotController extends Controller
                 }
 
                 //if Channel Template is set, then copy the permissions
-                if ($ifMaxChannelReached == false && ($job->channel_template_cid != 0 || $job->channel_template_cid != null) == true) {
+                if ($ifMaxChannelReached == false && ($job->channel_template_cid != 0 && $job->channel_template_cid != null) == true) {
                     //get channel permissions
                     $templateChannel = tsChannel::query()->where('cid', '=', $job->channel_template_cid)->first();
 
-                    //create standard channel
-                    $createdCID = $this->tsVirtualServer->channelCreate([
-                        'channel_name' => $newChannelname,
-                        'channel_codec' => $templateChannel->channel_codec,
-                        'channel_codec_quality' => $templateChannel->channel_codec_quality,
-                        'channel_flag_semi_permanent' => $isSemi,
-                        'channel_flag_permanent' => $isPerm,
-                        'channel_needed_talk_power' => $templateChannel->channel_needed_talk_power,
-                        'channel_flag_maxclients_unlimited' => $templateChannel->channel_flag_maxclients_unlimited,
-                        'channel_maxclients' => $templateChannel->channel_maxclients,
-                        'channel_flag_maxfamilyclients_inherited' => $templateChannel->channel_flag_maxfamilyclients_inherited,
-                        'channel_codec_is_unencrypted' => $templateChannel->channel_codec_is_unencrypted,
-                        'cpid' => $job->on_cid,
-                    ]);
+                    if ($templateChannel !== null) {
+                        //create standard channel
+                        $createdCid = $this->tsVirtualServer->channelCreate([
+                            'channel_name' => $newChannelName,
+                            'channel_codec' => $templateChannel->channel_codec,
+                            'channel_codec_quality' => $templateChannel->channel_codec_quality,
+                            'channel_flag_semi_permanent' => $isSemi,
+                            'channel_flag_permanent' => $isPerm,
+                            'channel_needed_talk_power' => $templateChannel->channel_needed_talk_power,
+                            'channel_flag_maxclients_unlimited' => $templateChannel->channel_flag_maxclients_unlimited,
+                            'channel_maxclients' => $templateChannel->channel_maxclients,
+                            'channel_flag_maxfamilyclients_inherited' => $templateChannel->channel_flag_maxfamilyclients_inherited,
+                            'channel_codec_is_unencrypted' => $templateChannel->channel_codec_is_unencrypted,
+                            'cpid' => $job->on_cid,
+                        ]);
 
-                    $templatePermission = $this->tsVirtualServer->channelGetById($templateChannel->cid);
-                    $templatePermission = $templatePermission->permList();
+                        $templatePermission = $this->tsVirtualServer->channelGetById($templateChannel->cid);
+                        $templatePermission = $templatePermission->permList();
 
-                    //get created channel
-                    $createdChannel = $this->tsVirtualServer->channelGetById($createdCID);
+                        //get created channel
+                        $createdChannel = $this->tsVirtualServer->channelGetById($createdCid);
 
-                    //set permissions
-                    foreach ($templatePermission as $permission) {
-                        $createdChannel->permAssign($permission['permid'], $permission['permvalue']);
+                        //set permissions
+                        foreach ($templatePermission as $permission) {
+                            $createdChannel->permAssign($permission['permid'], $permission['permvalue']);
+                        }
                     }
                 } elseif ($ifMaxChannelReached == false) {
                     //create standard channel
-                    $createdCID = $this->tsVirtualServer->channelCreate([
-                        'channel_name' => $newChannelname,
+                    $createdCid = $this->tsVirtualServer->channelCreate([
+                        'channel_name' => $newChannelName,
                         'channel_codec' => 4,
                         'channel_codec_quality' => 6,
                         'channel_flag_semi_permanent' => $isSemi,
-                        'channel_flag_permanent'=>$isPerm,
+                        'channel_flag_permanent' => $isPerm,
                         'cpid' => $job->on_cid,
                     ]);
                 }
 
                 //move User in Created Channel
-                if ($job->rel_action_user->action_bot == 'client_move_to_created_channel' && $ifMaxChannelReached == false) {
+                if (isset($createdCid) && $job->rel_action_user?->action_bot == 'client_move_to_created_channel' && $ifMaxChannelReached == false) {
                     //if client min count configured move all clients in the created channel
                     if ($job->action_min_clients <= $clientsOnChannel->count() && $job->action_min_clients > 1) {
-                        foreach ($clientsOnChannel->keys()->all() as $clientID) {
-                            $this->tsVirtualServer->clientMove($clientID, $createdCID);
+                        foreach ($clientsOnChannel->keys()->all() as $clientId) {
+                            $this->tsVirtualServer->clientMove($clientId, $createdCid);
                         }
                     } else {
                         //move the client in the created channel
-                        $this->tsVirtualServer->clientMove($clid, $createdCID);
+                        $this->tsVirtualServer->clientMove($clid, $createdCid);
                     }
 
                     //if channel group id not 0, then set the Channel Group cgid
                     if ($job->channel_cgid != 0) {
-                        $this->tsVirtualServer->clientSetChannelGroup($clDbID, $createdCID, $job->channel_cgid);
+                        $this->tsVirtualServer->clientSetChannelGroup($clientDbId, $createdCid, $job->channel_cgid);
                     }
                 }
 
                 //if channel temp, then bot go back in the standard channel
                 if ($isGoBackFlag == true) {
                     //bot goes back in the standard channel
-                    $this->tsVirtualServer->clientMove($this->self_clid, $this->standard_channel_id);
+                    $this->tsVirtualServer->clientMove($this->selfClid, $this->standardChannelId);
                 }
 
                 //notify_message_server_group = true
@@ -585,7 +608,7 @@ class TsBotController extends Controller
                     //build Message
                     $msg = str_replace(
                         ['{client-name}', '{channel-name}'],
-                        [$clName->toString(), $chName],
+                        [$client->toString(), $channelName],
                         $job->notify_message_server_group_message
                     );
 
@@ -608,20 +631,20 @@ class TsBotController extends Controller
         }
     }
 
-    private function deleteChannel($cid): void
+    private function deleteChannel(int $cid): void
     {
         tsChannel::query()
-            ->where('server_id', '=', $this->server_id)
+            ->where('server_id', '=', $this->serverId)
             ->where('cid', '=', $cid)
             ->delete();
 
         tsBotWorkerChannelsCreate::query()
-            ->where('server_id', '=', $this->server_id)
+            ->where('server_id', '=', $this->serverId)
             ->where('on_cid', '=', $cid)
             ->delete();
 
         tsBotWorkerChannelsRemove::query()
-            ->where('server_id', '=', $this->server_id)
+            ->where('server_id', '=', $this->serverId)
             ->where('channel_cid', '=', $cid)
             ->delete();
     }
@@ -630,7 +653,7 @@ class TsBotController extends Controller
     {
         if ($this->waitIncrease > 5) {
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::FAILED,
                 'reconnectBot',
                 'Maximum attempts and waiting time ('.$this->waitTimeSeconds.' seconds) reached',
@@ -639,7 +662,7 @@ class TsBotController extends Controller
             return tsServerConfig::BotReconnectFalse;
         } else {
             $this->logController->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::TRY_RECONNECT,
                 'reconnectBot',
                 'New connection attempt in '.$this->waitTimeSeconds.' seconds',
@@ -662,7 +685,7 @@ class TsBotController extends Controller
      */
     private function gatherVirtualServerStats(): void
     {
-        $this->StatisticController->gatherVirtualServerStatistic($this->server_id, $this->tsVirtualServer);
+        $this->statisticController->gatherVirtualServerStatistic($this->serverId, $this->tsVirtualServer);
     }
 
     /**
@@ -675,7 +698,7 @@ class TsBotController extends Controller
             case 10061:
                 //explanation: server not found
                 tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                    ->where('id', '=', $this->serverId)
                     ->update([
                         'bot_status_id'=>tsBotLog::FAILED,
                     ]);
@@ -693,7 +716,7 @@ class TsBotController extends Controller
             case 513:
                 //explanation: queryNickname already in use
                 tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                    ->where('id', '=', $this->serverId)
                     ->update([
                         'bot_status_id'=>tsBotLog::TRY_RECONNECT,
                     ]);
@@ -705,7 +728,7 @@ class TsBotController extends Controller
             case 111:
                 //explanation: connection refused
                 tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                    ->where('id', '=', $this->serverId)
                     ->update([
                         'bot_status_id'=>tsBotLog::FAILED,
                     ]);
@@ -715,7 +738,7 @@ class TsBotController extends Controller
             case 113:
                 //explanation: no route to host
                 tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                    ->where('id', '=', $this->serverId)
                     ->update([
                         'bot_status_id'=>tsBotLog::FAILED,
                     ]);
@@ -725,7 +748,7 @@ class TsBotController extends Controller
             default:
                 //explanation: unknown Error
                 tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                    ->where('id', '=', $this->serverId)
                     ->update([
                         'bot_status_id'=>tsBotLog::FAILED,
                     ]);
@@ -743,7 +766,7 @@ class TsBotController extends Controller
         switch ($message) {
             case 'Undefined array key "channel_name"':
                 $this->logController->setCustomLog(
-                    $this->server_id,
+                    $this->serverId,
                     tsBotLog::FAILED,
                     'Exception error',
                     $message,
@@ -753,7 +776,7 @@ class TsBotController extends Controller
                 break;
             default:
                 $this->logController->setCustomLog(
-                    $this->server_id,
+                    $this->serverId,
                     tsBotLog::TRY_RECONNECT,
                     'Exception error',
                     'Unknown Exception',

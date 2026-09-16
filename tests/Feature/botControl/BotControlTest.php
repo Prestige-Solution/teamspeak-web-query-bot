@@ -84,6 +84,15 @@ class BotControlTest extends TestCase
         $this->assertEquals(0, $queueDB->count());
     }
 
+    public function test_guest_cannot_start_or_stop_bot(): void
+    {
+        $response = $this->post(route('ts.start.tsBot'));
+        $response->assertRedirectToRoute('public.view.login');
+
+        $response = $this->post(route('ts.stop.tsBot'));
+        $response->assertRedirectToRoute('public.view.login');
+    }
+
     private function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();

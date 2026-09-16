@@ -21,18 +21,18 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class BannerWorkerController extends Controller
 {
-    protected int $server_id;
+    protected int $serverId;
 
-    protected string $qa_name;
+    protected string $qaName;
 
     protected TsLogController $logController;
 
     protected Server|Adapter|Host|Node $tsVirtualServer;
 
-    public function __construct(int $server_id)
+    public function __construct(int $serverId)
     {
-        $this->server_id = $server_id;
-        $this->logController = new TsLogController('Banner-Worker', $this->server_id);
+        $this->serverId = $serverId;
+        $this->logController = new TsLogController('Banner-Worker', $this->serverId);
     }
 
     /**
@@ -42,30 +42,30 @@ class BannerWorkerController extends Controller
     {
         try {
             $bannerAvailable = banner::query()
-                ->where('server_id', '=', $this->server_id)
+                ->where('server_id', '=', $this->serverId)
                 ->get()
                 ->count();
 
             if ($bannerAvailable > 0) {
                 //get Server config
                 $tsServerConfig = tsServerConfig::query()
-                    ->where('id', '=', $this->server_id)->first();
+                    ->where('id', '=', $this->serverId)->first();
 
                 if ($tsServerConfig->qa_nickname != null) {
-                    $this->qa_name = $tsServerConfig->qa_nickname;
+                    $this->qaName = $tsServerConfig->qa_nickname;
                 } else {
-                    $this->qa_name = $tsServerConfig->qa_name;
+                    $this->qaName = $tsServerConfig->qa_name;
                 }
 
                 //get the latest unused banner
                 $banner = banner::query()
-                    ->where('server_id', '=', $this->server_id)
+                    ->where('server_id', '=', $this->serverId)
                     ->oldest('next_check_at')
                     ->first();
 
                 if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name) == false) {
                     $this->logController->setCustomLog(
-                        $this->server_id,
+                        $this->serverId,
                         tsBotLog::FAILED,
                         'bannerWorkerCreateBanner',
                         'Original banner template file could not be found.',
@@ -82,8 +82,8 @@ class BannerWorkerController extends Controller
                     $tsServerConfig->server_ip,
                     $tsServerConfig->server_query_port,
                     $tsServerConfig->server_port,
-                    $this->qa_name.'-Banner-Worker',
-                    $this->server_id,
+                    $this->qaName.'-Banner-Worker',
+                    $this->serverId,
                 );
 
                 $this->tsVirtualServer = TeamSpeak3::factory($uri);
@@ -172,7 +172,7 @@ class BannerWorkerController extends Controller
                             $fileName = $banner->banner_viewer_file_name;
                         } else {
                             $this->logController->setCustomLog(
-                                $this->server_id,
+                                $this->serverId,
                                 tsBotLog::FAILED,
                                 'bannerWorkerCreateBanner',
                                 'Viewer file name could not be found.');
@@ -226,7 +226,7 @@ class BannerWorkerController extends Controller
                 $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
             }
         } catch(Exception $e) {
-            $this->logController->setCustomLog($this->server_id,
+            $this->logController->setCustomLog($this->serverId,
                 tsBotLog::FAILED,
                 'bannerWorkerCreateBanner',
                 'There was an error during create banner',

@@ -55,6 +55,38 @@ class PoliceWorkerTest extends TestCase
         $response->assertRedirectToRoute('worker.view.upsertPoliceWorker');
     }
 
+    public function test_post_update_police_worker_settings_validation_fails_for_invalid_webhook_url()
+    {
+        CreateServerFactory::new()->create();
+        CreateWorkerPoliceSettingsFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $updateArray = CreateWorkerPoliceSettingsFactory::new()->make([
+            'is_discord_webhook_active' => true,
+            'discord_webhook_url' => 'not-a-valid-url',
+        ])->toArray();
+
+        $response = $this->actingAs($this->user)->post(route('worker.create.updatePoliceWorkerSettings'), $updateArray);
+        $response->assertSessionHasErrors(['discord_webhook_url']);
+    }
+
+    public function test_post_update_police_worker_settings_validation_fails_for_missing_email_when_vpn_active()
+    {
+        CreateServerFactory::new()->create();
+        CreateWorkerPoliceSettingsFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $updateArray = CreateWorkerPoliceSettingsFactory::new()->make([
+            'is_vpn_protection_active' => true,
+            'vpn_protection_api_register_mail' => null,
+        ])->toArray();
+
+        $response = $this->actingAs($this->user)->post(route('worker.create.updatePoliceWorkerSettings'), $updateArray);
+        $response->assertSessionHasErrors(['vpn_protection_api_register_mail']);
+    }
+
     private function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();

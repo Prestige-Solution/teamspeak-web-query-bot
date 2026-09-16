@@ -117,6 +117,26 @@ class BadNicknameTest extends TestCase
         $this->assertFalse($result);
     }
 
+    public function test_post_create_new_bad_nickname_validation_fails_for_missing_fields()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('worker.create.newBadName'), []);
+        $response->assertSessionHasErrors(['description', 'value_option', 'value']);
+    }
+
+    public function test_post_delete_bad_nickname_validation_fails_for_non_existent_id()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('worker.delete.badName'), ['id' => 999]);
+        $response->assertSessionHasErrors(['id']);
+    }
+
     private function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();
