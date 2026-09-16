@@ -86,7 +86,6 @@ class ClientController extends Controller
                 'vpn_protection_api_register_mail'=>$request->validated('vpn_protection_api_register_mail'),
                 'discord_webhook_url'=>Crypt::encryptString($request->validated('discord_webhook_url')),
                 'allow_sgid_vpn'=>$request->validated('allow_sgid_vpn'),
-                'is_channel_auto_update_active'=>$request->validated('is_channel_auto_update_active'),
                 'is_bad_name_protection_active'=>$request->validated('is_bad_name_protection_active'),
                 'is_bad_name_protection_global_list_active'=>$request->validated('is_bad_name_protection_global_list_active'),
             ]);
