@@ -71,6 +71,19 @@ class AuthTest extends TestCase
         $response->assertRedirectToRoute('backend.view.dashboard');
     }
 
+    public function test_can_update_password_failed(): void
+    {
+        $response = $this->actingAs($this->user)->post(Route('backend.update.changePassword', [
+            'CurrentPassword' => 'test',
+            'NewPassword' => 'testNew',
+            '_token' => csrf_token(),
+        ]));
+
+        $response->assertStatus(302);
+        $response->assertRedirectBack();
+        $response->assertSessionHasErrors(['NewPassword'=>'The new password does not match']);
+    }
+
     public function test_can_logout(): void
     {
         $response = $this->actingAs($this->user)->get(Route('logout'));
