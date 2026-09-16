@@ -24,7 +24,6 @@ class CreateWorkerPoliceSettingsFactory extends Factory
             'is_vpn_protection_active'=>false,
             'discord_webhook_url'=>Crypt::encryptString('test-url'),
             'allow_sgid_vpn'=>0,
-            'is_channel_auto_update_active'=>false,
             'is_bad_name_protection_active'=>false,
             'is_bad_name_protection_global_list_active'=>false,
         ];

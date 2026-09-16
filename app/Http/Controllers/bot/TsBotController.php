@@ -361,15 +361,7 @@ class TsBotController extends Controller
 
     private function eventChannelCreated($event): void
     {
-        try {
-            //declare variable
-            $getData = $event->getData($event);
-            $getCID = $getData['cid'];
-            $this->storeCreatedChannel($getCID);
-        } catch (TeamSpeak3Exception $e) {
-            //set log
-            $this->logController->setLog($e, tsBotLog::FAILED, 'eventChannelCreated');
-        }
+        #do nothing
     }
 
     private function eventChannelEdited($event): void
@@ -391,8 +383,6 @@ class TsBotController extends Controller
 
                 $msg = 'The channel name is not allowed on this server.';
                 $this->ts_VirtualServer->clientPoke($getCLID, $msg);
-            } else {
-                $this->updateChannel($getCID);
             }
         } catch (TeamSpeak3Exception $e) {
             //set log
@@ -616,51 +606,6 @@ class TsBotController extends Controller
         } catch(TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, tsBotLog::FAILED, 'createChannel');
-        }
-    }
-
-    private function storeCreatedChannel($cid): void
-    {
-        $autoUpdateActive = tsBotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first()->is_channel_auto_update_active;
-
-        if ($autoUpdateActive == true) {
-            try {
-                //reset channel list
-                $this->ts_VirtualServer->channelListReset();
-                //get channel by id
-                $channel = $this->ts_VirtualServer->channelGetById($cid);
-                //get channel info
-                $channelInfo = $channel->getInfo();
-                //store info
-                $tsConfigController = new tsConfigController();
-                $tsConfigController->createChannels($this->server_id, $channelInfo, $channel->toString());
-            } catch (TeamSpeak3Exception $e) {
-                //set log
-                $this->logController->setLog($e, tsBotLog::FAILED, 'storeCreatedChannel');
-            }
-        }
-    }
-
-    private function updateChannel(int $cid): void
-    {
-        //check auto Update ist active
-        $autoUpdateActive = tsBotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first()->is_channel_auto_update_active;
-
-        if ($autoUpdateActive == true) {
-            try {
-                //reset channel list
-                $this->ts_VirtualServer->channelListReset();
-                //get channel by id
-                $channel = $this->ts_VirtualServer->channelGetById($cid);
-                //get channel info
-                $channelInfo = $channel->getInfo();
-                //store info
-                $tsConfigController = new tsConfigController();
-                $tsConfigController->updateChannels($this->server_id, $channelInfo, $channel->toString(), $cid);
-            } catch (TeamSpeak3Exception $e) {
-                //set log
-                $this->logController->setLog($e, tsBotLog::FAILED, 'updateChannel');
-            }
         }
     }
 
