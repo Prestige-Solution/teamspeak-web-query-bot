@@ -10,9 +10,9 @@ class badName extends Model
 {
     use HasFactory;
 
-    public const stringContains = 1;
+    public const int stringContains = 1;
 
-    public const stringRegex = 2;
+    public const int stringRegex = 2;
 
     protected $fillable = [
         'server_id',
