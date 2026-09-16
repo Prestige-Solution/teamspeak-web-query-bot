@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
 use App\Models\tsBot\tsServerConfig;
 use Illuminate\Support\Facades\Log;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
@@ -45,7 +45,7 @@ class MigrationController extends Controller
             ->first();
 
         //set up source server
-        $uriSourceHelperClass = new tsUriStringHelperController();
+        $uriSourceHelperClass = new TsUriStringHelperController();
         $uriSource = $uriSourceHelperClass->getStandardUriString(
             $source_server_config->qa_name,
             $source_server_config->qa_pw,
@@ -60,7 +60,7 @@ class MigrationController extends Controller
             ->where('id', '=', $this->target_server_id)
             ->first();
         //set up source server
-        $uriTargetHelperClass = new tsUriStringHelperController();
+        $uriTargetHelperClass = new TsUriStringHelperController();
         $uriTarget = $uriTargetHelperClass->getStandardUriString(
             $target_server_config->qa_name,
             $target_server_config->qa_pw,

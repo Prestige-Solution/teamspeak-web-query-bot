@@ -4,7 +4,7 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\TsLogController;
-use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsChannel;
 use App\Models\tsBot\tsServerConfig;
@@ -48,7 +48,7 @@ class ChannelRemoveWorkerController extends Controller
                 $this->qa_name = $tsServerConfig->qa_name;
             }
 
-            $tsStringHelper = new tsUriStringHelperController();
+            $tsStringHelper = new TsUriStringHelperController();
             $uri = $tsStringHelper->getStandardUriString(
                 $tsServerConfig->qa_name,
                 $tsServerConfig->qa_pw,

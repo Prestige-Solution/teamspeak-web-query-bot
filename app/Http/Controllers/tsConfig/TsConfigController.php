@@ -48,7 +48,7 @@ class TsConfigController extends Controller
             ->first();
 
         try {
-            $uri = new tsUriStringHelperController();
+            $uri = new TsUriStringHelperController();
             $this->uri = $uri->getStandardUriString(
                 $tsServerConfig->qa_name,
                 $tsServerConfig->qa_pw,

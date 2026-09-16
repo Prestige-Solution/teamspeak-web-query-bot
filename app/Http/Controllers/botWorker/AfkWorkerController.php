@@ -48,7 +48,7 @@ class AfkWorkerController extends Controller
             }
 
             //get uri with StringHelper
-            $tsStringHelper = new tsUriStringHelperController();
+            $tsStringHelper = new TsUriStringHelperController();
             $uri = $tsStringHelper->getStandardUriString(
                 $tsServerConfig->qa_name,
                 $tsServerConfig->qa_pw,

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\StatisticController;
 use App\Http\Controllers\sys\TsLogController;
 use App\Http\Controllers\tsConfig\BadNameController;
-use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsChannel;
 use App\Models\tsBot\tsServerConfig;
@@ -87,7 +87,7 @@ class TsBotController extends Controller
             }
 
             //get uri with StringHelper
-            $tsStringHelper = new tsUriStringHelperController();
+            $tsStringHelper = new TsUriStringHelperController();
             $uri = $tsStringHelper->getStandardUriString(
                 $tsServerConfig->qa_name,
                 $tsServerConfig->qa_pw,

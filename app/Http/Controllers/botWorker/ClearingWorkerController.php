@@ -4,7 +4,7 @@ namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\sys\TsLogController;
-use App\Http\Controllers\tsConfig\tsUriStringHelperController;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
 use App\Models\tsBot\tsBotLog;
 use App\Models\tsBot\tsChannel;
 use App\Models\tsBot\tsServerConfig;
@@ -47,7 +47,7 @@ class ClearingWorkerController extends Controller
             $this->qaName = $tsServerConfig->qa_name;
         }
 
-        $tsUriStringHelper = new tsUriStringHelperController();
+        $tsUriStringHelper = new TsUriStringHelperController();
         $uri = $tsUriStringHelper->getStandardUriString(
             $tsServerConfig->qa_name,
             $tsServerConfig->qa_pw,
