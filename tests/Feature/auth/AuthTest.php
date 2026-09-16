@@ -70,4 +70,12 @@ class AuthTest extends TestCase
         $response->assertStatus(302);
         $response->assertRedirectToRoute('backend.view.dashboard');
     }
+
+    public function test_can_logout(): void
+    {
+        $response = $this->actingAs($this->user)->get(Route('logout'));
+
+        $response->assertStatus(302);
+        $response->assertRedirectToRoute('public.view.login');
+    }
 }
