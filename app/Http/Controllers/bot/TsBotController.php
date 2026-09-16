@@ -660,7 +660,7 @@ class TsBotController extends Controller
      * @throws NodeException
      * @throws ServerQueryException
      */
-    private function gather_virtualServer_stats()
+    private function gather_virtualServer_stats(): void
     {
         $this->StatisticController->gatherVirtualServerStatistic($this->server_id, $this->ts_VirtualServer);
     }

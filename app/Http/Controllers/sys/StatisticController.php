@@ -18,7 +18,7 @@ class StatisticController extends Controller
      * @throws NodeException
      * @throws ServerQueryException
      */
-    public function gatherVirtualServerStatistic(int $server_id, Server $ts_VirtualServer)
+    public function gatherVirtualServerStatistic(int $server_id, Server $ts_VirtualServer): void
     {
         //
 
