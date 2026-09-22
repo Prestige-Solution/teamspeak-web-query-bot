@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Migration\StartMigrationRequest;
 use App\Jobs\tsMigrationQueue;
 use App\Models\tsBot\tsServerConfig;
-use Illuminate\Support\Facades\Auth;
 
 class MigrationController extends Controller
 {
