@@ -13,7 +13,7 @@ class MigrationController extends Controller
     public function viewMigration()
     {
         $servers = tsServerConfig::query()
-            ->where('user_id', '=', Auth::user()->id)
+            ->where('id', '=', Auth::user()->active_server_id)
             ->get();
 
         //get logs
