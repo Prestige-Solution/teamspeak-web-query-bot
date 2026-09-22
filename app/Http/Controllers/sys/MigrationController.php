@@ -12,9 +12,7 @@ class MigrationController extends Controller
 {
     public function viewMigration()
     {
-        $servers = tsServerConfig::query()
-            ->where('id', '=', Auth::user()->active_server_id)
-            ->get();
+        $servers = tsServerConfig::query()->get();
 
         //get logs
         $today = now()->format('Y-m-d');
