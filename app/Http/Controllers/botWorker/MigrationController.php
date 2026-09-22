@@ -40,6 +40,8 @@ class MigrationController extends Controller
      */
     public function setupConnections()
     {
+        $this->resetLogs();
+
         $source_server_config = tsServerConfig::query()
             ->where('id', '=', $this->sourceServerId)
             ->first();
@@ -292,6 +294,18 @@ class MigrationController extends Controller
 
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceChannelGroupInfo['name'].' failed: '.$e->getMessage());
+            }
+        }
+    }
+
+    private function resetLogs(): void
+    {
+        $logFiles = glob(storage_path('logs/migration*.log'));
+        if ($logFiles !== false) {
+            foreach ($logFiles as $logFile) {
+                if (file_exists($logFile)) {
+                    unlink($logFile);
+                }
             }
         }
     }

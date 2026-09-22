@@ -132,7 +132,7 @@
                             </select>
                         </div>
                         <div class="col-lg-3 mb-2">
-                            <input class="form-control" type="text" name="text[]" id="text" aria-label="Text" placeholder="Nur wenn Option = Text" value="@if($storedBannerOption->text != 0) {{$storedBannerOption->text}} @endif">
+                            <input class="form-control" type="text" name="text[]" id="text" aria-label="Text" placeholder="Only when Option = Text" value="@if($storedBannerOption->text != 0) {{$storedBannerOption->text}} @endif">
                         </div>
                         <div class="col-lg-1 mb-2">
                             <input type="number" class="form-control" name="coord_x[]" id="coord_x" placeholder="X" aria-label="X" value="{{$storedBannerOption->coord_x}}">
@@ -174,7 +174,7 @@
                         </select>
                     </div>
                     <div class="col-lg-3 mb-2">
-                        <input class="form-control" type="text" name="text[]" id="text" aria-label="text" placeholder="Nur wenn Option = Text">
+                        <input class="form-control" type="text" name="text[]" id="text" aria-label="text" placeholder="Only when Option = Text">
                     </div>
                     <div class="col-lg-1 mb-2">
                         <input type="number" class="form-control" name="coord_x[]" id="coord_x" placeholder="X" aria-label="X">
@@ -192,7 +192,7 @@
             <hr>
             <div class="row">
                 <div class="col-lg-auto">
-                    <button class="btn btn-primary" name="id" value="{{$banner->id}}">Speichern</button>
+                    <button class="btn btn-primary" name="id" value="{{$banner->id}}">Save</button>
                 </div>
             </div>
         </div>

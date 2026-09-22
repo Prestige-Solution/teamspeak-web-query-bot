@@ -48,11 +48,11 @@ class tsMigrationQueue implements ShouldQueue
     {
         try {
             $job = new MigrationController($this->source_server_id, $this->target_server_id);
-            $job->setup_connections();
+            $job->setupConnections();
         } catch (Exception $e) {
             $tsLogging = new TsLogController('Migration Job', $this->source_server_id);
             $tsLogging->setCustomLog(
-                $this->server_id,
+                $this->source_server_id,
                 tsBotLog::FAILED,
                 'queue_worker',
                 'There was an error during create migration queue',

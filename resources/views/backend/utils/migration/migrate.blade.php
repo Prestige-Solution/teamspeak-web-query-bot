@@ -1,7 +1,7 @@
 @extends('template')
 
 @section('site-title')
-    Server | {{config('app.name')}}
+    Migration Tool | {{config('app.project')}}
 @endsection
 
 @section('content')

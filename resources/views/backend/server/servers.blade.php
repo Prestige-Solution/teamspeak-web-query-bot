@@ -60,7 +60,8 @@
                                     @endif
                                     @if($server->rel_bot_status->id === \App\Models\category\catBotStatus::$FAILED)
                                         <span class="badge text-bg-danger">{{$server->rel_bot_status->status_name}}</span>
-                                @endif
+                                    @endif
+                                </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-bold">Query admin:</span>

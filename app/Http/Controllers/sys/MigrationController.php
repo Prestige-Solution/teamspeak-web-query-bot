@@ -36,8 +36,22 @@ class MigrationController extends Controller
      */
     public function startMigration(StartMigrationRequest $request)
     {
+        $this->resetLogs();
+
         tsMigrationQueue::dispatch($request->validated('source_server_id'), $request->validated('target_server_id'))->onConnection('worker')->onQueue('migration');
 
         return redirect()->route('migration.view.migrationSettings')->with('success', 'Migration started');
+    }
+
+    private function resetLogs(): void
+    {
+        $logFiles = glob(storage_path('logs/migration*.log'));
+        if ($logFiles !== false) {
+            foreach ($logFiles as $logFile) {
+                if (file_exists($logFile)) {
+                    unlink($logFile);
+                }
+            }
+        }
     }
 }

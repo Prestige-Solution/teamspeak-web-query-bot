@@ -83,6 +83,43 @@ class MigrationTest extends TestCase
         });
     }
 
+    public function test_start_migration_resets_existing_logs(): void
+    {
+        Queue::fake();
+
+        $sourceServer = CreateServerFactory::new()->create();
+        $targetServer = CreateServerFactory::new()->create(['server_ip' => '127.0.0.2']);
+        User::query()->where('id', '=', 1)->update(['active_server_id' => $sourceServer->id]);
+        $this->update_user();
+
+        $today = now()->format('Y-m-d');
+        $logPathToday = storage_path('logs/migration-'.$today.'.log');
+        $logPathOld = storage_path('logs/migration-2020-01-01.log');
+        file_put_contents($logPathToday, 'Old log entries from today');
+        file_put_contents($logPathOld, 'Old log entries from past');
+
+        try {
+            $this->assertFileExists($logPathToday);
+            $this->assertFileExists($logPathOld);
+
+            $response = $this->actingAs($this->user)->post(route('migration.start.migration'), [
+                'source_server_id' => $sourceServer->id,
+                'target_server_id' => $targetServer->id,
+            ]);
+
+            $response->assertRedirectToRoute('migration.view.migrationSettings');
+            $this->assertFileDoesNotExist($logPathToday);
+            $this->assertFileDoesNotExist($logPathOld);
+        } finally {
+            if (file_exists($logPathToday)) {
+                unlink($logPathToday);
+            }
+            if (file_exists($logPathOld)) {
+                unlink($logPathOld);
+            }
+        }
+    }
+
     public function test_start_migration_validation_fails_for_non_existent_server(): void
     {
         Queue::fake();

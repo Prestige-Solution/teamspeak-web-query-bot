@@ -7,14 +7,14 @@
             </div>
             <div class="modal-body">
                 <p class="fw-bold text-danger">
-                    The following settings are irrevocably deleted::
+                    The following settings are irrevocably deleted:
                 </p>
                 <ul>
                     <li>Banner configurations and templates</li>
                     <li>Channel configurations</li>
                     <li>Channel jobs</li>
                 </ul>
-                <p>The server is then reinitialized</p>
+                <p>The server is then reinitialized.</p>
             </div>
             <div class="modal-footer d-flex justify-content-between">
                 <form method="post" action="{{route('serverConfig.update.serverInit')}}">
