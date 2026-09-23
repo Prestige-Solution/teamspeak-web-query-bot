@@ -61,22 +61,25 @@ class BannerController extends Controller
 
     public function createUploadedTemplate(CreateUploadedTemplateRequest $request): RedirectResponse
     {
-        $uploaded = Storage::disk('banner')->putFileAs('template', $request->file('banner_original_file_name'), $request->file('banner_original_file_name')->getClientOriginalName());
-        if ($uploaded === false) {
-            return redirect()->back()->withErrors(['errors'=>'Unable to create banner original image.']);
+        $templateFile = $request->file('banner_original_file_name');
+        $originalFileName = $templateFile->getClientOriginalName();
+
+        $templateExists = banner::query()->where('banner_original_file_name', '=', $originalFileName)->exists();
+        if ($templateExists == true) {
+            return redirect()->back()->withErrors(['errors' => 'Template file already exists.']);
         }
 
-        $templateExists = banner::query()->where('banner_original_file_name', '=', $request->file('banner_original_file_name')->getClientOriginalName())->exists();
-        if ($templateExists == true) {
-            return redirect()->back()->withErrors(['errors'=>'Template file already exists.']);
+        $uploaded = Storage::disk('banner')->putFileAs('template', $templateFile, $originalFileName);
+        if ($uploaded === false) {
+            return redirect()->back()->withErrors(['errors' => 'Unable to create banner original image.']);
         }
 
         banner::query()->create([
-            'server_id'=>$request->validated('server_id'),
-            'banner_name'=>$request->validated('banner_name'),
-            'banner_original_file_name'=>$request->file('banner_original_file_name')->getClientOriginalName(),
-            'delay'=>1,
-            'next_check_at'=>Carbon::now(),
+            'server_id' => $request->validated('server_id'),
+            'banner_name' => $request->validated('banner_name'),
+            'banner_original_file_name' => $originalFileName,
+            'delay' => 1,
+            'next_check_at' => Carbon::now(),
         ]);
 
         return redirect()->route('banner.view.listBanner')->with('success', 'Banner created successfully');
@@ -142,7 +145,6 @@ class BannerController extends Controller
 
         $filePath = Storage::disk('banner')->path('viewer/'.$fileName);
 
-        header('Content-Type:image/png');
         $successCreated = imagepng($img, $filePath);
         imagedestroy($img);
 
@@ -164,12 +166,12 @@ class BannerController extends Controller
     {
         $this->deleteBannerById($request->validated('id'));
 
-        return redirect()->back()->with(['success'=>'Banner was successfully deleted']);
+        return redirect()->back()->with(['success' => 'Banner was successfully deleted']);
     }
 
-    public function deleteBannersByServerID(int $server_id): void
+    public function deleteBannersByServerId(int $serverId): void
     {
-        $banners = banner::query()->where('server_id', '=', $server_id)->get();
+        $banners = banner::query()->where('server_id', '=', $serverId)->get();
         foreach ($banners as $banner) {
             if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
                 Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
@@ -184,19 +186,21 @@ class BannerController extends Controller
         }
     }
 
-    private function deleteBannerById(int $banner_id): void
+    private function deleteBannerById(int $bannerId): void
     {
-        $banner = banner::query()->where('id', '=', $banner_id)->first();
+        $banner = banner::query()->where('id', '=', $bannerId)->first();
 
-        if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
-            Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
+        if ($banner !== null) {
+            if (Storage::disk('banner')->exists('template/'.$banner->banner_original_file_name)) {
+                Storage::disk('banner')->delete('template/'.$banner->banner_original_file_name);
+            }
+
+            if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
+                Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
+            }
+
+            bannerOption::query()->where('banner_id', '=', $bannerId)->delete();
+            banner::query()->where('id', '=', $bannerId)->delete();
         }
-
-        if (Storage::disk('banner')->exists('viewer/'.$banner->banner_viewer_file_name)) {
-            Storage::disk('banner')->delete('viewer/'.$banner->banner_viewer_file_name);
-        }
-
-        bannerOption::query()->where('banner_id', '=', $banner_id)->delete();
-        banner::query()->where('id', '=', $banner_id)->delete();
     }
 }

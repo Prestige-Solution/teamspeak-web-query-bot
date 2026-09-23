@@ -39,7 +39,7 @@ class ChannelRemoverController extends Controller
     public function upsertChannelRemoverJob(CreateChannelRemoverRequest $request): RedirectResponse
     {
         //get seconds
-        $channel_max_seconds_empty = match ($request->validated('channel_max_time_format')) {
+        $channelMaxSecondsEmpty = match ($request->validated('channel_max_time_format')) {
             'h' => $request->validated('channel_max_seconds_empty') * 60 * 60,
             'd' => $request->validated('channel_max_seconds_empty') * 24 * 60 * 60,
             default => $request->validated('channel_max_seconds_empty') * 60,
@@ -48,24 +48,24 @@ class ChannelRemoverController extends Controller
         //store
         tsBotWorkerChannelsRemove::query()->updateOrCreate(
             [
-                'server_id'=>$request->validated('server_id'),
-                'channel_cid'=>$request->validated('channel_cid'),
+                'server_id' => $request->validated('server_id'),
+                'channel_cid' => $request->validated('channel_cid'),
             ],
             [
-                'channel_max_seconds_empty'=>$channel_max_seconds_empty,
-                'channel_max_time_format'=>$request->validated('channel_max_time_format'),
-                'is_active'=>$request->validated('is_active'),
+                'channel_max_seconds_empty' => $channelMaxSecondsEmpty,
+                'channel_max_time_format' => $request->validated('channel_max_time_format'),
+                'is_active' => $request->validated('is_active'),
             ]
         );
 
-        return redirect()->route('channel.view.listChannelRemover')->with(['success'=>'The job was successfully updated']);
+        return redirect()->route('channel.view.listChannelRemover')->with(['success' => 'The job was successfully updated']);
     }
 
     public function deleteChannelRemoverJob(DeleteChannelRemoverRequest $request): RedirectResponse
     {
         $this->deleteChannelRemoveJobsById($request->validated('server_id'), $request->validated('id'));
 
-        return redirect()->route('channel.view.listChannelRemover')->with(['success'=>'The job was successfully deleted']);
+        return redirect()->route('channel.view.listChannelRemover')->with(['success' => 'The job was successfully deleted']);
     }
 
     private function buildChannelOptions(Collection $channels, int $pid = 0, int $level = 0): Collection
@@ -83,16 +83,16 @@ class ChannelRemoverController extends Controller
             ->values();
     }
 
-    private function deleteChannelRemoveJobsById(int $server_id, int $id): void
+    private function deleteChannelRemoveJobsById(int $serverId, int $id): void
     {
         tsBotWorkerChannelsRemove::query()
             ->where('id', '=', $id)
-            ->where('server_id', '=', $server_id)
+            ->where('server_id', '=', $serverId)
             ->delete();
     }
 
-    public function deleteChannelRemoveJobsByServerId(int $server_id): void
+    public function deleteChannelRemoveJobsByServerId(int $serverId): void
     {
-        tsBotWorkerChannelsRemove::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerChannelsRemove::query()->where('server_id', '=', $serverId)->delete();
     }
 }

@@ -123,16 +123,16 @@ class ChannelController extends Controller
             ->values();
     }
 
-    private function deleteChannelCreateJobsById(int $server_id, int $id): void
+    private function deleteChannelCreateJobsById(int $serverId, int $id): void
     {
         tsBotWorkerChannelsCreate::query()
             ->where('id', '=', $id)
-            ->where('server_id', '=', $server_id)
+            ->where('server_id', '=', $serverId)
             ->delete();
     }
 
-    public function deleteChannelCreateJobsByServerId(int $server_id): void
+    public function deleteChannelCreateJobsByServerId(int $serverId): void
     {
-        tsBotWorkerChannelsCreate::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerChannelsCreate::query()->where('server_id', '=', $serverId)->delete();
     }
 }

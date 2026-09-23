@@ -46,30 +46,30 @@ class ServerController extends Controller
      */
     public function createServer(CreateServerRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $server_id = tsServerConfig::query()->create(
+        $serverId = tsServerConfig::query()->create(
             [
-                'server_ip'=>$request->validated('server_ip'),
-                'server_name'=>$request->validated('server_name'),
-                'qa_name'=>$request->validated('qa_name'),
-                'qa_pw'=>Crypt::encryptString($request->validated('qa_pw')),
-                'server_query_port'=>$request->validated('server_query_port') ?? null,
-                'server_port'=>$request->validated('server_port') ?? 9987,
-                'description'=>$request->validated('description'),
-                'qa_nickname'=>$request->input('qa_nickname'),
-                'mode'=>$request->validated('mode'),
+                'server_ip' => $request->validated('server_ip'),
+                'server_name' => $request->validated('server_name'),
+                'qa_name' => $request->validated('qa_name'),
+                'qa_pw' => Crypt::encryptString($request->validated('qa_pw')),
+                'server_query_port' => $request->validated('server_query_port') ?? null,
+                'server_port' => $request->validated('server_port') ?? 9987,
+                'description' => $request->validated('description'),
+                'qa_nickname' => $request->input('qa_nickname'),
+                'mode' => $request->validated('mode'),
             ]
         )->id;
 
         //set created new server as active
-        if (! empty($server_id)) {
-            User::query()->where('id', '=', Auth::user()->id)->update(['active_server_id' => $server_id]);
-        }else{
+        if (! empty($serverId)) {
+            User::query()->where('id', '=', Auth::user()->id)->update(['active_server_id' => $serverId]);
+        } else {
             return redirect()->back()->withErrors(['error' => 'Server creation failed']);
         }
 
         //initializing server only in production mode
         if (config('app.env') !== 'testing') {
-            $status = $this->initializeTsServer($server_id);
+            $status = $this->initializeTsServer($serverId);
 
             if ($status != 0) {
                 if ($status['status'] == 1) {
@@ -87,15 +87,15 @@ class ServerController extends Controller
     {
         tsServerConfig::query()->where('id', '=', $request->validated('server_id'))->update(
             [
-                'server_ip'=>$request->validated('server_ip'),
-                'server_name'=>$request->validated('server_name'),
-                'qa_name'=>$request->validated('qa_name'),
-                'qa_pw'=>Crypt::encryptString(($request->validated('qa_pw'))),
-                'server_query_port'=>$request->validated('server_query_port') ?? null,
-                'server_port'=>$request->validated('server_port') ?? 9987,
-                'description'=>$request->input('description'),
-                'qa_nickname'=>str_replace(' ', '', $request->input('qa_nickname')),
-                'mode'=>$request->validated('mode'),
+                'server_ip' => $request->validated('server_ip'),
+                'server_name' => $request->validated('server_name'),
+                'qa_name' => $request->validated('qa_name'),
+                'qa_pw' => Crypt::encryptString(($request->validated('qa_pw'))),
+                'server_query_port' => $request->validated('server_query_port') ?? null,
+                'server_port' => $request->validated('server_port') ?? 9987,
+                'description' => $request->input('description'),
+                'qa_nickname' => str_replace(' ', '', $request->input('qa_nickname')),
+                'mode' => $request->validated('mode'),
             ]
         );
 
@@ -129,28 +129,30 @@ class ServerController extends Controller
 
     public function deleteServer(DeleteServerRequest $request): \Illuminate\Http\RedirectResponse
     {
+        $serverId = $request->validated('server_id');
+
         //delete logs and stats
-        $this->deleteBotLogs($request->validated('server_id'));
-        $this->deleteStatistics($request->validated('server_id'));
+        $this->deleteBotLogs($serverId);
+        $this->deleteStatistics($serverId);
 
         //delete all worker configs
-        $this->deleteWorkerConfigs($request->validated('server_id'));
-        $this->deleteBadNameEntries($request->validated('server_id'));
+        $this->deleteWorkerConfigs($serverId);
+        $this->deleteBadNameEntries($serverId);
 
         //delete ts data
-        $this->deleteTsDatabaseEntries($request->validated('server_id'));
+        $this->deleteTsDatabaseEntries($serverId);
 
         //delete server banner
-        $this->deleteBanners($request->validated('server_id'));
+        $this->deleteBanners($serverId);
 
         //delete server
-        tsServerConfig::query()->where('id', '=', $request->validated('server_id'))->delete();
+        tsServerConfig::query()->where('id', '=', $serverId)->delete();
 
         //check if a server is available else set user active_server_id to 0
-        $serverlist = tsServerConfig::query()->get();
+        $serverList = tsServerConfig::query()->get();
 
-        if ($serverlist->count() > 0) {
-            User::query()->update(['active_server_id' => $serverlist->first()->id]);
+        if ($serverList->count() > 0) {
+            User::query()->update(['active_server_id' => $serverList->first()->id]);
         } else {
             User::query()->update(['active_server_id' => 0]);
         }
@@ -159,95 +161,93 @@ class ServerController extends Controller
     }
 
     /**
-     * @param  int|null  $server_id
+     * @param  int|null  $serverId
      * @throws \Exception
      */
-    private function initializeTsServer(int $server_id = null, bool $update = false): array|int
+    private function initializeTsServer(?int $serverId = null, bool $update = false): array|int
     {
         //if create new server
-        if ($update === false)
-        {
+        if ($update === false) {
             //create default entry in police worker
-            tsBotWorkerPolice::query()->create(['server_id'=>$server_id]);
+            tsBotWorkerPolice::query()->create(['server_id' => $serverId]);
 
             //create default entry in statistics
-            statistic::query()->firstOrCreate(['server_id'=>$server_id]);
+            statistic::query()->firstOrCreate(['server_id' => $serverId]);
 
             $reInit = new TsConfigController();
-            $returnCode = $reInit->tsServerInitializing($server_id);
+            $returnCode = $reInit->tsServerInitializing($serverId);
         }
 
-        if ($update === true && $server_id !== null) {
+        if ($update === true && $serverId !== null) {
             //delete logs and stats
-            $this->deleteBotLogs($server_id);
-            $this->deleteStatistics($server_id);
+            $this->deleteBotLogs($serverId);
+            $this->deleteStatistics($serverId);
 
             //delete all worker configs
-            $this->deleteWorkerConfigs($server_id);
-            $this->deleteBadNameEntries($server_id);
+            $this->deleteWorkerConfigs($serverId);
+            $this->deleteBadNameEntries($serverId);
 
             //delete ts data
-            $this->deleteTsDatabaseEntries($server_id);
+            $this->deleteTsDatabaseEntries($serverId);
 
             //delete server banner
-            $this->deleteBanners($server_id);
+            $this->deleteBanners($serverId);
 
             //create default entry in police worker
-            tsBotWorkerPolice::query()->firstOrCreate(['server_id'=>$server_id]);
+            tsBotWorkerPolice::query()->firstOrCreate(['server_id' => $serverId]);
 
             //create default entry in statistics
-            statistic::query()->firstOrCreate(['server_id'=>$server_id]);
+            statistic::query()->firstOrCreate(['server_id' => $serverId]);
 
             $reInit = new TsConfigController();
-            $returnCode = $reInit->tsServerInitializing($server_id);
+            $returnCode = $reInit->tsServerInitializing($serverId);
         }
 
         return $returnCode ?? 0;
     }
 
-    private function deleteTsDatabaseEntries(int $server_id): void
+    private function deleteTsDatabaseEntries(int $serverId): void
     {
-        tsChannel::query()->where('server_id', '=', $server_id)->delete();
-        tsServerGroup::query()->where('server_id', '=', $server_id)->delete();
-        tsChannelGroup::query()->where('server_id', '=', $server_id)->delete();
+        tsChannel::query()->where('server_id', '=', $serverId)->delete();
+        tsServerGroup::query()->where('server_id', '=', $serverId)->delete();
+        tsChannelGroup::query()->where('server_id', '=', $serverId)->delete();
     }
 
-    private function deleteWorkerConfigs(int $server_id): void
+    private function deleteWorkerConfigs(int $serverId): void
     {
         $channelCreateJobsController = new ChannelController();
-        $channelCreateJobsController->deleteChannelCreateJobsByServerId($server_id);
+        $channelCreateJobsController->deleteChannelCreateJobsByServerId($serverId);
 
         $channelRemoveJobsController = new ChannelRemoverController();
-        $channelRemoveJobsController->deleteChannelRemoveJobsByServerId($server_id);
+        $channelRemoveJobsController->deleteChannelRemoveJobsByServerId($serverId);
 
         $clientController = new ClientController();
-        $clientController->deleteAfkWorkerSettingsByServerId($server_id);
-        $clientController->deletePoliceWorkerSettingsByServerId($server_id);
-        $clientController->deletePoliceVpnProtectionWorkerSettingsByServerId($server_id);
-
+        $clientController->deleteAfkWorkerSettingsByServerId($serverId);
+        $clientController->deletePoliceWorkerSettingsByServerId($serverId);
+        $clientController->deletePoliceVpnProtectionWorkerSettingsByServerId($serverId);
     }
 
-    private function deleteBotLogs(int $server_id): void
+    private function deleteBotLogs(int $serverId): void
     {
-        $botLogsController = new TsLogController('ServerController',$server_id);
-        $botLogsController->deleteLogEntrysByServerID();
+        $botLogsController = new TsLogController('ServerController', $serverId);
+        $botLogsController->deleteLogEntriesByServerId();
     }
 
-    private function deleteBadNameEntries(int $server_id): void
+    private function deleteBadNameEntries(int $serverId): void
     {
         $badNamesController = new BadNameController();
-        $badNamesController->deleteBadNameEntrysByServerID($server_id);
+        $badNamesController->deleteBadNameEntriesByServerId($serverId);
     }
 
-    private function deleteStatistics(int $server_id): void
+    private function deleteStatistics(int $serverId): void
     {
         $statisticsController = new StatisticController();
-        $statisticsController->deleteStatisticsByServerID($server_id);
+        $statisticsController->deleteStatisticsByServerId($serverId);
     }
 
-    private function deleteBanners(int $server_id): void
+    private function deleteBanners(int $serverId): void
     {
         $bannerController = new BannerController();
-        $bannerController->deleteBannersByServerID($server_id);
+        $bannerController->deleteBannersByServerId($serverId);
     }
 }

@@ -22,13 +22,13 @@ class CreateServerRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (str_replace(' ', '', $this->input('qa_nickname') == '')) {
+        if (str_replace(' ', '', (string) $this->input('qa_nickname')) === '') {
             $this->merge([
                 'qa_nickname' => 'web-query-bot',
             ]);
         } else {
             $this->merge([
-                'qa_nickname' => str_replace(' ', '', $this->input('qa_nickname')),
+                'qa_nickname' => str_replace(' ', '', (string) $this->input('qa_nickname')),
             ]);
         }
     }

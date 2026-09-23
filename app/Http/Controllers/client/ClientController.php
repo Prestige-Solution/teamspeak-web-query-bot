@@ -100,17 +100,17 @@ class ClientController extends Controller
         //create afk worker config
         $excludedServerGroups = collect($request->validated('excluded_servergroup'));
         //exists excluded Groups
-        if ($excludedServerGroups->count() != 0) {
+        if ($excludedServerGroups->isNotEmpty()) {
             foreach ($excludedServerGroups as $excludedServerGroup) {
                 tsBotWorkerAfk::query()->create([
-                    'server_id'=>$request->validated('server_id'),
-                    'is_afk_active'=>$request->validated('is_afk_active'),
-                    'max_client_idle_time'=>$request->validated('max_client_idle_time') * 1000 * 60,
-                    'afk_channel_cid'=>$request->validated('afk_channel_cid') ?? 0,
-                    'is_afk_kicker_active'=>$request->validated('is_afk_kicker_active'),
-                    'afk_kicker_max_idle_time'=>$request->validated('afk_kicker_max_idle_time') * 1000 * 60,
-                    'afk_kicker_slots_online'=>$request->validated('afk_kicker_slots_online'),
-                    'excluded_servergroup'=>$excludedServerGroup,
+                    'server_id' => $request->validated('server_id'),
+                    'is_afk_active' => $request->validated('is_afk_active'),
+                    'max_client_idle_time' => $request->validated('max_client_idle_time') * 1000 * 60,
+                    'afk_channel_cid' => $request->validated('afk_channel_cid') ?? 0,
+                    'is_afk_kicker_active' => $request->validated('is_afk_kicker_active'),
+                    'afk_kicker_max_idle_time' => $request->validated('afk_kicker_max_idle_time') * 1000 * 60,
+                    'afk_kicker_slots_online' => $request->validated('afk_kicker_slots_online'),
+                    'excluded_servergroup' => $excludedServerGroup,
                 ]);
             }
         }
@@ -118,7 +118,7 @@ class ClientController extends Controller
         //exclude // Vorlagengruppen > Typ 0 //Normale Gruppen > Typ 1 //ServerQuery Gruppen > Typ 2
         $excludeStandardServerGroups = tsServerGroup::query()
             ->where('server_id', '=', $request->validated('server_id'))
-            ->where(function ($query){
+            ->where(function ($query) {
                 $query->where('type', '=', 0)
                     ->orWhere('type', '=', 2);
             })
@@ -126,32 +126,32 @@ class ClientController extends Controller
 
         foreach ($excludeStandardServerGroups as $excludeStandardServerGroup) {
             tsBotWorkerAfk::query()->create([
-                'server_id'=>$request->validated('server_id'),
-                'is_afk_active'=>$request->validated('is_afk_active'),
-                'max_client_idle_time'=>$request->validated('max_client_idle_time') * 1000 * 60,
-                'afk_channel_cid'=>$request->validated('afk_channel_cid') ?? 0,
-                'is_afk_kicker_active'=>$request->validated('is_afk_kicker_active'),
-                'afk_kicker_max_idle_time'=>$request->validated('afk_kicker_max_idle_time') * 1000 * 60,
-                'afk_kicker_slots_online'=>$request->validated('afk_kicker_slots_online'),
-                'excluded_servergroup'=>$excludeStandardServerGroup->sgid,
+                'server_id' => $request->validated('server_id'),
+                'is_afk_active' => $request->validated('is_afk_active'),
+                'max_client_idle_time' => $request->validated('max_client_idle_time') * 1000 * 60,
+                'afk_channel_cid' => $request->validated('afk_channel_cid') ?? 0,
+                'is_afk_kicker_active' => $request->validated('is_afk_kicker_active'),
+                'afk_kicker_max_idle_time' => $request->validated('afk_kicker_max_idle_time') * 1000 * 60,
+                'afk_kicker_slots_online' => $request->validated('afk_kicker_slots_online'),
+                'excluded_servergroup' => $excludeStandardServerGroup->sgid,
             ]);
         }
 
-        return redirect()->route('worker.view.createOrUpdateAfkWorker')->with(['success'=>'Settings successfully updated']);
+        return redirect()->route('worker.view.createOrUpdateAfkWorker')->with(['success' => 'Settings successfully updated']);
     }
 
-    public function deleteAfkWorkerSettingsByServerId(int $server_id): void
+    public function deleteAfkWorkerSettingsByServerId(int $serverId): void
     {
-        tsBotWorkerAfk::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerAfk::query()->where('server_id', '=', $serverId)->delete();
     }
 
-    public function deletePoliceWorkerSettingsByServerId(int $server_id): void
+    public function deletePoliceWorkerSettingsByServerId(int $serverId): void
     {
-        tsBotWorkerPolice::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerPolice::query()->where('server_id', '=', $serverId)->delete();
     }
 
-    public function deletePoliceVpnProtectionWorkerSettingsByServerId(int $server_id): void
+    public function deletePoliceVpnProtectionWorkerSettingsByServerId(int $serverId): void
     {
-        tsBotWorkerPoliceVpnProtection::query()->where('server_id', '=', $server_id)->delete();
+        tsBotWorkerPoliceVpnProtection::query()->where('server_id', '=', $serverId)->delete();
     }
 }

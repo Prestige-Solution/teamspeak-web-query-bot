@@ -20,7 +20,6 @@ class BackendController extends Controller
     {
         $stats = statistic::query()
             ->where('server_id', '=', Auth::user()->active_server_id)
-            ->get()
             ->first();
 
         $server = tsServerConfig::query()
