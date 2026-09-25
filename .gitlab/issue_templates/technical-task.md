@@ -1,6 +1,6 @@
 ## Description and goal
 
-_**Tip**: Explain your motivations and goals so that whoever takes it in charge can think of possible alternative solutions, if necessary._
+_**Tip**: Explain your motivations and goals so that whoever is assigned to this task can think of possible alternative solutions, if necessary._
 
 ## Tasks and activities
 
