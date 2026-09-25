@@ -35,5 +35,11 @@
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
+  },
+  "resources/js/banner-creator.js": {
+    "file": "assets/banner-creator-mQyXhdCU.js",
+    "name": "banner-creator",
+    "src": "resources/js/banner-creator.js",
+    "isEntry": true
   }
 }

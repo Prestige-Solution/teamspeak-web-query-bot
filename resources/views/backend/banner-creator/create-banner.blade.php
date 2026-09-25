@@ -5,7 +5,7 @@
 @endsection
 
 @section('js-footer')
-    <script src="{{asset('js/pes-custom-js/banner-creator.js')}}" type="text/javascript"></script>
+    @vite(['resources/js/banner-creator.js'])
 @endsection
 
 @section('content')
@@ -23,7 +23,13 @@
         <div class="row mb-3">
             <div class="col-lg-6">
                 <label class="form-label fw-bold">Template:</label>
-                <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/template/'.$banner->banner_original_file_name)}}" alt="BannerImage" onclick="imageCoordinates()">
+                <div class="banner-template-wrapper position-relative d-inline-block">
+                    @if($banner->banner_viewer_file_name !== null)
+                        <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/viewer/'.$banner->banner_viewer_file_name)}}" alt="BannerImage">
+                    @else
+                        <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/template/'.$banner->banner_original_file_name)}}" alt="BannerImage">
+                    @endif
+                </div>
             </div>
             <div class="col-lg-6">
                 <label class="form-label fw-bold">Preview:</label>
@@ -100,7 +106,7 @@
         <div class="row mb-2">
             <div class="col-lg-12">
                 @foreach($storedBannerOptions as $storedBannerOption)
-                    <div class="row mt-3" id="BannerOptionGroup">
+                    <div class="row mt-3 banner-option-group" id="BannerOptionGroup">
                         <div class="col-lg-3 mb-2">
                             <select class="form-select" name="option_id[]" id="option_id" aria-label="option_id">
                                 <option disabled>--- Default ---</option>
@@ -142,7 +148,7 @@
                         </div>
                     </div>
                 @endforeach
-                <div class="row mt-3" id="BannerOptionGroup">
+                <div class="row mt-3 banner-option-group" id="BannerOptionGroup">
                     <div class="col-lg-3 mb-2">
                         <select class="form-select" name="option_id[]" id="option_id" aria-label="option_id">
                             <option disabled>--- Default ---</option>
