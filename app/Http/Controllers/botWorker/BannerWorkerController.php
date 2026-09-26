@@ -91,7 +91,7 @@ class BannerWorkerController extends Controller
 
                 //check if delay arrived
                 if (Carbon::now() >= $banner->next_check_at) {
-                    //exists banner options
+                    //banner options exist
                     $bannerOptions = bannerOption::query()
                         ->with([
                             'rel_cat_banner_option',

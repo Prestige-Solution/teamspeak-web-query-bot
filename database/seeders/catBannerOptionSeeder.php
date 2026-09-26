@@ -44,7 +44,7 @@ class catBannerOptionSeeder extends Seeder
         ]);
 
         catBannerOption::query()->create([
-            'name'=>'Plattform',
+            'name'=>'Platform',
             'pes_code'=>'get_server_platform',
             'ts_attribut'=>'virtualserver_platform',
             'category'=>'server',
