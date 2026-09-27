@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\App;
 
 class ValidateHttpsSignature
 {
-    public $keyResolver;
+    public Closure $keyResolver;
 
     public function __construct()
     {
@@ -31,7 +31,7 @@ class ValidateHttpsSignature
      * @param  Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         if ($this->hasValidSignature($request)) {
             return $next($request);
@@ -47,7 +47,7 @@ class ValidateHttpsSignature
      * @param  bool  $absolute
      * @return bool
      */
-    public function hasValidSignature(Request $request, $absolute = true)
+    public function hasValidSignature(Request $request, bool $absolute = true): bool
     {
         $url = $absolute ? $request->url() : '/'.$request->path();
 

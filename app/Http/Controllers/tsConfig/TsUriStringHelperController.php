@@ -35,7 +35,7 @@ class TsUriStringHelperController extends Controller
             throw new Exception('Invalid Server IP');
         }
 
-        //proof serverPort - if is null then set the standard ports else set the specific given port
+        //proof serverPort - if is null, then set the standard ports else set the specific given port
         if ($queryPort === null) {
             $queryPort = 10022;
         }

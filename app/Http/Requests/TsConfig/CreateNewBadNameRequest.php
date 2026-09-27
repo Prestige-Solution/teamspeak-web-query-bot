@@ -33,16 +33,17 @@ class CreateNewBadNameRequest extends FormRequest
      */
     public function rules(): array
     {
-        $value = $this->input('Value');
+        $value = $this->input('value');
 
         return [
             'server_id' => 'required|integer|exists:ts_server_configs,id',
-            'description'=>'required',
-            'value_option'=>'required|integer',
-            'value'=>['required'], [
+            'description' => 'required',
+            'value_option' => 'required|integer',
+            'value' => [
+                'required',
                 Rule::unique('bad_names')->where(function ($query) use ($value) {
-                    return $query->where('value', '=', $value)
-                        ->where('server_id', '=', Auth::user()->active_server_id);
+                    return $query->where('value', $value)
+                        ->where('server_id', Auth::user()->active_server_id);
                 }),
             ],
         ];

@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Migration\StartMigrationRequest;
 use App\Jobs\tsMigrationQueue;
 use App\Models\tsBot\tsServerConfig;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class MigrationController extends Controller
 {
-    public function viewMigration()
+    /**
+     * @return View
+     */
+    public function viewMigration(): View
     {
         $servers = tsServerConfig::query()->get();
 
@@ -29,9 +34,10 @@ class MigrationController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @param  StartMigrationRequest  $request
+     * @return RedirectResponse
      */
-    public function startMigration(StartMigrationRequest $request)
+    public function startMigration(StartMigrationRequest $request): RedirectResponse
     {
         $this->resetLogs();
 

@@ -38,7 +38,7 @@ class MigrationController extends Controller
     /**
      * @throws \Exception
      */
-    public function setupConnections()
+    public function setupConnections(): void
     {
         $this->resetLogs();
 
@@ -109,7 +109,7 @@ class MigrationController extends Controller
      * @throws ServerQueryException
      * @throws TransportException
      */
-    private function migrateChannels()
+    private function migrateChannels(): void
     {
         $sourceChannelList = $this->sourceConnection->channelList();
         $pid = 0;
@@ -215,7 +215,7 @@ class MigrationController extends Controller
      * @throws TransportException
      * @throws ServerQueryException
      */
-    private function migrateServergroups()
+    private function migrateServergroups(): void
     {
         $sourceServerGroupList = $this->sourceConnection->serverGroupList(['type'=>1]);
 
@@ -259,7 +259,7 @@ class MigrationController extends Controller
      * @throws TransportException
      * @throws ServerQueryException
      */
-    private function migrateChannelgroups()
+    private function migrateChannelgroups(): void
     {
         $sourceChannelGroupList = $this->sourceConnection->channelGroupList(['type'=>1]);
 

@@ -24,7 +24,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->configureRateLimiting();
 
@@ -43,7 +43,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function configureRateLimiting()
+    protected function configureRateLimiting(): void
     {
         //Each rate limit will be evaluated for the route based on the order they are placed within the array
         RateLimiter::for('api', function (Request $request) {

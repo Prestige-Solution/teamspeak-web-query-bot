@@ -162,6 +162,8 @@ class ServerController extends Controller
 
     /**
      * @param  int|null  $serverId
+     * @param  bool  $update
+     * @return array|int
      * @throws \Exception
      */
     private function initializeTsServer(?int $serverId = null, bool $update = false): array|int
