@@ -74,8 +74,8 @@ class TsConfigController extends Controller
 
         try {
             //CHANNELS
-            //get all channels as a collection without SubChannels
-            $tsChannels = collect($tsVirtualServer->channelList(['pid'=>0]));
+            //get all channels as a collection
+            $tsChannels = collect($tsVirtualServer->channelList());
             //get for each key - channelID connection the channel info and store in db
             foreach ($tsChannels->keys()->all() as $cid) {
                 //get channel by id
@@ -84,14 +84,6 @@ class TsConfigController extends Controller
                 $channelInfo = $channel->getInfo();
                 //store info
                 $this->createChannels($serverId, $channelInfo, $channel->toString());
-
-                //sub-channels available
-                $subChannels = collect($channel->subChannelList());
-                foreach ($subChannels->keys()->all() as $subChannelCid) {
-                    $subChannel = $tsVirtualServer->channelGetById($subChannelCid);
-                    $subChannelInfo = $subChannel->getInfo();
-                    $this->createChannels($serverId, $subChannelInfo, $subChannel->toString());
-                }
             }
         } catch (Exception $e) {
             $this->tsLogController->setCustomLog(

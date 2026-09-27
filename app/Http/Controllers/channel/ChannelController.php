@@ -108,19 +108,24 @@ class ChannelController extends Controller
         return redirect()->route('channel.view.channelJobs')->with(['success'=>'The job was successfully deleted']);
     }
 
-    private function buildChannelOptions(Collection $channels, int $pid = 0, int $level = 0): Collection
-    {
-        return $channels
-            ->where('pid', $pid)
-            ->sortBy('channel_order')
-            ->flatMap(function (tsChannel $channel) use ($channels, $level): Collection {
-                $channel->tree_channel_name = str_repeat('-', $level).$channel->channel_name;
+    private function buildChannelOptions(
+        Collection $channels,
+        int $pid = 0,
+        string $prefix = ''
+    ): Collection {
+        $children = $channels->where('pid', $pid)->sortBy('channel_order')->values();
+        $total = $children->count();
 
-                return collect([$channel])->merge(
-                    $this->buildChannelOptions($channels, $channel->cid, $level + 1)
-                );
-            })
-            ->values();
+        return $children->flatMap(function (tsChannel $channel, int $index) use ($channels, $prefix, $total, $pid): Collection {
+            $isLast = ($index === $total - 1);
+            $marker = $pid === 0 ? '' : ($isLast ? "└──\u{00A0}" : "├──\u{00A0}");
+            $channel->tree_channel_name = $prefix.$marker.$channel->channel_name;
+            $nextPrefix = $prefix.($pid === 0 ? '' : ($isLast ? "\u{00A0}\u{00A0}\u{00A0}\u{00A0}" : "│\u{00A0}\u{00A0}\u{00A0}"));
+
+            return collect([$channel])->merge(
+                $this->buildChannelOptions($channels, $channel->cid, $nextPrefix)
+            );
+        })->values();
     }
 
     private function deleteChannelCreateJobsById(int $serverId, int $id): void
