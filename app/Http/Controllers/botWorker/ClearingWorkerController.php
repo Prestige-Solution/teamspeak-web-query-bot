@@ -11,6 +11,7 @@ use App\Models\tsBot\tsServerConfig;
 use App\Models\tsBotWorkers\tsBotWorkerChannelsCreate;
 use App\Models\tsBotWorkers\tsBotWorkerChannelsRemove;
 use Exception;
+use Illuminate\Support\Collection;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Host;
 use PlanetTeamSpeak\TeamSpeak3Framework\Node\Node;
@@ -174,19 +175,46 @@ class ClearingWorkerController extends Controller
 
     private function deleteChannelFromDB(int $cid): void
     {
+        $channelIds = $this->getChannelAndSubChannelIds($cid);
+
         tsChannel::query()
             ->where('server_id', '=', $this->serverId)
-            ->where('cid', '=', $cid)
+            ->whereIn('cid', $channelIds)
             ->delete();
 
         tsBotWorkerChannelsCreate::query()
             ->where('server_id', '=', $this->serverId)
-            ->where('on_cid', '=', $cid)
+            ->whereIn('on_cid', $channelIds)
             ->delete();
 
         tsBotWorkerChannelsRemove::query()
             ->where('server_id', '=', $this->serverId)
-            ->where('channel_cid', '=', $cid)
+            ->whereIn('channel_cid', $channelIds)
             ->delete();
+    }
+
+    private function getChannelAndSubChannelIds(int $cid): array
+    {
+        $channels = tsChannel::query()
+            ->where('server_id', '=', $this->serverId)
+            ->get(['cid', 'pid']);
+
+        return array_merge([$cid], $this->getSubChannelIds($channels, $cid));
+    }
+
+    private function getSubChannelIds(Collection $channels, int $pid, array &$visited = []): array
+    {
+        $subChannelIds = [];
+        $children = $channels->where('pid', $pid);
+
+        foreach ($children as $child) {
+            if (!in_array($child->cid, $visited, true)) {
+                $visited[] = $child->cid;
+                $subChannelIds[] = $child->cid;
+                $subChannelIds = array_merge($subChannelIds, $this->getSubChannelIds($channels, $child->cid, $visited));
+            }
+        }
+
+        return $subChannelIds;
     }
 }

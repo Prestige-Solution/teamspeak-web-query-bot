@@ -277,6 +277,132 @@ class ChannelTest extends TestCase
         $response->assertSessionHasErrors(['id']);
     }
 
+    public function test_delete_channel_also_deletes_subchannels_and_jobs_on_subchannels(): void
+    {
+        CreateServerFactory::new()->create(['id' => 1]);
+        CreateServerFactory::new()->create(['id' => 2]);
+        CreateChannelGroupFactory::new()->create();
+        CreateServerGroupFactory::new()->create();
+
+        // Server 1 channels
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 10, 'pid' => 0, 'channel_name' => 'Root 1']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 11, 'pid' => 10, 'channel_name' => 'Sub 1-1']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 12, 'pid' => 11, 'channel_name' => 'Sub 1-1-1']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 20, 'pid' => 0, 'channel_name' => 'Root 2']);
+
+        // Server 1 jobs
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 10]);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 11]);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 12]);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 20]);
+
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 10]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 11]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 12]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 20]);
+
+        // Server 2 channels & jobs (isolation check)
+        CreateChannelFactory::new()->create(['server_id' => 2, 'cid' => 10, 'pid' => 0, 'channel_name' => 'Server 2 Root 1']);
+        CreateChannelFactory::new()->create(['server_id' => 2, 'cid' => 11, 'pid' => 10, 'channel_name' => 'Server 2 Sub 1-1']);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 2, 'on_cid' => 11]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 2, 'channel_cid' => 11]);
+
+        $reflection = new \ReflectionClass(\App\Http\Controllers\bot\TsBotController::class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        $serverProp = $reflection->getProperty('serverId');
+        $serverProp->setValue($instance, 1);
+
+        $method = $reflection->getMethod('deleteChannel');
+        $method->invoke($instance, 10);
+
+        // Assert Server 1 deleted channels & subchannels
+        $server1Channels = \App\Models\tsBot\tsChannel::query()->where('server_id', 1)->pluck('cid')->all();
+        $this->assertEquals([20], $server1Channels);
+
+        // Assert Server 1 creator jobs deleted for 10, 11, 12 but kept for 20
+        $server1CreateJobs = tsBotWorkerChannelsCreate::query()->where('server_id', 1)->pluck('on_cid')->all();
+        $this->assertEquals([20], $server1CreateJobs);
+
+        // Assert Server 1 remover jobs deleted for 10, 11, 12 but kept for 20
+        $server1RemoveJobs = tsBotWorkerChannelsRemove::query()->where('server_id', 1)->pluck('channel_cid')->all();
+        $this->assertEquals([20], $server1RemoveJobs);
+
+        // Assert Server 2 channels and jobs remain untouched
+        $server2Channels = \App\Models\tsBot\tsChannel::query()->where('server_id', 2)->pluck('cid')->all();
+        $this->assertEquals([10, 11], $server2Channels);
+
+        $server2CreateJobs = tsBotWorkerChannelsCreate::query()->where('server_id', 2)->pluck('on_cid')->all();
+        $this->assertEquals([11], $server2CreateJobs);
+
+        $server2RemoveJobs = tsBotWorkerChannelsRemove::query()->where('server_id', 2)->pluck('channel_cid')->all();
+        $this->assertEquals([11], $server2RemoveJobs);
+    }
+
+    public function test_delete_subchannel_only_deletes_subchannel_and_its_descendants(): void
+    {
+        CreateServerFactory::new()->create(['id' => 1]);
+        CreateChannelGroupFactory::new()->create();
+        CreateServerGroupFactory::new()->create();
+
+        // Server 1 channels
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 10, 'pid' => 0, 'channel_name' => 'Root']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 11, 'pid' => 10, 'channel_name' => 'Sub 1']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 12, 'pid' => 11, 'channel_name' => 'Sub 1-1']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 13, 'pid' => 10, 'channel_name' => 'Sub 2']);
+
+        // Jobs
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 10]);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 11]);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 12]);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 13]);
+
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 10]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 11]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 12]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 13]);
+
+        $reflection = new \ReflectionClass(\App\Http\Controllers\bot\TsBotController::class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        $serverProp = $reflection->getProperty('serverId');
+        $serverProp->setValue($instance, 1);
+
+        $method = $reflection->getMethod('deleteChannel');
+        $method->invoke($instance, 11);
+
+        // Channels 10 and 13 should remain; 11 and 12 should be deleted
+        $remainingChannels = \App\Models\tsBot\tsChannel::query()->where('server_id', 1)->pluck('cid')->all();
+        $this->assertEquals([10, 13], $remainingChannels);
+
+        $remainingCreateJobs = tsBotWorkerChannelsCreate::query()->where('server_id', 1)->pluck('on_cid')->all();
+        $this->assertEquals([10, 13], $remainingCreateJobs);
+
+        $remainingRemoveJobs = tsBotWorkerChannelsRemove::query()->where('server_id', 1)->pluck('channel_cid')->all();
+        $this->assertEquals([10, 13], $remainingRemoveJobs);
+    }
+
+    public function test_clearing_worker_delete_channel_from_db_cascades_to_subchannels_and_jobs(): void
+    {
+        CreateServerFactory::new()->create(['id' => 1]);
+        CreateChannelGroupFactory::new()->create();
+        CreateServerGroupFactory::new()->create();
+
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 10, 'pid' => 0, 'channel_name' => 'Root']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 11, 'pid' => 10, 'channel_name' => 'Sub 1']);
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 12, 'pid' => 11, 'channel_name' => 'Sub 1-1']);
+
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 12]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 12]);
+
+        $clearingWorker = new \App\Http\Controllers\botWorker\ClearingWorkerController(1);
+        $reflection = new \ReflectionClass($clearingWorker);
+        $method = $reflection->getMethod('deleteChannelFromDB');
+        $method->invoke($clearingWorker, 10);
+
+        $this->assertEquals(0, \App\Models\tsBot\tsChannel::query()->where('server_id', 1)->count());
+        $this->assertEquals(0, tsBotWorkerChannelsCreate::query()->where('server_id', 1)->count());
+        $this->assertEquals(0, tsBotWorkerChannelsRemove::query()->where('server_id', 1)->count());
+    }
+
     public function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();
