@@ -393,7 +393,7 @@ class TsBotController extends Controller
             $cid = $getData['cid'];
             $clid = $getData['invokerid'];
             $cidInfo = $this->tsVirtualServer->channelGetById($cid);
-            $channelName = $cidInfo['channel_name']->toString();
+            $channelName = $cidInfo['channel_name'];
 
             //proof Name
             $badNameController = new BadNameController();
