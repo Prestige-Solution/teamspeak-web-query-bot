@@ -22,21 +22,21 @@ class tsBannerWorkerQueue implements ShouldQueue, ShouldBeUnique
 
     public int $backoff = 60;
 
-    public int $server_id;
+    public int $serverId;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($server_id)
+    public function __construct($serverId)
     {
-        $this->server_id = $server_id;
+        $this->serverId = $serverId;
     }
 
     public function middleware(): array
     {
-        return [(new WithoutOverlapping($this->server_id))->expireAfter(180)];
+        return [(new WithoutOverlapping($this->serverId))->expireAfter(180)];
     }
 
     /**
@@ -46,12 +46,12 @@ class tsBannerWorkerQueue implements ShouldQueue, ShouldBeUnique
     public function handle(): void
     {
         try {
-            $bannerWorker = new BannerWorkerController($this->server_id);
+            $bannerWorker = new BannerWorkerController($this->serverId);
             $bannerWorker->bannerWorkerCreateBanner();
         } catch (Exception $e) {
-            $tsLogging = new TsLogController('Banner-Worker', $this->server_id);
+            $tsLogging = new TsLogController('Banner-Worker', $this->serverId);
             $tsLogging->setCustomLog(
-                $this->server_id,
+                $this->serverId,
                 tsBotLog::FAILED,
                 'queue_worker',
                 'There was an error during create queue',
@@ -63,7 +63,7 @@ class tsBannerWorkerQueue implements ShouldQueue, ShouldBeUnique
 
     public function uniqueId(): int
     {
-        return $this->server_id;
+        return $this->serverId;
     }
 
     public function backoff(): int

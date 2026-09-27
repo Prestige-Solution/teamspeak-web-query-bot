@@ -16,7 +16,7 @@ class TsUriStringHelperController extends Controller
      * mode = 2 is ssh = 1
      * @throws Exception
      */
-    public function getStandardUriString(string $queryName, string $queryPassword, string $host, int|null $queryPort, int $serverPort, string $botName, int $server_id): string
+    public function getStandardUriString(string $queryName, string $queryPassword, string $host, int|null $queryPort, int $serverPort, string $botName, int $serverId): string
     {
         //proof ipv4 or ipv6
         if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
@@ -24,9 +24,9 @@ class TsUriStringHelperController extends Controller
         } elseif (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) || filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
             $validatedHost = '['.$host.']';
         } else {
-            $logController = new TsLogController('validate uri', $server_id);
+            $logController = new TsLogController('validate uri', $serverId);
             $logController->setCustomLog(
-                $server_id,
+                $serverId,
                 tsBotLog::FAILED,
                 'validate uri',
                 'invalid server address',

@@ -109,11 +109,11 @@ class TsConfigController extends Controller
                 $serverGroup = $tsVirtualServer->serverGroupGetById($sgid);
                 $serverGroupInfo = $serverGroup->getInfo();
                 //store info
-                $this->createServerGroups($server_id, $serverGroupInfo);
+                $this->createServerGroups($serverId, $serverGroupInfo);
             }
         } catch (Exception $e) {
             $this->tsLogController->setCustomLog(
-                $server_id,
+                $serverId,
                 tsBotLog::FAILED,
                 'Setup - Server Groups',
                 '',
@@ -135,11 +135,11 @@ class TsConfigController extends Controller
                 $channelGroup = $tsVirtualServer->channelGroupGetById($cgid);
                 $channelGroupInfo = $channelGroup->getInfo();
                 //store info
-                $this->createChannelGroups($server_id, $channelGroupInfo);
+                $this->createChannelGroups($serverId, $channelGroupInfo);
             }
         } catch (Exception $e) {
             $this->tsLogController->setCustomLog(
-                $server_id,
+                $serverId,
                 tsBotLog::FAILED,
                 'Setup - Channel Groups',
                 '',
@@ -152,14 +152,14 @@ class TsConfigController extends Controller
         }
 
         $this->tsLogController->setCustomLog(
-            $server_id,
+            $serverId,
             tsBotLog::SUCCESS,
             'Config Initialization',
             'The server has been successfully initialized.',
         );
 
         //update virtual server statistic
-        $this->statisticController->gatherVirtualServerStatistic($server_id, $tsVirtualServer);
+        $this->statisticController->gatherVirtualServerStatistic($serverId, $tsVirtualServer);
 
         return ['status'=>1, 'msg'=>'success'];
     }

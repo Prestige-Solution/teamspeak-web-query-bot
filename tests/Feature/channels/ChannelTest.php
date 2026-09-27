@@ -49,6 +49,34 @@ class ChannelTest extends TestCase
         $response->assertSeeText('Client enters channel');
     }
 
+    public function test_view_channel_options_tree_hierarchy()
+    {
+        CreateServerFactory::new()->create();
+        // Root channel
+        CreateChannelFactory::new()->create(['cid' => 10, 'pid' => 0, 'channel_name' => 'channel-1']);
+        // Sub channels level 1
+        CreateChannelFactory::new()->create(['cid' => 11, 'pid' => 10, 'channel_order' => 1, 'channel_name' => 'channel 1-1']);
+        CreateChannelFactory::new()->create(['cid' => 12, 'pid' => 10, 'channel_order' => 2, 'channel_name' => 'channel 1-2']);
+        // Sub channels level 2 under channel 1-2
+        CreateChannelFactory::new()->create(['cid' => 13, 'pid' => 12, 'channel_order' => 1, 'channel_name' => 'channel 2-1']);
+        CreateChannelFactory::new()->create(['cid' => 14, 'pid' => 12, 'channel_order' => 2, 'channel_name' => 'channel 2-2']);
+        // Deep sub channel level 3 under channel 2-1
+        CreateChannelFactory::new()->create(['cid' => 15, 'pid' => 13, 'channel_order' => 1, 'channel_name' => 'channel 3-1']);
+
+        User::query()->where('id', 1)->update(['active_server_id' => 1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->get(route('channel.view.channelJobs'));
+        $response->assertOk();
+
+        $response->assertSee('channel-1');
+        $response->assertSee("├──\u{00A0}channel 1-1");
+        $response->assertSee("└──\u{00A0}channel 1-2");
+        $response->assertSee("\u{00A0}\u{00A0}\u{00A0}\u{00A0}├──\u{00A0}channel 2-1");
+        $response->assertSee("\u{00A0}\u{00A0}\u{00A0}\u{00A0}│\u{00A0}\u{00A0}\u{00A0}└──\u{00A0}channel 3-1");
+        $response->assertSee("\u{00A0}\u{00A0}\u{00A0}\u{00A0}└──\u{00A0}channel 2-2");
+    }
+
     public function test_post_create_channel_creator_job()
     {
         CreateServerFactory::new()->create();

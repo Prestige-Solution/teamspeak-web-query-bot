@@ -85,21 +85,21 @@ class ConsoleCommandTest extends TestCase
         $this->artisan('app:start-worker')->assertSuccessful();
 
         Queue::assertPushedOn('bannerWorker', tsBannerWorkerQueue::class, function ($job) use ($server1) {
-            return $job->server_id === $server1->id;
+            return $job->serverId === $server1->id;
         });
         Queue::assertPushedOn('afkWorker', tsBotAfkWorkerQueue::class, function ($job) use ($server1) {
-            return $job->server_id === $server1->id;
+            return $job->serverId === $server1->id;
         });
         Queue::assertPushedOn('channelRemoverWorker', tsBotChannelRemoveWorkerQueue::class, function ($job) use ($server1) {
-            return $job->server_id === $server1->id;
+            return $job->serverId === $server1->id;
         });
         Queue::assertPushedOn('policeWorker', tsBotPoliceWorkerQueue::class, function ($job) use ($server1) {
-            return $job->server_id === $server1->id;
+            return $job->serverId === $server1->id;
         });
 
         // Server 2 with is_ts_start = false should not dispatch jobs
         Queue::assertNotPushed(tsBannerWorkerQueue::class, function ($job) use ($server2) {
-            return $job->server_id === $server2->id;
+            return $job->serverId === $server2->id;
         });
     }
 
@@ -115,7 +115,7 @@ class ConsoleCommandTest extends TestCase
         $this->artisan('app:start-clearing')->assertSuccessful();
 
         Queue::assertPushedOn('clearing', tsClearingWorkerQueue::class, function ($job) use ($server1) {
-            return $job->server_id === $server1->id;
+            return $job->serverId === $server1->id;
         });
     }
 
