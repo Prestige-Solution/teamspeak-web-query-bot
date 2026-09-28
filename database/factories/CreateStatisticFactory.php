@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateStatisticFactory extends Factory
 {
-
     protected $model = statistic::class;
+
     public function definition(): array
     {
         return [

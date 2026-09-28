@@ -12,39 +12,39 @@ const RUN_STORAGE_LINK = true;
 
 function printInfo(string $message): void
 {
-    echo PHP_EOL . '[OK] ' . $message . PHP_EOL;
+    echo PHP_EOL.'[OK] '.$message.PHP_EOL;
 }
 
 function printWarning(string $message): void
 {
-    echo PHP_EOL . '[WARNING] ' . $message . PHP_EOL;
+    echo PHP_EOL.'[WARNING] '.$message.PHP_EOL;
 }
 
 function printError(string $message): void
 {
-    echo PHP_EOL . '[ERROR] ' . $message . PHP_EOL;
+    echo PHP_EOL.'[ERROR] '.$message.PHP_EOL;
 }
 
 function runCommand(string $command, bool $allowFailure = false): void
 {
-    echo PHP_EOL . '> ' . $command . PHP_EOL;
+    echo PHP_EOL.'> '.$command.PHP_EOL;
 
-    passthru($command . ' 2>&1', $exitCode);
+    passthru($command.' 2>&1', $exitCode);
 
     if ($exitCode !== 0) {
         if ($allowFailure) {
-            printWarning('Command failed, but will be ignored. Exit Code: ' . $exitCode);
+            printWarning('Command failed, but will be ignored. Exit Code: '.$exitCode);
 
             return;
         }
 
-        throw new RuntimeException('Command failed: ' . $command . ' | Exit Code: ' . $exitCode);
+        throw new RuntimeException('Command failed: '.$command.' | Exit Code: '.$exitCode);
     }
 }
 
 function runArtisan(string $command, bool $allowFailure = false): void
 {
-    runCommand('php artisan ' . $command, $allowFailure);
+    runCommand('php artisan '.$command, $allowFailure);
 }
 
 function disableMaintenanceMode(): void
@@ -63,20 +63,20 @@ $projectRoot = __DIR__;
 chdir($projectRoot);
 
 try {
-    if (! file_exists($projectRoot . '/artisan')) {
+    if (! file_exists($projectRoot.'/artisan')) {
         throw new RuntimeException('No artisan file found. The upgrade.php file must be located in the Laravel project root directory..');
     }
 
-    if (! file_exists($projectRoot . '/composer.json')) {
+    if (! file_exists($projectRoot.'/composer.json')) {
         throw new RuntimeException('No composer.json file found.');
     }
 
-    if (! file_exists($projectRoot . '/package.json')) {
+    if (! file_exists($projectRoot.'/package.json')) {
         throw new RuntimeException('No package.json found.');
     }
 
     printInfo('Upgrade started');
-    printInfo('Project Path: ' . $projectRoot);
+    printInfo('Project Path: '.$projectRoot);
 
     if (USE_MAINTENANCE_MODE) {
         runArtisan('down');
@@ -89,7 +89,7 @@ try {
     }
 
     if (RUN_NPM_INSTALL) {
-        if (file_exists($projectRoot . '/package-lock.json')) {
+        if (file_exists($projectRoot.'/package-lock.json')) {
             runCommand('npm ci');
         } else {
             runCommand('npm install');
@@ -127,7 +127,7 @@ try {
 
     $duration = round(microtime(true) - $startedAt, 2);
 
-    printInfo('Upgrade successfully completed in ' . $duration . ' seconds.');
+    printInfo('Upgrade successfully completed in '.$duration.' seconds.');
 
     exit(0);
 } catch (Throwable $exception) {

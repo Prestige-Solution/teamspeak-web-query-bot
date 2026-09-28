@@ -105,6 +105,6 @@ class tsBotWorkerChannelsCreate extends Model
 
     public function rel_pid(): HasMany
     {
-        return $this->hasMany(tsChannel::class, ['pid','server_id'], ['on_cid', 'server_id']);
+        return $this->hasMany(tsChannel::class, ['pid', 'server_id'], ['on_cid', 'server_id']);
     }
 }

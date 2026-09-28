@@ -16,8 +16,8 @@ use App\Models\tsBotWorkers\tsBotWorkerChannelsCreate;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 
 class ChannelController extends Controller
 {

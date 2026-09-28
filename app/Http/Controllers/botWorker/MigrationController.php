@@ -192,8 +192,7 @@ class MigrationController extends Controller
                 //migrate channel icon // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
                 $hasIcon = $this->sourceConnection->channelGetById($sourceChannel['cid'])->permList(true);
 
-                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
-                {
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0) {
                     $iconContent = $this->sourceConnection->channelGetById($sourceChannel['cid'])->iconDownload();
                     $iconId = $this->targetConnection->iconUpload($iconContent);
                     $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
@@ -202,7 +201,6 @@ class MigrationController extends Controller
                 }
 
                 //TODO add migrate channel files
-
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create channel failed: '.$e->getMessage());
             }
@@ -239,15 +237,13 @@ class MigrationController extends Controller
                 //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
                 $hasIcon = $this->sourceConnection->serverGroupGetById($sourceServerGroup['sgid'])->permList(true);
 
-                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
-                {
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0) {
                     $iconContent = $this->sourceConnection->serverGroupGetById($sourceServerGroup['sgid'])->iconDownload();
                     $iconId = $this->targetConnection->iconUpload($iconContent);
                     $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
 
                     $this->targetConnection->serverGroupPermAssign($sid, ['i_icon_id'], $signedIconId);
                 }
-
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceServerGroupInfo['name'].' failed: '.$e->getMessage());
             }
@@ -283,15 +279,13 @@ class MigrationController extends Controller
                 //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
                 $hasIcon = $this->sourceConnection->channelGroupGetById($sourceChannelGroup['cgid'])->permList(true);
 
-                if ($hasIcon['i_icon_id']['permvalue'] !== 0)
-                {
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0) {
                     $iconContent = $this->sourceConnection->channelGroupGetById($sourceChannelGroup['cgid'])->iconDownload();
                     $iconId = $this->targetConnection->iconUpload($iconContent);
                     $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
 
                     $this->targetConnection->channelGroupPermAssign($cgid, ['i_icon_id'], $signedIconId);
                 }
-
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceChannelGroupInfo['name'].' failed: '.$e->getMessage());
             }

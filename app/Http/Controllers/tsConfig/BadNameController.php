@@ -77,7 +77,6 @@ class BadNameController extends Controller
         }
 
         foreach ($checkNames as $checkName) {
-
             $badNameResultRegex = 0;
 
             try {
@@ -132,5 +131,4 @@ class BadNameController extends Controller
     {
         badName::query()->where('server_id', '=', $serverId)->delete();
     }
-
 }

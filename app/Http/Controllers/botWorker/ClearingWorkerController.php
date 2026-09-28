@@ -208,7 +208,7 @@ class ClearingWorkerController extends Controller
         $children = $channels->where('pid', $pid);
 
         foreach ($children as $child) {
-            if (!in_array($child->cid, $visited, true)) {
+            if (! in_array($child->cid, $visited, true)) {
                 $visited[] = $child->cid;
                 $subChannelIds[] = $child->cid;
                 $subChannelIds = array_merge($subChannelIds, $this->getSubChannelIds($channels, $child->cid, $visited));
