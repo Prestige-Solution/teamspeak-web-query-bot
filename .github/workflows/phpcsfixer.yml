@@ -8,13 +8,13 @@ on:
   pull_request:
 
 jobs:
-  phpunit-tests:
+  php-cs-fixer:
     strategy:
       fail-fast: false
       matrix:
-        php_versions: ['8.2']
+        php_versions: ['8.3','8.4','8.5']
 
-    name: PHPUnit (PHP ${{ matrix.php_versions }})
+    name: PHP-CS-Fixer (PHP ${{ matrix.php_versions }})
     runs-on: ubuntu-latest
     steps:
       - name: install php ${{ matrix.php_versions }} with extensions
@@ -26,7 +26,7 @@ jobs:
           tools: none
 
       - name: checkout repository
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v6
 
       - name: install dependencies
         uses: php-actions/composer@v6

@@ -18,6 +18,4 @@ yarn-error.log
 .phpunit.cache
 .identifier.sqlite
 identifier.sqlite
-storage/logs/chaining/*
-storage/logs/*
 .php-cs-fixer.cache
