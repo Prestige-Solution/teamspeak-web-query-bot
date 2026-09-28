@@ -6,6 +6,7 @@ use App\Jobs\tsMigrationQueue;
 use App\Models\User;
 use Database\Factories\CreateServerFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -18,6 +19,7 @@ class MigrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        File::ensureDirectoryExists(storage_path('logs'));
         $this->seed();
 
         $this->user = User::query()->where('id', '=', 1)->first();
