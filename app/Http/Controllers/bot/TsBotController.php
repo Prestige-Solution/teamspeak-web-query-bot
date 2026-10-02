@@ -244,31 +244,42 @@ class TsBotController extends Controller
      */
     public function eventListener($event): void
     {
-        $this->botStopSignal();
-        $getEvent = $event->getType()->toString();
+        try {
+            $this->botStopSignal();
+            $getEvent = $event->getType()->toString();
 
-        if (config('app.bot_debug') == true) {
-            echo 'type: '.$getEvent."\n";
-        }
+            if (config('app.bot_debug') == true) {
+                echo 'type: '.$getEvent."\n";
+            }
 
-        if ($getEvent == 'cliententerview') {
-            $this->eventClientEnterView($event);
-        }
+            if ($getEvent == 'cliententerview') {
+                $this->eventClientEnterView($event);
+            }
 
-        if ($getEvent == 'clientmoved') {
-            $this->eventClientMoved($event);
-        }
+            if ($getEvent == 'clientmoved') {
+                $this->eventClientMoved($event);
+            }
 
-        if ($getEvent == 'channelcreated') {
-            $this->eventChannelCreated($event);
-        }
+            if ($getEvent == 'channelcreated') {
+                $this->eventChannelCreated($event);
+            }
 
-        if ($getEvent == 'channeledited') {
-            $this->eventChannelEdited($event);
-        }
+            if ($getEvent == 'channeledited') {
+                $this->eventChannelEdited($event);
+            }
 
-        if ($getEvent == 'channeldeleted') {
-            $this->eventChannelDeleted($event);
+            if ($getEvent == 'channeldeleted') {
+                $this->eventChannelDeleted($event);
+            }
+        } catch (TeamSpeak3Exception $e) {
+            $this->logController->setLog($e, tsBotLog::FAILED, 'eventListener');
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->serverId,
+                tsBotLog::FAILED,
+                'eventListener',
+                $e->getMessage(),
+            );
         }
     }
 
@@ -309,7 +320,10 @@ class TsBotController extends Controller
 
         try {
             //proof only for clients == 0 and not for query == 1
-            if ($getData['client_type'] == 0) {
+            if (isset($getData['client_type']) && $getData['client_type'] == 0) {
+                if (! isset($getData['clid'], $getData['client_nickname'])) {
+                    return;
+                }
                 $clid = $getData['clid'];
                 $nickname = $getData['client_nickname'];
                 $badNameResult = false;
@@ -342,6 +356,9 @@ class TsBotController extends Controller
         try {
             //declare variable
             $getData = $event->getData();
+            if (! isset($getData['ctid'], $getData['clid'])) {
+                return;
+            }
             $ctid = $getData['ctid'];
             $clid = $getData['clid'];
 
@@ -377,6 +394,13 @@ class TsBotController extends Controller
         } catch (TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, tsBotLog::FAILED, 'eventClientMoved');
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->serverId,
+                tsBotLog::FAILED,
+                'eventClientMoved',
+                $e->getMessage(),
+            );
         }
     }
 
@@ -390,9 +414,15 @@ class TsBotController extends Controller
         try {
             //declare variable
             $getData = $event->getData();
+            if (! isset($getData['cid'], $getData['invokerid'])) {
+                return;
+            }
             $cid = $getData['cid'];
             $clid = $getData['invokerid'];
             $cidInfo = $this->tsVirtualServer->channelGetById($cid);
+            if (! isset($cidInfo['channel_name'])) {
+                return;
+            }
             $channelName = $cidInfo['channel_name'];
 
             //proof Name
@@ -408,6 +438,13 @@ class TsBotController extends Controller
         } catch (TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, tsBotLog::FAILED, 'eventChannelEdited');
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->serverId,
+                tsBotLog::FAILED,
+                'eventChannelEdited',
+                $e->getMessage(),
+            );
         }
     }
 
@@ -416,12 +453,21 @@ class TsBotController extends Controller
         try {
             //declare variable
             $getData = $event->getData();
-            $cid = $getData['cid'];
+            if (isset($getData['cid'])) {
+                $cid = $getData['cid'];
 
-            $this->deleteChannel($cid);
+                $this->deleteChannel($cid);
+            }
         } catch (TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, tsBotLog::FAILED, 'eventChannelDeleted');
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->serverId,
+                tsBotLog::FAILED,
+                'eventChannelDeleted',
+                $e->getMessage(),
+            );
         }
     }
 
@@ -626,9 +672,16 @@ class TsBotController extends Controller
                     }
                 }
             }
-        } catch(TeamSpeak3Exception $e) {
+        } catch (TeamSpeak3Exception $e) {
             //set log
             $this->logController->setLog($e, tsBotLog::FAILED, 'createChannel');
+        } catch (Exception $e) {
+            $this->logController->setCustomLog(
+                $this->serverId,
+                tsBotLog::FAILED,
+                'createChannel',
+                $e->getMessage(),
+            );
         }
     }
 
@@ -793,6 +846,7 @@ class TsBotController extends Controller
     {
         switch ($message) {
             case 'Undefined array key "channel_name"':
+            case 'Undefined array key "cid"':
                 $this->logController->setCustomLog(
                     $this->serverId,
                     tsBotLog::FAILED,

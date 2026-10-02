@@ -403,6 +403,64 @@ class ChannelTest extends TestCase
         $this->assertEquals(0, tsBotWorkerChannelsRemove::query()->where('server_id', 1)->count());
     }
 
+    public function test_event_channel_deleted_with_cid_deletes_channel(): void
+    {
+        CreateServerFactory::new()->create(['id' => 1]);
+        CreateChannelGroupFactory::new()->create();
+        CreateServerGroupFactory::new()->create();
+
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 10, 'pid' => 0, 'channel_name' => 'Root']);
+        CreateJobChannelCreatorFactory::new()->create(['server_id' => 1, 'on_cid' => 10]);
+        CreateJobChannelRemoverFactory::new()->create(['server_id' => 1, 'channel_cid' => 10]);
+
+        $reflection = new \ReflectionClass(\App\Http\Controllers\bot\TsBotController::class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        $serverProp = $reflection->getProperty('serverId');
+        $serverProp->setValue($instance, 1);
+
+        $event = new class
+        {
+            public function getData(): array
+            {
+                return ['cid' => 10];
+            }
+        };
+
+        $method = $reflection->getMethod('eventChannelDeleted');
+        $method->invoke($instance, $event);
+
+        $this->assertEquals(0, \App\Models\tsBot\tsChannel::query()->where('server_id', 1)->count());
+        $this->assertEquals(0, tsBotWorkerChannelsCreate::query()->where('server_id', 1)->count());
+        $this->assertEquals(0, tsBotWorkerChannelsRemove::query()->where('server_id', 1)->count());
+    }
+
+    public function test_event_channel_deleted_without_cid_does_not_throw_exception(): void
+    {
+        CreateServerFactory::new()->create(['id' => 1]);
+        CreateChannelGroupFactory::new()->create();
+        CreateServerGroupFactory::new()->create();
+
+        CreateChannelFactory::new()->create(['server_id' => 1, 'cid' => 10, 'pid' => 0, 'channel_name' => 'Root']);
+
+        $reflection = new \ReflectionClass(\App\Http\Controllers\bot\TsBotController::class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        $serverProp = $reflection->getProperty('serverId');
+        $serverProp->setValue($instance, 1);
+
+        $event = new class
+        {
+            public function getData(): array
+            {
+                return [];
+            }
+        };
+
+        $method = $reflection->getMethod('eventChannelDeleted');
+        $method->invoke($instance, $event);
+
+        $this->assertEquals(1, \App\Models\tsBot\tsChannel::query()->where('server_id', 1)->count());
+    }
+
     public function update_user(): void
     {
         $this->user = User::query()->where('id', '=', 1)->first();
