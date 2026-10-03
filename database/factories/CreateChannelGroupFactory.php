@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3Bot\ts3ChannelGroup;
+use App\Models\tsBot\tsChannelGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateChannelGroupFactory extends Factory
 {
-    protected $model = ts3ChannelGroup::class;
+    protected $model = tsChannelGroup::class;
 
     /**
      * Define the model's default state.

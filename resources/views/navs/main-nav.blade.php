@@ -7,7 +7,7 @@
         <div class="collapse navbar-collapse justify-content-md-center" id="navbarDashboard">
             <ul class="navbar-nav">
             @auth()
-                @if(\Illuminate\Support\Facades\Auth::user()->default_server_id == 0)
+                @if(\Illuminate\Support\Facades\Auth::user()->active_server_id == 0)
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{{Route('serverConfig.view.serverList')}}">Server</a>
                     </li>

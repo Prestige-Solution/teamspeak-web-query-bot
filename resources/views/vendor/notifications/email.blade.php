@@ -39,7 +39,7 @@
 @if (! empty($salutation))
 {{ $salutation }}
 @else
-@lang('Freundliche Grüße'),<br>
+@lang('Regards'),<br>
         <img src="storage/cdi/ps-bot.png" width="50px" style="padding-top: 10px; padding-bottom: 10px;" alt=""><br>PS-Bot Team
 @endif
 
@@ -47,7 +47,8 @@
 @isset($actionText)
 <x-slot:subcopy>
 @lang(
-    "Wenn du Probleme beim Klicken des Buttons hast, dann kopiere nachfolgenden Link in deinen Browser:",
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\n".
+    'into your web browser:',
     [
         'actionText' => $actionText,
     ]

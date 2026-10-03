@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Registrierung abschließen</title>
+    <title>Complete registration</title>
     <style>
         /* -------------------------------------
             GLOBAL RESETS
@@ -333,7 +333,7 @@
     </style>
 </head>
 <body>
-<span class="preheader">Deine Registrierung bei PS-Bot</span>
+<span class="preheader">Your registration at PS-Bot</span>
 <table role="presentation" class="body">
     <tr>
         <td>&nbsp;</td>
@@ -354,10 +354,10 @@
                             <table role="presentation">
                                 <tr>
                                     <td>
-                                        <h2>Willkommen --Benutzername--,</h2>
+                                        <h2>Welcome --Username--,</h2>
                                         <p>
-                                            wir freuen uns, dass du dich für den <b>PS-Bot</b> entschieden hast. Um den Service nutzen zu können, bestätige bitte deine
-                                            E-Mail-Adresse mit Klick auf den nachfolgenden Button.
+                                            we are glad that you have chosen <b>PS-Bot</b>. To use the service, please confirm your
+                                            email address by clicking the button below.
                                         </p>
                                         <table role="presentation" class="btn btn-primary">
                                             <tbody>
@@ -366,7 +366,7 @@
                                                     <table role="presentation">
                                                         <tbody>
                                                         <tr>
-                                                            <td> <a href="#" target="_blank">E-Mail Adresse bestätigen</a> </td>
+                                                            <td> <a href="#" target="_blank">Confirm email address</a> </td>
                                                         </tr>
                                                         </tbody>
                                                     </table>
@@ -380,11 +380,11 @@
                             <table role="presentation">
                                 <tr>
                                     <td>
-                                        <h2>Wie geht es weiter?</h2>
+                                        <h2>What's next?</h2>
                                         <p>
-                                            Wir haben dir eine <a href="#">Tutorial Seite</a> erstellt, in der wir Schritt für Schritt erklären wie du deinen <b>Bot
-                                            "sicher" erstellen</b> kannst. Dort findest du auch die Voraussetzungen welche Berechtigungen der Bot benötigt und wie
-                                            du eine extra Identität anlegen kannst.
+                                            We have created a <a href="#">tutorial page</a> for you, explaining step by step how you can <b>create
+                                            your bot securely</b>. There you will also find the prerequisites, which permissions the bot requires, and how
+                                            you can create an additional identity.
                                         </p>
                                     </td>
                                 </tr>
@@ -392,7 +392,7 @@
                             <table role="presentation">
                                 <tr>
                                     <td>
-                                        <p>Freundliche Grüße<br>
+                                        <p>Kind regards,<br>
                                             <img src="storage/cdi/ps-bot.png" width="50px" style="padding-top: 10px; padding-bottom: 10px;" alt=""><br>
                                         PS-Bot Team
                                         </p>
@@ -411,14 +411,6 @@
                         <tr>
                             <td class="content-block">
                                 <p class="apple-link">Prestige Solutions, 09599 Freiberg, Saxony, Germany</p>
-                                <p style="text-align: left;">
-                                    Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte Informationen.
-
-                                    Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrtümlich erhalten haben,
-                                    informieren Sie bitte sofort den Absender und vernichten Sie diese Mail.
-
-                                    Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
-                                </p>
                                 <p>
                                     This e-mail may contain confidential and/or privileged information. If you are not the
                                     intended recipient (or have received this e-mail in error) please notify the sender

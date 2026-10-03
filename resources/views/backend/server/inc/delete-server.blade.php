@@ -7,7 +7,7 @@
             </div>
             <div class="modal-body">
                 <p class="fw-bold text-danger">
-                    The following settings are irrevocably deleted::
+                    The following settings are irrevocably deleted:
                 </p>
                 <ul>
                     <li>Banner configurations and templates</li>

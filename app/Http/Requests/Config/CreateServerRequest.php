@@ -22,13 +22,13 @@ class CreateServerRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (str_replace(' ', '', $this->input('qa_nickname') == '')) {
+        if (str_replace(' ', '', (string) $this->input('qa_nickname')) === '') {
             $this->merge([
                 'qa_nickname' => 'web-query-bot',
             ]);
         } else {
             $this->merge([
-                'qa_nickname' => str_replace(' ', '', $this->input('qa_nickname')),
+                'qa_nickname' => str_replace(' ', '', (string) $this->input('qa_nickname')),
             ]);
         }
     }
@@ -40,7 +40,7 @@ class CreateServerRequest extends FormRequest
     {
         return [
             'server_name'=>'required',
-            'server_ip' => 'required|unique:ts3_server_configs,server_ip',
+            'server_ip' => 'required',
             'qa_name' => 'required',
             'qa_pw' => 'required',
             'server_query_port' => 'nullable|integer',
@@ -57,7 +57,6 @@ class CreateServerRequest extends FormRequest
             'server_name.required'=>'Enter a server name',
             'server_ip.required' => 'Enter an IP address',
             'server_ip.not_regex' => 'The IP address contains non-permitted characters',
-            'server_ip.unique' => 'The IP address already exists',
             'qa_name.required' => 'Enter a query admin name',
             'qa_name.min'=>'The query admin name must contain at least 3 characters',
             'qa_name.not_regex' => 'The server query admin name contains non-permitted characters',

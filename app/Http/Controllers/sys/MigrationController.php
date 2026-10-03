@@ -4,17 +4,19 @@ namespace App\Http\Controllers\sys;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Migration\StartMigrationRequest;
-use App\Jobs\ts3MigrationQueue;
-use App\Models\ts3Bot\ts3ServerConfig;
-use Illuminate\Support\Facades\Auth;
+use App\Jobs\tsMigrationQueue;
+use App\Models\tsBot\tsServerConfig;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class MigrationController extends Controller
 {
-    public function viewMigration()
+    /**
+     * @return View
+     */
+    public function viewMigration(): View
     {
-        $servers = ts3ServerConfig::query()
-            ->where('user_id', '=', Auth::user()->id)
-            ->get();
+        $servers = tsServerConfig::query()->get();
 
         //get logs
         $today = now()->format('Y-m-d');
@@ -32,12 +34,27 @@ class MigrationController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @param  StartMigrationRequest  $request
+     * @return RedirectResponse
      */
-    public function startMigration(StartMigrationRequest $request)
+    public function startMigration(StartMigrationRequest $request): RedirectResponse
     {
-        ts3MigrationQueue::dispatch($request->validated('source_server_id'), $request->validated('target_server_id'))->onConnection('worker')->onQueue('migration');
+        $this->resetLogs();
+
+        tsMigrationQueue::dispatch($request->validated('source_server_id'), $request->validated('target_server_id'))->onConnection('worker')->onQueue('migration');
 
         return redirect()->route('migration.view.migrationSettings')->with('success', 'Migration started');
+    }
+
+    private function resetLogs(): void
+    {
+        $logFiles = glob(storage_path('logs/migration*.log'));
+        if ($logFiles !== false) {
+            foreach ($logFiles as $logFile) {
+                if (file_exists($logFile)) {
+                    unlink($logFile);
+                }
+            }
+        }
     }
 }

@@ -13,7 +13,7 @@ class catBotStatusSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         catBotStatus::query()->create([
             'status_name'=>'Running',
@@ -22,7 +22,7 @@ class catBotStatusSeeder extends Seeder
             'status_name'=>'Trying to (re)connect',
         ]);
         catBotStatus::query()->create([
-            'status_name'=>'Stopped',
+            'status_name'=>'Offline',
         ]);
         catBotStatus::query()->create([
             'status_name'=>'Failed',

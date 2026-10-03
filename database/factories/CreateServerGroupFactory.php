@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3Bot\ts3ServerGroup;
+use App\Models\tsBot\tsServerGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CreateServerGroupFactory extends Factory
 {
-    protected $model = ts3ServerGroup::class;
+    protected $model = tsServerGroup::class;
 
     /**
      * Define the model's default state.

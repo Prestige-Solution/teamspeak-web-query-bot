@@ -6,23 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Channel\DeleteChannelJobRequest;
 use App\Http\Requests\Channel\UpsertChannelJobRequest;
 use App\Http\Requests\Channel\ViewListChannelJobsRequest;
-use App\Models\ts3Bot\ts3Channel;
-use App\Models\ts3Bot\ts3ChannelGroup;
-use App\Models\ts3Bot\ts3ServerGroup;
-use App\Models\ts3BotEvents\ts3BotAction;
-use App\Models\ts3BotEvents\ts3BotActionUser;
-use App\Models\ts3BotEvents\ts3BotEvent;
-use App\Models\ts3BotWorkers\ts3BotWorkerChannelsCreate;
+use App\Models\tsBot\tsChannel;
+use App\Models\tsBot\tsChannelGroup;
+use App\Models\tsBot\tsServerGroup;
+use App\Models\tsBotEvents\tsBotAction;
+use App\Models\tsBotEvents\tsBotActionUser;
+use App\Models\tsBotEvents\tsBotEvent;
+use App\Models\tsBotWorkers\tsBotWorkerChannelsCreate;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 
 class ChannelController extends Controller
 {
     public function viewChannelJobs(ViewListChannelJobsRequest $request): View|Factory|RedirectResponse|Application
     {
-        $jobs = ts3BotWorkerChannelsCreate::query()
+        $jobs = tsBotWorkerChannelsCreate::query()
             ->with([
                 'rel_servers',
                 'rel_types',
@@ -39,24 +40,26 @@ class ChannelController extends Controller
             ->orderBy('on_cid')
             ->get();
 
-        $tsChannels = ts3Channel::query()
+        $channels = tsChannel::query()
             ->where('server_id', '=', $request->validated('server_id'))
-            ->orderBy('channel_order')
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
 
-        $tsChannelTemplates = ts3Channel::query()
+        $tsChannels = $this->buildChannelOptions($channels->toBase());
+
+        $templateChannels = tsChannel::query()
             ->where('server_id', '=', $request->validated('server_id'))
             ->whereNot('channel_name', 'like', '%spacer%')
-            ->orderBy('cid')
             ->get(['id', 'channel_name', 'cid', 'pid', 'channel_order']);
 
-        $botEvents = ts3BotEvent::query()->where('cat_job_type', '=', 2)->get();
-        $botActions = ts3BotAction::query()->where('type_id', '=', 1)->get();
-        $botActionUsers = ts3BotActionUser::query()->get();
-        $tsServerGroups = ts3ServerGroup::query()->where('server_id', '=', $request->validated('server_id'))
+        $tsChannelTemplates = $this->buildChannelOptions($templateChannels->toBase());
+
+        $botEvents = tsBotEvent::query()->where('cat_job_type', '=', 2)->get();
+        $botActions = tsBotAction::query()->where('type_id', '=', 1)->get();
+        $botActionUsers = tsBotActionUser::query()->get();
+        $tsServerGroups = tsServerGroup::query()->where('server_id', '=', $request->validated('server_id'))
             ->where('type', '=', 1)->get(['sgid', 'name']);
 
-        $tsChannelGroups = ts3ChannelGroup::query()->where('server_id', '=', $request->validated('server_id'))
+        $tsChannelGroups = tsChannelGroup::query()->where('server_id', '=', $request->validated('server_id'))
             ->where('type', '=', 1)->get(['id', 'cgid', 'name']);
 
         return view('backend.jobs.channel-creator.channel-creator-job-list')->with([
@@ -73,7 +76,7 @@ class ChannelController extends Controller
 
     public function upsertChannelJob(UpsertChannelJobRequest $request): RedirectResponse
     {
-        ts3BotWorkerChannelsCreate::query()->updateOrCreate(
+        tsBotWorkerChannelsCreate::query()->updateOrCreate(
             [
                 'server_id'=>$request->validated('server_id'),
                 'type_id'=>1,
@@ -100,12 +103,41 @@ class ChannelController extends Controller
 
     public function deleteChannelJob(DeleteChannelJobRequest $request): RedirectResponse
     {
-        //delete entry
-        ts3BotWorkerChannelsCreate::query()
-            ->where('id', '=', $request->validated('id'))
-            ->where('server_id', '=', $request->validated('server_id'))
-            ->delete();
+        $this->deleteChannelCreateJobsById($request->validated('server_id'), $request->validated('id'));
 
         return redirect()->route('channel.view.channelJobs')->with(['success'=>'The job was successfully deleted']);
+    }
+
+    private function buildChannelOptions(
+        Collection $channels,
+        int $pid = 0,
+        string $prefix = ''
+    ): Collection {
+        $children = $channels->where('pid', $pid)->sortBy('channel_order')->values();
+        $total = $children->count();
+
+        return $children->flatMap(function (tsChannel $channel, int $index) use ($channels, $prefix, $total, $pid): Collection {
+            $isLast = ($index === $total - 1);
+            $marker = $pid === 0 ? '' : ($isLast ? "└──\u{00A0}" : "├──\u{00A0}");
+            $channel->tree_channel_name = $prefix.$marker.$channel->channel_name;
+            $nextPrefix = $prefix.($pid === 0 ? '' : ($isLast ? "\u{00A0}\u{00A0}\u{00A0}\u{00A0}" : "│\u{00A0}\u{00A0}\u{00A0}"));
+
+            return collect([$channel])->merge(
+                $this->buildChannelOptions($channels, $channel->cid, $nextPrefix)
+            );
+        })->values();
+    }
+
+    private function deleteChannelCreateJobsById(int $serverId, int $id): void
+    {
+        tsBotWorkerChannelsCreate::query()
+            ->where('id', '=', $id)
+            ->where('server_id', '=', $serverId)
+            ->delete();
+    }
+
+    public function deleteChannelCreateJobsByServerId(int $serverId): void
+    {
+        tsBotWorkerChannelsCreate::query()->where('server_id', '=', $serverId)->delete();
     }
 }

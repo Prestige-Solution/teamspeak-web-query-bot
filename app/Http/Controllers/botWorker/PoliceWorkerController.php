@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\sys\Ts3LogController;
-use App\Http\Controllers\ts3Config\BadNameController;
-use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
-use App\Models\ts3Bot\ts3BotLog;
-use App\Models\ts3Bot\ts3ServerConfig;
-use App\Models\ts3BotWorkers\ts3BotWorkerPolice;
-use App\Models\ts3BotWorkers\ts3BotWorkerPoliceVpnProtection;
+use App\Http\Controllers\sys\TsLogController;
+use App\Http\Controllers\tsConfig\BadNameController;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
+use App\Models\tsBot\tsBotLog;
+use App\Models\tsBot\tsServerConfig;
+use App\Models\tsBotWorkers\tsBotWorkerPolice;
+use App\Models\tsBotWorkers\tsBotWorkerPoliceVpnProtection;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
@@ -23,20 +23,20 @@ use PlanetTeamSpeak\TeamSpeak3Framework\TeamSpeak3;
 
 class PoliceWorkerController extends Controller
 {
-    protected int $server_id;
+    protected int $serverId;
 
-    protected string $qa_name;
+    protected string $qaName;
 
-    protected bool $is_bot_alive = false;
+    protected bool $isBotAlive = false;
 
-    protected Server|Adapter|Host|Node $ts3_VirtualServer;
+    protected Server|Adapter|Host|Node $tsVirtualServer;
 
-    protected Ts3LogController $logController;
+    protected TsLogController $logController;
 
-    public function __construct(int $server_id)
+    public function __construct(int $serverId)
     {
-        $this->server_id = $server_id;
-        $this->logController = new Ts3LogController('Police-Worker', $this->server_id);
+        $this->serverId = $serverId;
+        $this->logController = new TsLogController('Police-Worker', $this->serverId);
     }
 
     /**
@@ -45,42 +45,44 @@ class PoliceWorkerController extends Controller
     public function startPolice(): void
     {
         //get Server config
-        $ts3ServerConfig = ts3ServerConfig::query()
-            ->where('id', '=', $this->server_id)->first();
+        $tsServerConfig = tsServerConfig::query()
+            ->where('id', '=', $this->serverId)->first();
 
-        if ($ts3ServerConfig->qa_nickname != null) {
-            $this->qa_name = $ts3ServerConfig->qa_nickname;
+        if ($tsServerConfig->qa_nickname != null) {
+            $this->qaName = $tsServerConfig->qa_nickname;
         } else {
-            $this->qa_name = $ts3ServerConfig->qa_name;
+            $this->qaName = $tsServerConfig->qa_name;
         }
 
         //get uri with StringHelper
-        $ts3StringHelper = new Ts3UriStringHelperController();
-        $uri = $ts3StringHelper->getStandardUriString(
-            $ts3ServerConfig->qa_name,
-            $ts3ServerConfig->qa_pw,
-            $ts3ServerConfig->server_ip,
-            $ts3ServerConfig->server_query_port,
-            $ts3ServerConfig->server_port,
-            $this->qa_name.'-Police-Worker',
-            $this->server_id,
+        $tsStringHelper = new TsUriStringHelperController();
+        $uri = $tsStringHelper->getStandardUriString(
+            $tsServerConfig->qa_name,
+            $tsServerConfig->qa_pw,
+            $tsServerConfig->server_ip,
+            $tsServerConfig->server_query_port,
+            $tsServerConfig->server_port,
+            $this->qaName.'-Police-Worker',
+            $this->serverId,
         );
 
         try {
-            $this->ts3_VirtualServer = TeamSpeak3::factory($uri);
+            $this->tsVirtualServer = TeamSpeak3::factory($uri);
         } catch(Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
-                ts3BotLog::FAILED,
+                $this->serverId,
+                tsBotLog::FAILED,
                 'Start Police-Worker',
                 'There was an error while attempting to communicate with the server',
                 $e->getCode(),
                 $e->getMessage()
             );
+
+            return;
         }
 
         //policeWorker Settings
-        $policeWorkerSetting = ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->first();
+        $policeWorkerSetting = tsBotWorkerPolice::query()->where('server_id', '=', $this->serverId)->first();
 
         //check VPN
         if ($policeWorkerSetting->is_vpn_protection_active == true && ! empty($policeWorkerSetting->vpn_protection_api_register_mail)) {
@@ -97,7 +99,7 @@ class PoliceWorkerController extends Controller
             $this->checkBadName();
         }
 
-        $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+        $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
     }
 
     private function checkVpn($policeWorkerSetting): void
@@ -105,12 +107,12 @@ class PoliceWorkerController extends Controller
         try {
             //api police / max 15 per Minute and 500 per day
             //query Count over all Server
-            $apiQueryCountSum = ts3BotWorkerPolice::query()
-                ->where('server_id', '=', $this->server_id)
+            $apiQueryCountSum = tsBotWorkerPolice::query()
+                ->where('server_id', '=', $this->serverId)
                 ->sum('vpn_protection_query_count');
             //sum query count per day
-            $apiQueryCountPerDaySum = ts3BotWorkerPolice::query()
-                ->where('server_id', '=', $this->server_id)
+            $apiQueryCountPerDaySum = tsBotWorkerPolice::query()
+                ->where('server_id', '=', $this->serverId)
                 ->sum('vpn_protection_query_per_day');
 
             //max count per Server
@@ -125,17 +127,17 @@ class PoliceWorkerController extends Controller
             //if not reach api max query per day
             if ($apiQueryCountPerDaySum <= $policeWorkerSetting->vpn_protection_max_query_per_day) {
                 //get clients
-                $this->ts3_VirtualServer->clientListReset();
-                $clientList = collect($this->ts3_VirtualServer->clientList(['clid']));
+                $this->tsVirtualServer->clientListReset();
+                $clientList = collect($this->tsVirtualServer->clientList(['clid']));
 
                 foreach ($clientList->keys()->all() as $clid) {
-                    $clidInfo = $this->ts3_VirtualServer->clientGetById($clid)->getInfo();
+                    $clidInfo = $this->tsVirtualServer->clientGetById($clid)->getInfo();
                     $clidIP = $clidInfo['connection_client_ip'];
                     $checked = false;
                     $kickResult = false;
 
                     //check if ip is known
-                    $knownIpCheck = ts3BotWorkerPoliceVpnProtection::query()->where('ip_address', '=', $clidIP)->first();
+                    $knownIpCheck = tsBotWorkerPoliceVpnProtection::query()->where('ip_address', '=', $clidIP)->first();
                     if ($knownIpCheck != null && $knownIpCheck->check_result != 'VPN Detection') {
                         $checked = true;
                     } elseif ($knownIpCheck != null && $knownIpCheck->check_result == 'VPN Detection') {
@@ -144,7 +146,7 @@ class PoliceWorkerController extends Controller
                     }
 
                     //ignore own sgid
-                    if (Str::contains($clidInfo['client_nickname'], $this->qa_name) == true || $clidInfo['client_nickname'] == 'serveradmin') {
+                    if (Str::contains($clidInfo['client_nickname'], $this->qaName) == true || $clidInfo['client_nickname'] == 'serveradmin') {
                         $kickResult = false;
                         $checked = true;
                     }
@@ -169,9 +171,9 @@ class PoliceWorkerController extends Controller
                                 //kick is true
                                 $kickResult = true;
                                 //store ip with check_result = vpn
-                                ts3BotWorkerPoliceVpnProtection::query()->updateOrCreate(
+                                tsBotWorkerPoliceVpnProtection::query()->updateOrCreate(
                                     [
-                                        'server_id'=>$this->server_id,
+                                        'server_id'=>$this->serverId,
                                         'ip_address'=>$clidIP,
                                     ],
                                     [
@@ -179,9 +181,9 @@ class PoliceWorkerController extends Controller
                                     ]
                                 );
                             } else {
-                                ts3BotWorkerPoliceVpnProtection::query()->updateOrCreate(
+                                tsBotWorkerPoliceVpnProtection::query()->updateOrCreate(
                                     [
-                                        'server_id'=>$this->server_id,
+                                        'server_id'=>$this->serverId,
                                         'ip_address'=>$clidIP,
                                     ],
                                     [
@@ -197,79 +199,79 @@ class PoliceWorkerController extends Controller
 
                             //proof lock time
                             if ($apiQueryCountSum >= $apiQueryMaxCount) {
-                                ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->update([
+                                tsBotWorkerPolice::query()->where('server_id', '=', $this->serverId)->update([
                                     'vpn_protection_next_check_available_at'=>Carbon::now()->addMinutes(15),
                                 ]);
                             }
                         }
                     }
                     if ($kickResult == true) {
-                        $this->ts3_VirtualServer->clientPoke($clid, 'VPN was detected. Pleas report to a Teamspeak administrator or turn off VPN');
-                        $this->ts3_VirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'VPN was detected. Pleas report to a Teamspeak administrator or turn off VPN');
+                        $this->tsVirtualServer->clientPoke($clid, 'VPN was detected. Please report to a Teamspeak administrator or turn off VPN');
+                        $this->tsVirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'VPN was detected. Please report to a Teamspeak administrator or turn off VPN');
                     }
                 }
 
                 //set query request count
-                ts3BotWorkerPolice::query()->where('server_id', '=', $this->server_id)->update([
+                tsBotWorkerPolice::query()->where('server_id', '=', $this->serverId)->update([
                     'vpn_protection_query_count'=>$apiQueryCountServer,
                     'vpn_protection_query_per_day'=>$apiQueryCountPerDay + $apiQueryCountThisProcess,
                 ]);
             }
         } catch (Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
-                ts3BotLog::FAILED,
+                $this->serverId,
+                tsBotLog::FAILED,
                 'Check VPN',
                 'There was an error during check vpn',
                 $e->getCode(),
                 $e->getMessage()
             );
 
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
     private function checkBotKeepAlive(): void
     {
         try {
-            $checkBotIsWorking = collect($this->ts3_VirtualServer->clientList(['client_nickname'=>$this->qa_name]));
+            $checkBotIsWorking = collect($this->tsVirtualServer->clientList(['client_nickname'=>$this->qaName]));
 
             foreach ($checkBotIsWorking->keys()->all() as $clid) {
-                $BotQueryName = $this->ts3_VirtualServer->clientGetById($clid);
+                $botQueryName = $this->tsVirtualServer->clientGetById($clid);
 
-                if ($BotQueryName['client_nickname'] == $this->qa_name) {
-                    $this->is_bot_alive = true;
+                if ($botQueryName['client_nickname'] == $this->qaName) {
+                    $this->isBotAlive = true;
                 }
             }
 
-            if ($this->is_bot_alive === false) {
+            if ($this->isBotAlive === false) {
                 $this->logController->setCustomLog(
-                    $this->server_id,
-                    ts3BotLog::STOPPED,
+                    $this->serverId,
+                    tsBotLog::SHUTDOWN,
                     'checkBotWork',
                     'No active bot found on the server',
                 );
 
-                ts3ServerConfig::query()
-                    ->where('id', '=', $this->server_id)
+                tsServerConfig::query()
+                    ->where('id', '=', $this->serverId)
                     ->update([
-                        'bot_status_id'=>ts3BotLog::STOPPED,
+                        'bot_status_id'=>tsBotLog::SHUTDOWN,
                     ]);
 
-                $policeWorkerSetting = ts3BotWorkerPolice::query()
-                    ->where('server_id', '=', $this->server_id)
+                $policeWorkerSetting = tsBotWorkerPolice::query()
+                    ->where('server_id', '=', $this->serverId)
                     ->first(['discord_webhook_url', 'is_discord_webhook_active']);
 
                 if ($policeWorkerSetting->is_discord_webhook_active == true) {
                     $response = Http::post(Crypt::decryptString($policeWorkerSetting->discord_webhook_url), [
-                        'content' => $this->qa_name.' is missing on Teamspeak Server. He has probably stopped working',
-                        'username' => $this->qa_name.'-Police-Worker',
+                        'content' => $this->qaName.' is missing on Teamspeak Server. He has probably stopped working',
+                        'username' => $this->qaName.'-Police-Worker',
                     ]);
 
                     if ($response->status() != 204) {
                         $this->logController->setCustomLog(
-                            $this->server_id,
-                            ts3BotLog::FAILED,
+                            $this->serverId,
+                            tsBotLog::FAILED,
                             'checkBotAlive',
                             'Webhook could not be send.',
                         );
@@ -278,15 +280,15 @@ class PoliceWorkerController extends Controller
             }
         } catch (Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
-                ts3BotLog::FAILED,
+                $this->serverId,
+                tsBotLog::FAILED,
                 'Check Bot Keep Alive',
                 'There was an error during check bot keep alive',
                 $e->getCode(),
                 $e->getMessage()
             );
 
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 
@@ -296,34 +298,34 @@ class PoliceWorkerController extends Controller
 
         try {
             //get all clients
-            $this->ts3_VirtualServer->clientListReset();
-            $clientList = collect($this->ts3_VirtualServer->clientList(['clid']));
+            $this->tsVirtualServer->clientListReset();
+            $clientList = collect($this->tsVirtualServer->clientList(['clid']));
 
             foreach ($clientList->keys()->all() as $clid) {
                 //proof only client_type = 0 / 1 = serverquery
-                $clidInfo = $this->ts3_VirtualServer->clientGetById($clid);
+                $clidInfo = $this->tsVirtualServer->clientGetById($clid);
 
                 if ($clidInfo['client_type'] == 0) {
-                    $badNameProofResult = $badNameController->checkBadName($clidInfo['client_nickname'], $this->server_id);
+                    $badNameProofResult = $badNameController->checkBadName($clidInfo['client_nickname'], $this->serverId);
 
                     if ($badNameProofResult == true) {
                         //kick client
-                        $this->ts3_VirtualServer->clientPoke($clid, 'Your nickname is not allowed on this server!');
-                        $this->ts3_VirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'Your nickname is not allowed on this server!');
+                        $this->tsVirtualServer->clientPoke($clid, 'Your nickname is not allowed on this server!');
+                        $this->tsVirtualServer->clientKick($clid, TeamSpeak3::KICK_SERVER, 'Your nickname is not allowed on this server!');
                     }
                 }
             }
         } catch (Exception $e) {
             $this->logController->setCustomLog(
-                $this->server_id,
-                ts3BotLog::FAILED,
+                $this->serverId,
+                tsBotLog::FAILED,
                 'Check Bad Name',
                 'There was an error during check bad name',
                 $e->getCode(),
                 $e->getMessage()
             );
 
-            $this->ts3_VirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
+            $this->tsVirtualServer->getParent()->getAdapter()->getTransport()->disconnect();
         }
     }
 }

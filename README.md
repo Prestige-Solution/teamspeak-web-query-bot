@@ -1,40 +1,47 @@
-# Teamspeak Web Query Bot
-Your TS server, your rules – but without the admin stress.<br>
-Tired of clicking around in the server query? Our web app does all the work for you: create channels, set permissions, manage users – everything runs automatically.<br> Log in, set up and sit back.<br>
+# TeamSpeak Web Query Bot
+
+Your TeamSpeak server, your rules – without the administrative stress.<br>
+Tired of clicking around in the server query? Our web app handles the heavy lifting for you: create channels, set permissions, manage users – everything runs automatically.<br>
+Log in, configure, and sit back.<br>
 Less admin, more gaming.
 
 ---
 
-# Features
-- Create dynamic channels and define client actions in just a few clicks with the Channel Creator, it's that simple.
-- Let the Channel Remover do the cleanup automatically removing sub-channels you no longer need.
-- Create your individual banners and display them dynamically in your Teamspeak
-- Custom banners, dynamic impact: craft your message and display it in TeamSpeak with style.
-- Define what’s allowed and what’s not. Block bad names for channels and users effortlessly.
-- Scale made simple: handle multiple TeamSpeak servers from one place.
-- Full SSH query support
+## Features
+
+- **Channel Creator:** Create dynamic channels and define client actions in just a few clicks.
+- **Channel Remover:** Automatically clean up temporary or unused sub-channels.
+- **Dynamic Banners:** Create customized banners and display real-time server information dynamically in TeamSpeak.
+- **Name Police:** Define what is allowed and what is not. Block forbidden nicknames and channel names effortlessly.
+- **Multi-Server Management:** Scale made simple: manage multiple TeamSpeak servers from a single dashboard.
+- **SSH Query Support:** Full support for secure SSH ServerQuery connections.
 
 ---
 
-# Installation & Setup
-## Requirements
-* Webserver (e.g. apache, nginx)
-* PHP 8.2 or newer with the following extensions
-  * see [Laravel Development](https://laravel.com/docs/12.x/deployment)
-  * ssh2
-  * gd
-* Database (Recommended: MySQL or Postgres)
-* Git
-* Composer
-* npm
+## Installation & Setup
 
-## Setup & Installation Guide
-There are a few Important Steps and Configurations.<br>
-Read the [Installation & Setup Guide](docs/installation.md)
+### Requirements
+
+- **Web Server:** Nginx or Apache
+- **PHP:** 8.3 or newer with required extensions:
+  - `curl`, `gd`, `ssh2`, `intl`, `mbstring`, `xml`, `bz2`, `zip`
+  - Database driver: `pdo_mysql` (MySQL/MariaDB) or `pdo_pgsql` (PostgreSQL)
+  - See [Laravel Deployment Documentation](https://laravel.com/docs/12.x/deployment)
+- **Database:** MySQL 8.0+, MariaDB 10.3+, or PostgreSQL 13+
+- **Composer:** v2.x
+- **Node.js & npm:** v18.x or newer (*optional*, only needed if developing or rebuilding frontend assets)
+- **Supervisor:** For running persistent bot instances and queue workers
+- **Git**
+
+### Installation Guide
+
+For detailed step-by-step instructions, see the [Installation & Setup Guide](docs/installation.md).
 
 ---
 
-# Teamspeak Permission
-- Use your serveradmin query account to have the max power and control to your server
-- Or you can define a specific Bot identity, but remember there has in some situations not enough power.
-With our Logging implementation you can see what the Bot does.
+## TeamSpeak Permissions
+
+- **ServerAdmin Query Account:** Recommended for full administrative control and seamless bot operations.
+- **Custom Bot Identity:** You can create a dedicated ServerQuery identity, but ensure it has sufficient permissions granted for the configured bot features (channel creation, client kicks/moves, group assignments, etc.).
+
+All bot operations and ServerQuery interactions are tracked via the built-in logging system.

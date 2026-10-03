@@ -23,7 +23,7 @@ class CreateUploadedTemplateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'server_id' => Auth::user()->default_server_id,
+            'server_id' => Auth::user()->active_server_id,
         ]);
     }
 
@@ -33,7 +33,7 @@ class CreateUploadedTemplateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'banner_original_file_name'=>'required|mimes:png',
+            'banner_original_file_name'=>'required|image|mimes:png|max:5120',
             'server_id'=>'required|numeric',
             'banner_name' => 'required',
         ];

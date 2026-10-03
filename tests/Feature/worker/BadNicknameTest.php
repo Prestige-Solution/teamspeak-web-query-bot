@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\worker;
 
-use App\Http\Controllers\ts3Config\BadNameController;
+use App\Http\Controllers\tsConfig\BadNameController;
 use App\Models\sys\badName;
 use App\Models\User;
 use Database\Factories\CreateBadNicknameFactory;
@@ -35,7 +35,7 @@ class BadNicknameTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->get(route('worker.view.badNames'));
@@ -50,7 +50,7 @@ class BadNicknameTest extends TestCase
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $updateArray = CreateBadNicknameFactory::new()->make()->toArray();
@@ -73,7 +73,7 @@ class BadNicknameTest extends TestCase
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create();
         CreateBadNicknameFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $currentDB = badName::query()->get();
@@ -94,27 +94,47 @@ class BadNicknameTest extends TestCase
         CreateServerGroupFactory::new()->create();
         CreateWorkerPoliceSettingsFactory::new()->create(['is_bad_name_protection_global_list_active'=>true]);
         CreateBadNicknameFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $badNameController = new BadNameController();
-        $result = $badNameController->checkBadName('admin', $this->user->default_server_id);
+        $result = $badNameController->checkBadName('admin', $this->user->active_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('Administrator', $this->user->default_server_id);
+        $result = $badNameController->checkBadName('Administrator', $this->user->active_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('Factory', $this->user->default_server_id);
+        $result = $badNameController->checkBadName('Factory', $this->user->active_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('factory', $this->user->default_server_id);
+        $result = $badNameController->checkBadName('factory', $this->user->active_server_id);
         $this->assertTrue($result);
 
-        $result = $badNameController->checkBadName('Hans', $this->user->default_server_id);
+        $result = $badNameController->checkBadName('Hans', $this->user->active_server_id);
         $this->assertFalse($result);
 
-        $result = $badNameController->checkBadName('Rick', $this->user->default_server_id);
+        $result = $badNameController->checkBadName('Rick', $this->user->active_server_id);
         $this->assertFalse($result);
+    }
+
+    public function test_post_create_new_bad_nickname_validation_fails_for_missing_fields()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('worker.create.newBadName'), []);
+        $response->assertSessionHasErrors(['description', 'value_option', 'value']);
+    }
+
+    public function test_post_delete_bad_nickname_validation_fails_for_non_existent_id()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $response = $this->actingAs($this->user)->post(route('worker.delete.badName'), ['id' => 999]);
+        $response->assertSessionHasErrors(['id']);
     }
 
     private function update_user(): void

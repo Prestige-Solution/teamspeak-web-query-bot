@@ -27,7 +27,7 @@ agreed):**
 
 _**Hint**: Use Gherkin syntax to lay them out. It is complete and explicit, human-readable but easy to convert into self-executable tests._
 
-_**Tip**: A scenario title should describe in a complete sentence what happens in that scenario, to improve readability and indability._
+_**Tip**: A scenario title should describe in a complete sentence what happens in that scenario, to improve readability and findability._
 
 **OK**: `Administrator logs into back-office`
 **BAD**: `Backoffice login`

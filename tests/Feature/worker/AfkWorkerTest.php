@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\worker;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
+use App\Models\tsBotWorkers\tsBotWorkerAfk;
 use App\Models\User;
 use Database\Factories\CreateChannelFactory;
 use Database\Factories\CreateChannelGroupFactory;
@@ -32,7 +32,7 @@ class AfkWorkerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $response = $this->actingAs($this->user)->get(route('worker.view.createOrUpdateAfkWorker'));
@@ -45,7 +45,7 @@ class AfkWorkerTest extends TestCase
         CreateChannelFactory::new()->create();
         CreateChannelGroupFactory::new()->create();
         CreateServerGroupFactory::new()->create();
-        User::query()->where('id', '=', 1)->update(['default_server_id'=>1]);
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
         $this->update_user();
 
         $updateArray = UpdateWorkerAfkSettingsFactory::new()->make()->toArray();
@@ -57,11 +57,26 @@ class AfkWorkerTest extends TestCase
         $response->assertRedirectToRoute('worker.view.createOrUpdateAfkWorker');
 
         //checks
-        $dbResult = ts3BotWorkerAfk::query()->get();
+        $dbResult = tsBotWorkerAfk::query()->get();
         $this->assertCount(1, $dbResult);
         $this->assertEquals(1, $dbResult->first()->is_afk_active);
         $this->assertEquals(1, $dbResult->first()->is_afk_kicker_active);
         $this->assertEquals(2 * 1000 * 60, $dbResult->first()->afk_kicker_max_idle_time);
+    }
+
+    public function test_post_update_afk_worker_settings_validation_fails_for_missing_afk_channel_when_active()
+    {
+        CreateServerFactory::new()->create();
+        User::query()->where('id', '=', 1)->update(['active_server_id'=>1]);
+        $this->update_user();
+
+        $updateArray = UpdateWorkerAfkSettingsFactory::new()->make([
+            'is_afk_active' => true,
+            'afk_channel_cid' => null,
+        ])->toArray();
+
+        $response = $this->actingAs($this->user)->post(route('worker.update.afkWorker'), $updateArray);
+        $response->assertSessionHasErrors(['afk_channel_cid']);
     }
 
     private function update_user(): void

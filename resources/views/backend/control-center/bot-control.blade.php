@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    @if(empty($server) || \Illuminate\Support\Facades\Auth::user()->default_server_id === 0)
+    @if(empty($server) || \Illuminate\Support\Facades\Auth::user()->active_server_id === 0)
     <div class="container mt-2">
         <div class="row">
             <div class="col-lg-12">
@@ -81,18 +81,18 @@
                     <div class="row">
                         <div class="col-lg-auto">
                             @if($server->is_bot_update == false)
-                                @if($server->is_ts3_start == 0 && $server->bot_status_id == 3)
-                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts3.start.ts3Bot')}}">
+                                @if($server->is_ts_start == 0 && $server->bot_status_id == 3)
+                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts.start.tsBot')}}">
                                         @csrf
                                         <button type="submit" class="btn btn-success"><i class="fa-solid fa-circle-play"></i> Start</button>
                                     </form>
-                                @elseif($server->is_ts3_start == 0 && $server->bot_status_id != 3)
-                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts3.start.ts3Bot')}}">
+                                @elseif($server->is_ts_start == 0 && $server->bot_status_id != 3)
+                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts.start.tsBot')}}">
                                         @csrf
                                         <button type="submit" class="btn btn-warning"><i class="fa-solid fa-circle-play"></i> Restart</button>
                                     </form>
                                 @else
-                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts3.stop.ts3Bot')}}">
+                                    <form class="mb-2 ms-2" method="post" action="{{Route('ts.stop.tsBot')}}">
                                         @csrf
                                         <button type="submit" class="btn btn-danger"><i class="fa-solid fa-circle-stop"></i> Stop</button>
                                     </form>

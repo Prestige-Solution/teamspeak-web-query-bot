@@ -13,7 +13,7 @@ This project follows a Code of Conduct. By participating, you agree to uphold a 
 
 ## How to Contribute
 
-### 🐛 Reporting Bugs
+### Reporting Bugs
 
 If you find a bug:
 
@@ -27,7 +27,7 @@ If you find a bug:
 
 ---
 
-### 💡 Suggesting Features
+### Suggesting Features
 
 Feature ideas are welcome.<br> 
 When proposing a feature, please include:
@@ -39,7 +39,7 @@ When proposing a feature, please include:
 
 ---
 
-### 🔧 Contributing Code
+### Contributing Code
 
 1. Fork the repository
 2. Create a new branch:
@@ -52,7 +52,7 @@ When proposing a feature, please include:
    - tests pass (if applicable)
    - code is formatted consistently
 5. Commit your changes:
-   ```
+   ```bash
    git commit -m "feat: short description of the change"
    ```
 6. Push your branch:

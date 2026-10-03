@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\botWorker;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ts3Config\Ts3UriStringHelperController;
-use App\Models\ts3Bot\ts3ServerConfig;
+use App\Http\Controllers\tsConfig\TsUriStringHelperController;
+use App\Models\tsBot\tsServerConfig;
 use Illuminate\Support\Facades\Log;
 use PlanetTeamSpeak\TeamSpeak3Framework\Adapter\Adapter;
 use PlanetTeamSpeak\TeamSpeak3Framework\Exception\AdapterException;
@@ -22,30 +22,32 @@ class MigrationController extends Controller
 
     protected Server|Adapter|Node|Host $targetConnection;
 
-    protected int $source_server_id = 0;
+    protected int $sourceServerId = 0;
 
-    protected int $target_server_id = 0;
+    protected int $targetServerId = 0;
 
     /**
      * @throws \Exception
      */
-    public function __construct(int $source_server_id, int $target_server_id)
+    public function __construct(int $sourceServerId, int $targetServerId)
     {
-        $this->source_server_id = $source_server_id;
-        $this->target_server_id = $target_server_id;
+        $this->sourceServerId = $sourceServerId;
+        $this->targetServerId = $targetServerId;
     }
 
     /**
      * @throws \Exception
      */
-    public function setup_connections()
+    public function setupConnections(): void
     {
-        $source_server_config = ts3ServerConfig::query()
-            ->where('id', '=', $this->source_server_id)
+        $this->resetLogs();
+
+        $source_server_config = tsServerConfig::query()
+            ->where('id', '=', $this->sourceServerId)
             ->first();
 
-        //setup source server
-        $uriSourceHelperClass = new Ts3UriStringHelperController();
+        //set up source server
+        $uriSourceHelperClass = new TsUriStringHelperController();
         $uriSource = $uriSourceHelperClass->getStandardUriString(
             $source_server_config->qa_name,
             $source_server_config->qa_pw,
@@ -53,14 +55,14 @@ class MigrationController extends Controller
             $source_server_config->server_query_port,
             $source_server_config->server_port,
             'migrate-bot',
-            $this->source_server_id
+            $this->sourceServerId
         );
 
-        $target_server_config = ts3ServerConfig::query()
-            ->where('id', '=', $this->target_server_id)
+        $target_server_config = tsServerConfig::query()
+            ->where('id', '=', $this->targetServerId)
             ->first();
-        //setup source server
-        $uriTargetHelperClass = new Ts3UriStringHelperController();
+        //set up source server
+        $uriTargetHelperClass = new TsUriStringHelperController();
         $uriTarget = $uriTargetHelperClass->getStandardUriString(
             $target_server_config->qa_name,
             $target_server_config->qa_pw,
@@ -68,7 +70,7 @@ class MigrationController extends Controller
             $target_server_config->server_query_port,
             $target_server_config->server_port,
             'migrate-bot',
-            $this->target_server_id
+            $this->targetServerId
         );
 
         try {
@@ -85,15 +87,15 @@ class MigrationController extends Controller
 
         Log::channel('migration')->info('## Start Migration ##');
         //migration channels with permissions
-        $this->migrate_channels();
+        $this->migrateChannels();
         Log::channel('migration')->info('Create Channel Completed');
 
         //migrate servergroups with permissions
-        $this->migrate_servergroups();
+        $this->migrateServergroups();
         Log::channel('migration')->info('Create Server Groups Completed');
 
         //migrate channelgroups
-        $this->migrate_channelgroups();
+        $this->migrateChannelgroups();
         Log::channel('migration')->info('Create Channel Groups Completed');
 
         //disconnect
@@ -107,7 +109,7 @@ class MigrationController extends Controller
      * @throws ServerQueryException
      * @throws TransportException
      */
-    private function migrate_channels()
+    private function migrateChannels(): void
     {
         $sourceChannelList = $this->sourceConnection->channelList();
         $pid = 0;
@@ -180,11 +182,27 @@ class MigrationController extends Controller
                 $sourceChannelPermissions = $this->sourceConnection->channelPermList($sourceChannelInfo['cid'], true);
 
                 foreach ($sourceChannelPermissions as $sourceChannelPermission) {
-                    $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']],
-                        $sourceChannelPermission['permvalue']);
+                    if ($sourceChannelPermission['permsid'] === 'i_icon_id') {
+                        continue;
+                    }
+
+                    $this->targetConnection->channelPermAssign($pid, [$sourceChannelPermission['permsid']], $sourceChannelPermission['permvalue']);
                 }
+
+                //migrate channel icon // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->channelGetById($sourceChannel['cid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0) {
+                    $iconContent = $this->sourceConnection->channelGetById($sourceChannel['cid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->channelPermAssign($pid, ['i_icon_id'], $signedIconId);
+                }
+
+                //TODO add migrate channel files
             } catch (\Exception $e) {
-                Log::channel('migration')->error('Create Servergroup failed: '.$e->getMessage());
+                Log::channel('migration')->error('Create channel failed: '.$e->getMessage());
             }
         }
     }
@@ -195,7 +213,7 @@ class MigrationController extends Controller
      * @throws TransportException
      * @throws ServerQueryException
      */
-    private function migrate_servergroups()
+    private function migrateServergroups(): void
     {
         $sourceServerGroupList = $this->sourceConnection->serverGroupList(['type'=>1]);
 
@@ -215,6 +233,17 @@ class MigrationController extends Controller
                         Log::channel('migration')->error('Create permsid: '.$sourceServerGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
+
+                //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->serverGroupGetById($sourceServerGroup['sgid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0) {
+                    $iconContent = $this->sourceConnection->serverGroupGetById($sourceServerGroup['sgid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->serverGroupPermAssign($sid, ['i_icon_id'], $signedIconId);
+                }
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceServerGroupInfo['name'].' failed: '.$e->getMessage());
             }
@@ -226,7 +255,7 @@ class MigrationController extends Controller
      * @throws TransportException
      * @throws ServerQueryException
      */
-    private function migrate_channelgroups()
+    private function migrateChannelgroups(): void
     {
         $sourceChannelGroupList = $this->sourceConnection->channelGroupList(['type'=>1]);
 
@@ -246,8 +275,31 @@ class MigrationController extends Controller
                         Log::channel('migration')->error('Create permsid: '.$sourceChannelGroupPermission['permsid'].' failed. | '.$e->getMessage());
                     }
                 }
+
+                //migrate icons // remember, teamspeak use a cache system. Icons maybe don't view instead, so a reconnection is needed
+                $hasIcon = $this->sourceConnection->channelGroupGetById($sourceChannelGroup['cgid'])->permList(true);
+
+                if ($hasIcon['i_icon_id']['permvalue'] !== 0) {
+                    $iconContent = $this->sourceConnection->channelGroupGetById($sourceChannelGroup['cgid'])->iconDownload();
+                    $iconId = $this->targetConnection->iconUpload($iconContent);
+                    $signedIconId = $iconId > 0x7FFFFFFF ? $iconId - 0x100000000 : $iconId;
+
+                    $this->targetConnection->channelGroupPermAssign($cgid, ['i_icon_id'], $signedIconId);
+                }
             } catch (\Exception $e) {
                 Log::channel('migration')->error('Create '.$sourceChannelGroupInfo['name'].' failed: '.$e->getMessage());
+            }
+        }
+    }
+
+    private function resetLogs(): void
+    {
+        $logFiles = glob(storage_path('logs/migration*.log'));
+        if ($logFiles !== false) {
+            foreach ($logFiles as $logFile) {
+                if (file_exists($logFile)) {
+                    unlink($logFile);
+                }
             }
         }
     }

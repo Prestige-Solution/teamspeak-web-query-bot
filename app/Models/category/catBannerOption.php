@@ -9,7 +9,7 @@ class catBannerOption extends Model
     protected $fillable = [
         'name',
         'pes_code',
-        'ts3_attribut',
+        'ts_attribut',
         'category',
     ];
 }

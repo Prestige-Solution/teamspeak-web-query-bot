@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ts3BotWorkers\ts3BotWorkerAfk;
+use App\Models\tsBotWorkers\tsBotWorkerAfk;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class UpdateWorkerAfkSettingsFactory extends Factory
 {
-    protected $model = ts3BotWorkerAfk::class;
+    protected $model = tsBotWorkerAfk::class;
 
     /**
      * Define the model's default state.

@@ -9,20 +9,20 @@
                 </div>
                 <div class="modal-body">
                     <div class="row mb-2">
-                        <label class="col-lg-3 col-form-label fw-bold" for="server_name">Servername</label>
+                        <label class="col-lg-3 col-form-label fw-bold" for="server_name">Server name</label>
                         <div class="col-lg-9">
-                            <input class="form-control" type="text" name="server_name" id="server_name" placeholder="Servername" required>
+                            <input class="form-control" type="text" name="server_name" id="server_name" placeholder="Server name" required>
                             <div class="invalid-feedback">
                                 Please enter a server name.
                             </div>
                         </div>
                     </div>
                     <div class="row mb-2">
-                        <label class="col-lg-3 col-form-label fw-bold" for="server_ip">IP adresse</label>
+                        <label class="col-lg-3 col-form-label fw-bold" for="server_ip">IP address</label>
                         <div class="col-lg-9">
                             <input class="form-control" type="text" name="server_ip" id="server_ip" placeholder="IPv4 or IPv6 or DNS address" required>
                             <div class="invalid-feedback">
-                                Example: IPv4: 127.0.0.1 | IPv6: 0:0:0:0:0:0:0:1 or ::1 | DNS: ts3.example.com
+                                Example: IPv4: 127.0.0.1 | IPv6: 0:0:0:0:0:0:0:1 or ::1 | DNS: ts.example.com
                             </div>
                         </div>
                     </div>
@@ -66,7 +66,7 @@
                         <label class="col-lg-3 col-form-label fw-bold" for="mode">Connection Mode</label>
                         <div class="col-lg-9">
                             <select class="form-select" name="mode" id="mode">
-                                <option value="{{\App\Models\ts3Bot\ts3ServerConfig::TS3ConnectModeSSH}}">SSH</option>
+                                <option value="{{\App\Models\tsBot\tsServerConfig::tsConnectModeSSH}}">SSH</option>
                             </select>
                         </div>
                     </div>

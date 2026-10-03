@@ -5,7 +5,7 @@
 @endsection
 
 @section('js-footer')
-    <script src="{{asset('js/pes-custom-js/banner-creator.js')}}" type="text/javascript"></script>
+    @vite(['resources/js/banner-creator.js'])
 @endsection
 
 @section('content')
@@ -23,7 +23,13 @@
         <div class="row mb-3">
             <div class="col-lg-6">
                 <label class="form-label fw-bold">Template:</label>
-                <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/template/'.$banner->banner_original_file_name)}}" alt="BannerImage" onclick="imageCoordinates()">
+                <div class="banner-template-wrapper position-relative d-inline-block">
+                    @if($banner->banner_viewer_file_name !== null)
+                        <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/viewer/'.$banner->banner_viewer_file_name)}}" alt="BannerImage">
+                    @else
+                        <img class="img-thumbnail" id="BannerImage" src="{{asset('banner/template/'.$banner->banner_original_file_name)}}" alt="BannerImage">
+                    @endif
+                </div>
             </div>
             <div class="col-lg-6">
                 <label class="form-label fw-bold">Preview:</label>
@@ -100,7 +106,7 @@
         <div class="row mb-2">
             <div class="col-lg-12">
                 @foreach($storedBannerOptions as $storedBannerOption)
-                    <div class="row mt-3" id="BannerOptionGroup">
+                    <div class="row mt-3 banner-option-group" id="BannerOptionGroup">
                         <div class="col-lg-3 mb-2">
                             <select class="form-select" name="option_id[]" id="option_id" aria-label="option_id">
                                 <option disabled>--- Default ---</option>
@@ -132,7 +138,7 @@
                             </select>
                         </div>
                         <div class="col-lg-3 mb-2">
-                            <input class="form-control" type="text" name="text[]" id="text" aria-label="Text" placeholder="Nur wenn Option = Text" value="@if($storedBannerOption->text != 0) {{$storedBannerOption->text}} @endif">
+                            <input class="form-control" type="text" name="text[]" id="text" aria-label="Text" placeholder="Only when Option = Text" value="@if($storedBannerOption->text != 0) {{$storedBannerOption->text}} @endif">
                         </div>
                         <div class="col-lg-1 mb-2">
                             <input type="number" class="form-control" name="coord_x[]" id="coord_x" placeholder="X" aria-label="X" value="{{$storedBannerOption->coord_x}}">
@@ -142,7 +148,7 @@
                         </div>
                     </div>
                 @endforeach
-                <div class="row mt-3" id="BannerOptionGroup">
+                <div class="row mt-3 banner-option-group" id="BannerOptionGroup">
                     <div class="col-lg-3 mb-2">
                         <select class="form-select" name="option_id[]" id="option_id" aria-label="option_id">
                             <option disabled>--- Default ---</option>
@@ -174,7 +180,7 @@
                         </select>
                     </div>
                     <div class="col-lg-3 mb-2">
-                        <input class="form-control" type="text" name="text[]" id="text" aria-label="text" placeholder="Nur wenn Option = Text">
+                        <input class="form-control" type="text" name="text[]" id="text" aria-label="text" placeholder="Only when Option = Text">
                     </div>
                     <div class="col-lg-1 mb-2">
                         <input type="number" class="form-control" name="coord_x[]" id="coord_x" placeholder="X" aria-label="X">
@@ -192,7 +198,7 @@
             <hr>
             <div class="row">
                 <div class="col-lg-auto">
-                    <button class="btn btn-primary" name="id" value="{{$banner->id}}">Speichern</button>
+                    <button class="btn btn-primary" name="id" value="{{$banner->id}}">Save</button>
                 </div>
             </div>
         </div>

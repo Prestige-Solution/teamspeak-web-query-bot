@@ -15,7 +15,11 @@
     </testsuites>
     <source>
         <include>
-            <directory>app</directory>
+            <directory>app/console</directory>
+            <directory>app/Http/Controllers</directory>
+            <directory>app/Http/Requests</directory>
+            <directory>app/Jobs</directory>
+            <directory>app/Models</directory>
         </include>
     </source>
     <coverage ignoreDeprecatedCodeUnits="true"

@@ -26,8 +26,8 @@ class StartMigrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'source_server_id'=>'required|integer|exists:ts3_server_configs,id',
-            'target_server_id'=>'required|integer|exists:ts3_server_configs,id',
+            'source_server_id'=>'required|integer|exists:ts_server_configs,id',
+            'target_server_id'=>'required|integer|exists:ts_server_configs,id',
         ];
     }
 

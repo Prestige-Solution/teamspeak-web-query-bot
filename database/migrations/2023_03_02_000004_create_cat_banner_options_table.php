@@ -18,7 +18,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('pes_code');
-            $table->string('ts3_attribut');
+            $table->string('ts_attribut');
             $table->string('category');
             $table->timestamps();
         });

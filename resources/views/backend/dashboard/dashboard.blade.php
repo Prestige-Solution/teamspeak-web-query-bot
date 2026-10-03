@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    @if(empty($server) || \Illuminate\Support\Facades\Auth::user()->default_server_id === 0)
+    @if(empty($server) || \Illuminate\Support\Facades\Auth::user()->active_server_id === 0)
         <div class="container mt-2">
             <div class="row">
                 <div class="col-lg-12">

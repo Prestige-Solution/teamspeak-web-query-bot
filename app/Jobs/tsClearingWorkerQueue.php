@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Http\Controllers\botWorker\ClearingWorkerController;
+use App\Http\Controllers\sys\TsLogController;
+use App\Models\tsBot\tsBotLog;
+use Exception;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
+use Illuminate\Queue\SerializesModels;
+
+class tsClearingWorkerQueue implements ShouldQueue, ShouldBeUnique
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $serverId;
+
+    public int $backoff = 60;
+
+    public int $tries = 1;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct($serverId)
+    {
+        $this->serverId = $serverId;
+    }
+
+    public function middleware(): array
+    {
+        return [(new WithoutOverlapping($this->serverId))->expireAfter(180)];
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        try {
+            $clearingController = new ClearingWorkerController($this->serverId);
+            $clearingController->startClearing();
+        } catch (Exception $e) {
+            $tsLogging = new TsLogController('Clearing-Worker', $this->serverId);
+            $tsLogging->setCustomLog(
+                $this->serverId,
+                tsBotLog::FAILED,
+                'queue_worker',
+                'There was an error during create queue',
+                $e->getMessage(),
+                $e->getMessage(),
+            );
+        }
+    }
+
+    public function uniqueId(): int
+    {
+        return $this->serverId;
+    }
+
+    public function backoff(): int
+    {
+        return $this->backoff;
+    }
+}

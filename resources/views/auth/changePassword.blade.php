@@ -8,7 +8,7 @@
     <div class="container mt-3 mb-3">
         <div class="row">
             <div class="col-lg-12">
-                <h2 class="fw-bold">Change Passwort</h2>
+                <h2 class="fw-bold">Change Password</h2>
             </div>
         </div>
         <hr>
